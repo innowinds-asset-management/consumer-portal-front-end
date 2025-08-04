@@ -1,0 +1,36 @@
+//
+// _authentication.scss
+//
+
+.auth-bg {
+    background-color: #ebf4f5;
+    background-image: linear-gradient(90deg, #ebf4f5 0%, #b3c5df 100%);
+}
+
+.auth-brand {
+    .logo-dark {
+        display: inline-block;
+    }
+
+    .logo-light {
+        display: none;
+    }
+}
+
+// Dark mode
+html[data-bs-theme="dark"] {
+    .auth-bg {
+        background-color: #a399b2;
+        background-image: linear-gradient(147deg, #a399b2 0%, #4d4855 74%);
+    }
+
+    .auth-brand {
+        .logo-light {
+            display: inline-block;
+        }
+
+        .logo-dark {
+            display: none;
+        }
+    }
+}

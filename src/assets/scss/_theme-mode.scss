@@ -1,0 +1,134 @@
+//
+// _theme-default.scss
+//
+
+// Google Font Family
+// @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+
+:root {
+    --#{$prefix}logo-lg-height: 22px;
+    --#{$prefix}logo-sm-height: 28px;
+
+    --#{$prefix}sidenav-width: 240px;
+    --#{$prefix}sidenav-width-md: 160px;
+    --#{$prefix}sidenav-width-sm: 70px;
+
+    --#{$prefix}topbar-height: 70px;
+
+    --#{$prefix}menu-item-icon-size: 1.125rem;
+    --#{$prefix}menu-item-font-size: 0.925rem;
+    --#{$prefix}menu-link-item-gap: 12px;
+    --#{$prefix}menu-item-padding-x: 15px;
+    --#{$prefix}menu-item-padding-y: 8px;
+    --#{$prefix}menu-item-item-gap: 2px;
+
+    // theme dark
+    &[data-bs-theme="dark"] {
+        --#{$prefix}light: #252630;
+        --#{$prefix}light-rgb: #{to-rgb(#252630)};
+        --#{$prefix}dark: #f1f1f1;
+        --#{$prefix}dark-rgb: #{to-rgb(#f1f1f1)};
+        --#{$prefix}box-shadow: #{0px 0px 35px 0px rgba(26, 27, 34, 0.5)};
+    }
+}
+
+:root {
+
+    // Background Light left-sidebar
+    &[data-menu-color="light"] {
+        --#{$prefix}menu-bg: #{$white};
+        --#{$prefix}menu-item-color: #{$gray-700};
+        --#{$prefix}menu-item-hover-color: #{$primary};
+        --#{$prefix}menu-item-hover-bg: #{rgba($primary, 0.1)};
+        --#{$prefix}menu-item-active-color: #{$primary};
+        --#{$prefix}menu-item-active-bg: transparent;
+        --#{$prefix}sidebar-user-bg: #f6fafd;
+    }
+
+    // Dark Left Sidebar
+    &[data-menu-color="dark"] {
+        --#{$prefix}menu-bg: #252630;
+        --#{$prefix}menu-item-color: #97aac1;
+        --#{$prefix}menu-item-hover-color: #e2eeff;
+        --#{$prefix}menu-item-hover-bg: #1e1f27;
+        --#{$prefix}menu-item-active-color: #e2eeff;
+        --#{$prefix}menu-item-active-bg: transparent;
+        --#{$prefix}sidebar-user-bg: #1e1f27;
+    }
+
+    // Dark Mode Only
+    &[data-menu-color="dark"][data-bs-theme="dark"],
+    &[data-bs-theme="dark"][data-menu-color="light"] {
+        --#{$prefix}menu-bg: #1e1f27;
+        --#{$prefix}menu-item-color: #97aac1;
+        --#{$prefix}menu-item-hover-color: #e2eeff;
+        --#{$prefix}menu-item-hover-bg: #252630;
+        --#{$prefix}menu-item-active-color: #e2eeff;
+        --#{$prefix}menu-item-active-bg: transparent;
+        --#{$prefix}sidebar-user-bg: #252630;
+    }
+
+    // Brand Menu
+    &[data-menu-color="brand"] {
+        --#{$prefix}menu-bg: #{$primary};
+        --#{$prefix}menu-item-color: #e1e5e9;
+        --#{$prefix}menu-item-hover-color: #ffffff;
+        --#{$prefix}menu-item-hover-bg: rgba(255, 255, 255, 0.1);
+        --#{$prefix}menu-item-active-color: #ffffff;
+        --#{$prefix}menu-item-active-bg: transparent;
+        --#{$prefix}sidebar-user-bg: rgba(255, 255, 255, 0.1);
+    }
+
+    // Brand Menu
+    &[data-menu-color="gradient"] {
+        --#{$prefix}menu-bg: #{linear-gradient(to bottom,#5d6dc3,#3c86d8)};
+        --#{$prefix}menu-item-color: #e1e5e9;
+        --#{$prefix}menu-item-hover-color: #ffffff;
+        --#{$prefix}menu-item-hover-bg: rgba(255, 255, 255, 0.1);
+        --#{$prefix}menu-item-active-color: #ffffff;
+        --#{$prefix}menu-item-active-bg: transparent;
+        --#{$prefix}sidebar-user-bg: rgba(255, 255, 255, 0.1);
+    }
+
+    // Light Topbar
+    &[data-topbar-color="light"] {
+        --#{$prefix}topbar-bg: #{$white};
+        --#{$prefix}topbar-item-color: #{$gray-700};
+        --#{$prefix}topbar-item-hover-color: #{$primary};
+        --#{$prefix}topbar-search-bg: #eaeff3;
+        --#{$prefix}topbar-user-bg: transparent;
+        --#{$prefix}topbar-user-border: #eef2f7;
+    }
+
+    // Dark Topbar
+    &[data-topbar-color="dark"],
+    &[data-bs-theme="dark"][data-topbar-color="light"] {
+        --#{$prefix}topbar-bg: #1e1f27;
+        --#{$prefix}topbar-item-color: #aab9ca;
+        --#{$prefix}topbar-item-hover-color: #e4f0ff;
+        --#{$prefix}topbar-search-bg: rgba(255, 255, 255, 0.05);
+        --#{$prefix}topbar-user-bg: transparent;
+        --#{$prefix}topbar-user-border: rgba(255, 255, 255, 0.05);
+    }
+
+    // Brand Topbar
+    &[data-topbar-color="brand"] {
+        --#{$prefix}topbar-bg: #{$primary};
+        --#{$prefix}topbar-item-color: rgba(255, 255, 255, 0.9);
+        --#{$prefix}topbar-item-hover-color: #ffffff;
+        --#{$prefix}topbar-search-bg: rgba(255, 255, 255, 0.1);
+        --#{$prefix}topbar-user-bg: rgba(255, 255, 255, 0.1);
+        --#{$prefix}topbar-user-border: rgba(255, 255, 255, 0.15);
+    }
+
+    // Gradient Topbar
+    &[data-topbar-color="gradient"] {
+        --#{$prefix}topbar-bg: #{linear-gradient(to top,#5d6dc3,#3c86d8)};
+        --#{$prefix}topbar-item-color: rgba(255, 255, 255, 0.9);
+        --#{$prefix}topbar-item-hover-color: #ffffff;
+        --#{$prefix}topbar-search-bg: rgba(255, 255, 255, 0.1);
+        --#{$prefix}topbar-user-bg: rgba(255, 255, 255, 0.1);
+        --#{$prefix}topbar-user-border: rgba(255, 255, 255, 0.15);
+    }
+}

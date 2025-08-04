@@ -1,0 +1,26 @@
+// Custom - React
+
+.content-none {
+  &:after {
+    display: none !important;
+  }
+
+  &:before {
+    display: none !important;
+  }
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.flex-centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icons-center {
+  display: inline-flex;
+  align-items: center;
+}

@@ -1,0 +1,239 @@
+//
+// topbar.scss
+//
+
+/* ==================
+Topbar CSS
+===================== */
+
+.app-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1010;
+    background: $topbar-bg;
+    min-height: $topbar-height;
+    margin-left: 0;
+    border-bottom: 1px solid $topbar-user-border;
+    box-shadow: var(--#{$prefix}box-shadow);
+    transition: $transition-base;
+    padding: 0 calc($grid-gutter-width * 0.5);
+
+    .topbar-menu {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+
+        .topbar-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: $topbar-height;
+
+            .topbar-link {
+                z-index: 1;
+                border: none;
+                background-color: transparent;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                color: $topbar-item-color;
+
+                &:hover,
+                &:active,
+                &:focus {
+                    color: $topbar-item-hover-color;
+                }
+            }
+        }
+
+        .page-title,
+        .breadcrumb-item {
+            line-height: 1;
+            color: $topbar-item-color;
+
+            --#{$prefix}body-color: #{$topbar-item-color};
+            --#{$prefix}breadcrumb-divider-color: #{$topbar-item-color};
+        }
+    }
+
+
+    .dropdown-menu {
+        top: 23px !important;
+    }
+
+    ul {
+        list-style-type: none;
+        margin-bottom: 0;
+    }
+
+    // .logo {
+    //     display: none;
+    // }
+}
+
+.sidenav-toggle-button {
+    display: flex;
+    position: relative;
+    cursor: pointer;
+    background-color: transparent;
+    border: none;
+    color: $topbar-item-color;
+
+    &:hover,
+    &:active,
+    &:focus {
+        color: $topbar-item-hover-color;
+    }
+}
+
+#light-dark-mode {
+    .light-mode-icon {
+        display: block;
+    }
+
+    .dark-mode-icon {
+        display: none;
+    }
+}
+
+// Topbar light/Dark Mode icon 
+html[data-bs-theme="dark"] {
+    #light-dark-mode {
+        .light-mode-icon {
+            display: none;
+        }
+
+        .dark-mode-icon {
+            display: block;
+        }
+    }
+}
+
+.nav-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-width: 0 1px;
+    border-style: solid;
+    border-color: $topbar-user-border;
+    background-color: $topbar-user-bg;
+    min-height: $topbar-height;
+    transition: none;
+}
+
+
+// Topbar Search
+.topbar-search {
+    width: 230px;
+    padding: calc($input-padding-y * 1) $input-padding-x;
+    line-height: $input-line-height;
+    background-color: $topbar-search-bg;
+    color: $topbar-item-color;
+    border-radius: 30px;
+}
+
+// Notification
+.notification-item {
+    background-color: var(--#{$prefix}secondary-bg);
+    position: relative;
+    cursor: pointer;
+
+    .notification-item-close {
+        position: absolute;
+        right: 0;
+        display: none;
+        top: 0;
+        bottom: 0;
+        padding: 15px;
+        background-color: #{$dropdown-link-hover-bg};
+    }
+
+    .notification-badge {
+        height: 22px;
+        width: 22px;
+        text-align: center;
+        color: $white;
+        top: -12px;
+        right: -8px;
+        border: 2px solid $card-bg;
+        line-height: 18px;
+        font-size: 11px;
+    }
+
+    &:hover {
+        .notification-item-close {
+            display: block;
+        }
+    }
+}
+
+.animate-ring {
+    animation: tada 1.5s ease infinite
+}
+
+@keyframes tada {
+    0% {
+        transform: scaleZ(1)
+    }
+
+    10%,
+    20% {
+        transform: scale3d(.95, .95, .95) rotate3d(0, 0, 1, -10deg)
+    }
+
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: scaleZ(1) rotate3d(0, 0, 1, 10deg)
+    }
+
+    40%,
+    60%,
+    80% {
+        transform: rotate3d(0, 0, 1, -10deg)
+    }
+
+    to {
+        transform: scaleZ(1)
+    }
+}
+
+@include media-breakpoint-down(sm) {
+    .app-topbar {
+
+        .topbar-menu {
+            position: initial;
+        }
+
+        .dropdown {
+            position: static;
+
+            .dropdown-menu {
+                width: 100%;
+                left: 10px !important;
+                right: 10px !important;
+            }
+        }
+    }
+}
+
+@include media-breakpoint-down(md) {
+    .app-topbar {
+        padding: 0 $spacer * 0.5;
+    }
+
+    .logo {
+        padding: 0;
+
+        .logo-sm {
+            display: flex;
+        }
+
+        .logo-lg {
+            display: none;
+        }
+    }
+}

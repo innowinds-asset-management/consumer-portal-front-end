@@ -1,0 +1,157 @@
+//
+// _layout.scss
+//
+
+// Wrapper
+.wrapper {
+    height: 100%;
+    width: 100%;
+}
+
+// Content Page
+.page-content {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    margin-left: $sidenav-width;
+    transition: $transition-base;
+    min-height: calc(100vh - $topbar-height - 5px);
+    padding: calc($spacer * 0.75) calc($spacer * 0.5);
+    padding-bottom: 0;
+}
+
+// Logo Height
+.logo-lg {
+    img {
+        height: $logo-lg-height;
+    }
+}
+
+.logo-sm {
+    img {
+        height: $logo-sm-height;
+    }
+}
+
+// Sidebar Logo
+.logo {
+    display: flex;
+    top: 0;
+    position: sticky;
+    height: $topbar-height;
+    padding: 0 22px;
+    transition: $transition-base;
+    align-items: center;
+
+    .logo-lg {
+        display: flex;
+    }
+
+    .logo-sm {
+        display: none;
+    }
+
+    .logo-light {
+        display: none;
+    }
+
+    .logo-dark {
+        display: flex;
+    }
+}
+
+html[data-bs-theme="dark"] {
+    .logo {
+        .logo-light {
+            display: block;
+        }
+
+        .logo-dark {
+            display: none;
+        }
+    }
+
+    .darkMode {
+        display: none;
+    }
+}
+
+// Sidenav Logo
+html[data-menu-color="brand"],
+html[data-menu-color="dark"],
+html[data-menu-color="gradient"] {
+
+    .sidenav-menu {
+        .logo {
+            .logo-light {
+                display: block;
+            }
+
+            .logo-dark {
+                display: none;
+            }
+        }
+    }
+}
+
+// Topbar Logo
+html[data-topbar-color="brand"],
+html[data-topbar-color="dark"],
+html[data-topbar-color="gradient"] {
+    .app-topbar {
+        .logo {
+            .logo-light {
+                display: block;
+            }
+
+            .logo-dark {
+                display: none;
+            }
+        }
+    }
+}
+
+// Page Title 
+.page-title-head {
+    background-color: var(--#{$prefix}secondary-bg);
+    box-shadow: var(--#{$prefix}box-shadow);
+    padding: calc($spacer * 0.5) calc($spacer * 0.75);
+    margin: calc($spacer * -0.75) calc($spacer * -1);
+    margin-bottom: calc($spacer * 0.75);
+}
+
+html[data-layout="topnav"] {
+    .page-title-head {
+        background-color: transparent;
+        box-shadow: none;
+        padding: 0;
+        padding-bottom: calc($spacer * 0.75);
+        margin: 0;
+    }
+}
+
+html[data-sidenav-size="full"] {
+    .app-topbar {
+        .logo {
+            padding: 0;
+
+            .logo-sm {
+                display: flex;
+            }
+
+            .logo-lg {
+                display: none;
+            }
+        }
+    }
+
+    .sidenav-menu {
+        .logo {
+            display: flex;
+        }
+
+        [data-simplebar] {
+            height: calc(100% - $topbar-height);
+        }
+    }
+}

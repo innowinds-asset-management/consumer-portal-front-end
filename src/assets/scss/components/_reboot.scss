@@ -1,0 +1,67 @@
+//
+// reboot.scss
+//
+
+html {
+    position: relative;
+    min-height: 100%;
+    // direction: ltr;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+::selection {
+    color: $primary;
+    background: rgba($primary, 0.15);
+}
+
+button,
+a {
+    outline: none !important;
+}
+
+// Forms
+
+label {
+    font-weight: $font-weight-medium;
+}
+
+b,
+strong {
+    font-weight: $font-weight-semibold;
+}
+
+// border style
+.border-dashed {
+    --#{$prefix}border-style: dashed;
+}
+
+// Custom Link
+.link-reset {
+    color: inherit;
+    transition: $transition-base;
+
+    &:hover {
+        color: var(--#{$prefix}primary);
+    }
+}
+
+.lucide {
+    width: 1em;
+    height: 1em;
+}
+
+
+.page-container {
+    @extend .container-fluid;
+}
+
+// .page-container {
+//     @extend .container;  
+// }
+
+// .page-container {
+//     max-width: 90%;
+// }
