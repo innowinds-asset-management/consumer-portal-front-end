@@ -38,6 +38,7 @@ export interface CreateAssetRequest {
   consumerSerialNo: string;
   poLineItemId: string;
   warrantyPeriod: number;
+  departmentId: string;
   warrantyStartDate: string;
   warrantyEndDate: string;
   warrantyId: string;

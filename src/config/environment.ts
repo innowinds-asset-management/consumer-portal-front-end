@@ -5,6 +5,7 @@ export const ENV_CONFIG = {
   // API URLs
   API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1',
   ASSET_API_URL: process.env.NEXT_PUBLIC_ASSET_API_URL || 'http://localhost:3003/api/v1',
+  WARRANTY_API_URL: process.env.NEXT_PUBLIC_WARRANTY_API_URL || 'http://localhost:3004/api/v1',
   
   // Environment
   NODE_ENV: process.env.NODE_ENV || 'development',
@@ -55,6 +56,7 @@ export const isFeatureEnabled = (feature: keyof typeof ENV_CONFIG.FEATURE_FLAGS)
 export const {
   API_URL,
   ASSET_API_URL,
+  WARRANTY_API_URL,
   NODE_ENV,
   IS_DEVELOPMENT,
   IS_PRODUCTION,

@@ -52,6 +52,35 @@ export default function AssetListingPage() {
     fetchAssets();
   }, []);
 
+  // Add click handlers to asset names after grid is rendered
+  useEffect(() => {
+    if (!loading && assets.length > 0) {
+      const addClickHandlers = () => {
+        const assetNameCells = document.querySelectorAll('td:first-child');
+        if (assetNameCells.length > 0) {
+          assetNameCells.forEach((cell, index) => {
+            if (index < assets.length) {
+              const asset = assets[index];
+              (cell as HTMLElement).style.cursor = 'pointer';
+              (cell as HTMLElement).style.color = '#0d6efd';
+              (cell as HTMLElement).style.textDecoration = 'underline';
+              cell.addEventListener('click', () => {
+                router.push(`/assets/detail?id=${asset.id}`);
+              });
+            }
+          });
+        }
+      };
+      // Try immediately
+      addClickHandlers();
+      // Also try after a delay to ensure GridJS has rendered
+      const timeoutId = setTimeout(addClickHandlers, 500);
+
+      // Cleanup timeout
+      return () => clearTimeout(timeoutId);
+    }
+  }, [loading, assets, router]);
+
   // Format date for display
   const formatDate = (dateString: string) => {
     if (!dateString) return "";
@@ -152,6 +181,7 @@ export default function AssetListingPage() {
                 search: "form-control",
                 pagination: "pagination pagination-sm"
               }}
+
               style={{
                 table: {
                   width: "100%"

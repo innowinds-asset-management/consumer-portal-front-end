@@ -6,7 +6,8 @@ import ComponentContainerCard from '@/components/ComponentContainerCard'
 import { Button, Col, Form, Row, Alert } from 'react-bootstrap'
 import { assetTypesService, AssetType } from '@/services/api/assetTypes'
 import { assetSubTypesService, AssetSubType } from '@/services/api/assetSubTypes'
-import { assetsService, CreateAssetRequest } from '@/services/api/assets'
+import { departmentService, Department } from '@/services/api/departments'
+import { assetCompleteService, CreateAssetCompleteRequest } from '@/services/api/assetComplete'
 import { STORAGE_KEYS } from "@/utils/constants";
 
 // Form data interface
@@ -22,7 +23,7 @@ interface FormData {
   warrantyStartDate: string;
   warrantyEndDate: string;
   buildingNumber: string;
-  departmentName: string;
+  departmentId: string;
   floorNumber: string;
   roomNumber: string;
 }
@@ -40,7 +41,7 @@ interface FormErrors {
   warrantyStartDate?: string;
   warrantyEndDate?: string;
   buildingNumber?: string;
-  departmentName?: string;
+  departmentId?: string;
   floorNumber?: string;
   roomNumber?: string;
 }
@@ -51,9 +52,12 @@ export default function AssetPage() {
   const [error, setError] = useState("");
   const [assetTypes, setAssetTypes] = useState<AssetType[]>([]);
   const [assetSubTypes, setAssetSubTypes] = useState<AssetSubType[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [loadingAssetTypes, setLoadingAssetTypes] = useState(true);
+  const [loadingDepartments, setLoadingDepartments] = useState(true);
   const [assetTypesError, setAssetTypesError] = useState("");
   const [assetSubTypesError, setAssetSubTypesError] = useState("");
+  const [departmentsError, setDepartmentsError] = useState("");
 
   // Form data state
   const [formData, setFormData] = useState<FormData>({
@@ -68,7 +72,7 @@ export default function AssetPage() {
     warrantyStartDate: new Date().toISOString().split('T')[0], // Current date
     warrantyEndDate: new Date().toISOString().split('T')[0], // Current date
     buildingNumber: "",
-    departmentName: "",
+    departmentId: "",
     floorNumber: "",
     roomNumber: "",
   });
@@ -76,7 +80,7 @@ export default function AssetPage() {
   // Form errors state
   const [errors, setErrors] = useState<FormErrors>({});
 
-  // Fetch asset types on component mount
+  // Fetch asset types and departments on component mount
   useEffect(() => {
     const fetchAssetTypes = async () => {
       try {
@@ -92,7 +96,25 @@ export default function AssetPage() {
       }
     };
 
+    const fetchDepartments = async () => {
+      try {
+        setLoadingDepartments(true);
+        setDepartmentsError("");
+        const consumerId = JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "";
+        if (consumerId) {
+          const data = await departmentService.getDepartmentsByConsumerId(consumerId);
+          setDepartments(data);
+        }
+      } catch (err) {
+        console.error('Error fetching departments:', err);
+        setDepartmentsError("Failed to load departments. Please refresh the page.");
+      } finally {
+        setLoadingDepartments(false);
+      }
+    };
+
     fetchAssetTypes();
+    fetchDepartments();
   }, []);
 
   // Fetch asset sub-types when asset type changes
@@ -144,10 +166,10 @@ export default function AssetPage() {
     fetchAssetSubTypes();
   }, [formData.assetType, assetTypes]);
 
-  // Calculate warranty end date based on start date and duration
-  const calculateWarrantyEndDate = (startDate: string, durationDays: number): string => {
+  // Calculate warranty end date based on start date and duration (months)
+  const calculateWarrantyEndDate = (startDate: string, durationMonths: number): string => {
     const start = new Date(startDate);
-    const end = new Date(start.getTime() + (durationDays * 24 * 60 * 60 * 1000));
+    const end = new Date(start.getTime() + (durationMonths * 30 * 24 * 60 * 60 * 1000));
     return end.toISOString().split('T')[0];
   };
 
@@ -184,7 +206,7 @@ export default function AssetPage() {
     if (!formData.installationDate) newErrors.installationDate = "Installation date is required";
     if (formData.warrantyDuration < 0) newErrors.warrantyDuration = "Must be 0 or greater";
     if (!formData.buildingNumber.trim()) newErrors.buildingNumber = "Building number is required";
-    if (!formData.departmentName.trim()) newErrors.departmentName = "Department name is required";
+    if (!formData.departmentId) newErrors.departmentId = "Department is required";
     if (!formData.floorNumber.trim()) newErrors.floorNumber = "Floor number is required";
     if (!formData.roomNumber.trim()) newErrors.roomNumber = "Room number is required";
 
@@ -212,33 +234,40 @@ export default function AssetPage() {
           throw new Error("Invalid asset type or sub-type selected");
         }
 
-        // Create the API request with proper mapping
-        const createAssetRequest: CreateAssetRequest = {
+        // Create the complete asset request
+        const completeAssetData: CreateAssetCompleteRequest = {
           assetTypeId: selectedAssetType.id,
           assetSubTypeId: selectedAssetSubType.id,
           assetName: formData.name,
-          
-          consumerId: JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "", // Default value
-          partNo: formData.model, // Using model as part number
-          supplierId: "sup_dell", // Default value
-          supplierSerialNo: formData.model, // Using model as serial number
-          consumerSerialNo: formData.name, // Using asset name as consumer serial
-          poLineItemId: "clx1234567890abcdeh", // Default value
           warrantyPeriod: formData.warrantyDuration,
-          warrantyStartDate: new Date(formData.warrantyStartDate).toISOString(),
-          warrantyEndDate: new Date(formData.warrantyEndDate).toISOString(),
-          warrantyId: "WARR-001", // Default value
-          installationDate: new Date(formData.installationDate).toISOString(),
+          warrantyStartDate: new Date(formData.warrantyStartDate),
+          warrantyEndDate: new Date(formData.warrantyEndDate),
+          installationDate: new Date(formData.installationDate),
           brand: formData.brand,
-          grnId: "cmdsjhwoh000z14faps90yrw2", // Default value
-          grnItemId: "cmdsjhwvp001714faegmv1mf1", // Default value
           model: formData.model,
           subModel: formData.subModel,
-          supplierCode: formData.brand.toUpperCase() + "-" + formData.model.replace(/\s+/g, "-"), // Generate supplier code
-          isActive: true
+          isActive: true,
+          consumerId: JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "",
+          partNo: formData.model, // Using model as part number
+          supplierCode: formData.brand.toUpperCase() + "-" + formData.model.replace(/\s+/g, "-"),
+          warrantyId: "WARR-001", // Default value
+          consumerSerialNo: formData.name, // Using asset name as consumer serial
+          grnId: "cmdsjhwoh000z14faps90yrw2", // Default value
+          grnItemId: "cmdsjhwvp001714faegmv1mf1", // Default value
+          poLineItemId: "clx1234567890abcdeh", // Default value
+          supplierId: "sup_dell", // Default value
+          supplierSerialNo: formData.model, // Using model as serial number
+          departmentId: formData.departmentId,
+          building: formData.buildingNumber,
+          floorNumber: formData.floorNumber,
+          roomNumber: formData.roomNumber,
+          isCurrentLocation: true
         };
 
-        await assetsService.createAsset(createAssetRequest);
+        // Single API call to create asset, location, and installation
+        const result = await assetCompleteService.createAssetComplete(completeAssetData);
+        
+        console.log("Asset created successfully:", result);
       
       console.log("Form submitted:", formData);
       setSubmitted(true);
@@ -256,7 +285,7 @@ export default function AssetPage() {
           warrantyStartDate: new Date().toISOString().split('T')[0],
           warrantyEndDate: new Date().toISOString().split('T')[0],
           buildingNumber: "",
-          departmentName: "",
+          departmentId: "",
           floorNumber: "",
           roomNumber: "",
         });
@@ -297,6 +326,12 @@ export default function AssetPage() {
         {assetSubTypesError && (
           <Alert variant="warning" className="mb-3">
             {assetSubTypesError}
+          </Alert>
+        )}
+
+        {departmentsError && (
+          <Alert variant="warning" className="mb-3">
+            {departmentsError}
           </Alert>
         )}
         
@@ -468,11 +503,11 @@ export default function AssetPage() {
             
             <Col lg={6}>
               <div className="mb-3">
-                <Form.Label htmlFor="warrantyDuration">Warranty Duration (days)</Form.Label>
+                <Form.Label htmlFor="warrantyDuration">Warranty Duration (months)</Form.Label>
                 <Form.Control
                   type="number"
                   id="warrantyDuration"
-                  placeholder="Enter warranty duration in days"
+                  placeholder="Enter warranty duration in months"
                   min="0"
                   value={formData.warrantyDuration || ""}
                   onChange={(e) => handleFieldChange("warrantyDuration", parseInt(e.target.value) || 0)}
@@ -516,7 +551,7 @@ export default function AssetPage() {
                   readOnly
                   className="bg-light"
                 />
-                <small className="text-muted">Automatically calculated based on start date and duration</small>
+                <small className="text-muted">Automatically calculated based on start date and duration (months)</small>
               </div>
             </Col>
           </Row>
@@ -541,24 +576,37 @@ export default function AssetPage() {
               </div>
             </Col>
             
-            <Col lg={6}>
-              <div className="mb-3">
-                <Form.Label htmlFor="departmentName">Department Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  id="departmentName"
-                  placeholder="Enter department name"
-                  value={formData.departmentName}
-                  onChange={(e) => handleFieldChange("departmentName", e.target.value)}
-                  isInvalid={!!errors.departmentName}
-                />
-                {errors.departmentName && (
-                  <Form.Control.Feedback type="invalid">
-                    {errors.departmentName}
-                  </Form.Control.Feedback>
-                )}
-              </div>
-            </Col>
+                          <Col lg={6}>
+                <div className="mb-3">
+                  <Form.Label htmlFor="departmentId">Department</Form.Label>
+                  <Form.Select
+                    id="departmentId"
+                    value={formData.departmentId}
+                    onChange={(e) => handleFieldChange("departmentId", e.target.value)}
+                    isInvalid={!!errors.departmentId}
+                    disabled={loadingDepartments}
+                  >
+                    <option value="">
+                      {loadingDepartments ? "Loading departments..." : "Select department"}
+                    </option>
+                    {departments.map((department) => (
+                      <option key={department.deptId} value={department.deptId}>
+                        {department.deptName}
+                      </option>
+                    ))}
+                  </Form.Select>
+                  {loadingDepartments && (
+                    <div className="mt-2">
+                      <small className="text-muted">Loading departments...</small>
+                    </div>
+                  )}
+                  {errors.departmentId && (
+                    <Form.Control.Feedback type="invalid">
+                      {errors.departmentId}
+                    </Form.Control.Feedback>
+                  )}
+                </div>
+              </Col>
           </Row>
 
           <Row>
@@ -606,22 +654,22 @@ export default function AssetPage() {
               variant="secondary" 
               type="button" 
               onClick={() => {
-                setFormData({
-                  name: "",
-                  assetType: "",
-                  subAssetType: "",
-                  brand: "",
-                  model: "",
-                  subModel: "",
-                  installationDate: "",
-                  warrantyDuration: 0,
-                  warrantyStartDate: new Date().toISOString().split('T')[0], // Current date
-                  warrantyEndDate: new Date().toISOString().split('T')[0], // Current date
-                  buildingNumber: "",
-                  departmentName: "",
-                  floorNumber: "",
-                  roomNumber: "",
-                });
+                        setFormData({
+          name: "",
+          assetType: "",
+          subAssetType: "",
+          brand: "",
+          model: "",
+          subModel: "",
+          installationDate: "",
+          warrantyDuration: 0,
+          warrantyStartDate: new Date().toISOString().split('T')[0], // Current date
+          warrantyEndDate: new Date().toISOString().split('T')[0], // Current date
+          buildingNumber: "",
+          departmentId: "",
+          floorNumber: "",
+          roomNumber: "",
+        });
                 setErrors({});
               }}
               className="me-2"

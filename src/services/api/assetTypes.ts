@@ -62,7 +62,7 @@ class AssetTypesService {
   // Get active asset types only
   async getActiveAssetTypes(): Promise<AssetType[]> {
     try {
-      const allAssetTypes = await this.getAssetTypes()
+      const allAssetTypes = await this.getAssetTypes()      
       return allAssetTypes.filter(assetType => assetType.isActive)
     } catch (error) {
       console.error('Error fetching active asset types:', error)
