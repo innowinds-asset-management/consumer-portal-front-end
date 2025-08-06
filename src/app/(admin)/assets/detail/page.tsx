@@ -8,8 +8,11 @@ import { Card, CardBody, Col, Nav, NavItem, NavLink, Row, TabContainer, TabConte
 import { assetsService, Asset } from '@/services/api/assets'
 import { assetTypesService, AssetType } from '@/services/api/assetTypes'
 import { assetSubTypesService, AssetSubType } from '@/services/api/assetSubTypes'
+import {departmentService, Department } from '@/services/api/departments'
 import { warrantyService, Warranty } from '@/services/api/warranty'
+import { Location } from '@/services/api/assets'
 import { useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation';
 
 // Mock service request data
 const mockServiceHistory = [
@@ -43,6 +46,7 @@ const mockServiceHistory = [
 ];
 
 export default function AssetDetailPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const assetId = searchParams.get('id');
   
@@ -50,6 +54,8 @@ export default function AssetDetailPage() {
   const [assetType, setAssetType] = useState<AssetType | null>(null);
   const [assetSubType, setAssetSubType] = useState<AssetSubType | null>(null);
   const [warranties, setWarranties] = useState<Warranty[]>([]);
+  const [assetLocation, setAssetLocation] = useState<{ locations: Location[] } | null>(null);
+  const [assetDepartment,setDepartmnet] = useState<{ department: Department } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -67,17 +73,18 @@ export default function AssetDetailPage() {
         
         // Fetch asset details
         const assetData = await assetsService.getAssetById(assetId);
+        
         setAsset(assetData);
         
-        // Fetch asset type details
-        const assetTypes = await assetTypesService.getActiveAssetTypes();
-        const foundAssetType = assetTypes.find(at => at.id === assetData.assetTypeId);
-        setAssetType(foundAssetType || null);
-        
-        // Fetch asset sub-type details
-        const assetSubTypes = await assetSubTypesService.getActiveAssetSubTypes();
-        const foundAssetSubType = assetSubTypes.find(ast => ast.id === assetData.assetSubTypeId);
-        setAssetSubType(foundAssetSubType || null);
+        // Set asset type and sub-type from response data
+        setAssetType(assetData.assetType || null);
+        setAssetSubType(assetData.assetSubType || null);
+        //fetch location details
+        const locationData = { locations: assetData.locations || [] };
+        setAssetLocation(locationData);
+        //set department details
+        const departmentData = { department: assetData.department || null };
+        setDepartmnet(departmentData);
         
         // Fetch warranty details
         const warrantyData = await warrantyService.getWarrantiesByAssetId(assetId);
@@ -93,6 +100,11 @@ export default function AssetDetailPage() {
 
     fetchAssetDetails();
   }, [assetId]);
+
+
+  const handleClick = (asset: Asset) => {
+    router.push(`/assets/service-request?id=${asset.id}`);
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -210,11 +222,11 @@ export default function AssetDetailPage() {
             <NavItem as="li" role="presentation">
               <NavLink eventKey="department">
                 <IconifyIcon icon="tabler:building" className="fs-18 me-1" />
-                Department
+                Transferable Department
               </NavLink>
             </NavItem>
             <NavItem as="li" role="presentation">
-              <NavLink eventKey="serviceHistory">
+              <NavLink eventKey="serviceRequest">
                 <IconifyIcon icon="tabler:history" className="fs-18 me-1" />
                 Service Request
               </NavLink>
@@ -356,89 +368,61 @@ export default function AssetDetailPage() {
               </Row>
             </TabPane>
 
-            {/* Department Tab */}
+                        {/* Department Tab */}
             <TabPane eventKey="department" id="department">
               <Row>
                 <Col sm="12">
                   <Card className="border-0">
                     <CardBody>
-                      <h6 className="text-muted mb-3">Department Information</h6>
-                      <Table responsive striped>
-                        <thead>
-                          <tr>
-                            <th>Field</th>
-                            <th>Value</th>
-                            <th>Status</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td><strong>Building Number</strong></td>
-                            <td>
-                              <span className="text-muted">Not specified</span>
-                            </td>
-                            <td>
-                              <Badge bg="secondary">Not Available</Badge>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td><strong>Department</strong></td>
-                            <td>
-                              <span className="text-muted">Not specified</span>
-                            </td>
-                            <td>
-                              <Badge bg="secondary">Not Available</Badge>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td><strong>Floor Number</strong></td>
-                            <td>
-                              <span className="text-muted">Not specified</span>
-                            </td>
-                            <td>
-                              <Badge bg="secondary">Not Available</Badge>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td><strong>Room Number</strong></td>
-                            <td>
-                              <span className="text-muted">Not specified</span>
-                            </td>
-                            <td>
-                              <Badge bg="secondary">Not Available</Badge>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td><strong>GRN ID</strong></td>
-                            <td>{asset.grnId}</td>
-                            <td>
-                              <Badge bg="success">Available</Badge>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td><strong>GRN Item ID</strong></td>
-                            <td>{asset.grnItemId}</td>
-                            <td>
-                              <Badge bg="success">Available</Badge>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td><strong>Asset ID</strong></td>
-                            <td>{asset.id}</td>
-                            <td>
-                              <Badge bg="success">Available</Badge>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </Table>
+                      <h6 className="text-muted mb-3">Location Information</h6>
+                      {!assetLocation?.locations || assetLocation.locations.length === 0 ? (
+                        <div className="text-center py-4">
+                          <p className="text-muted">No location information available</p>
+                        </div>
+                      ) : (
+                        <Table responsive striped>
+                          <thead>
+                            <tr>
+                              <th>Department Name</th>
+                              <th>Building</th>
+                              <th>Floor</th>
+                              <th>Room</th>
+                              <th>Current Location</th>
+                              <th>Created Date</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {assetLocation.locations.map((location: Location) => (
+                              <tr key={location.id}>
+                                <td>{location.departmentId ? (assetDepartment?.department?.deptName || '') : ''}</td>
+                                <td>{location.building}</td>
+                                <td>{location.floorNumber}</td>
+                                <td>{location.roomNumber}</td>
+                                <td>
+                                  <Badge bg={location.isCurrentLocation ? 'success' : 'secondary'}>
+                                    {location.isCurrentLocation ? 'Current' : 'Historical'}
+                                  </Badge>
+                                </td>
+                                <td>{formatDate(location.createdAt)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      )}
+                      
+                      <div className="text-center mt-3">
+                        <small className="text-muted">
+                          Showing {assetLocation?.locations?.length || 0} location records
+                        </small>
+                      </div>
                     </CardBody>
                   </Card>
                 </Col>
               </Row>
             </TabPane>
 
-            {/* Service History Tab */}
-            <TabPane eventKey="serviceHistory" id="serviceHistory">
+            {/* Service Request Tab */}
+            <TabPane eventKey="serviceRequest" id="serviceRequest">
               <Row>
                 <Col sm="12">
                   <Card className="border-0">
@@ -448,10 +432,7 @@ export default function AssetDetailPage() {
                         <Button 
                           variant="primary" 
                           size="sm"
-                          onClick={() => {
-                            // TODO: Implement service request functionality
-                            console.log('Service request button clicked for asset:', asset?.id);
-                          }}
+                          onClick={() => handleClick(asset)}
                         >
                           <IconifyIcon icon="tabler:plus" className="me-1" />
                           Service Request
@@ -459,19 +440,18 @@ export default function AssetDetailPage() {
                       </div>
                       <Table responsive striped>
                         <thead>
-                          <tr>
-                            <th>Date</th>
+                          <tr>                           
                             <th>Type</th>
                             <th>Description</th>
                             <th>Technician</th>
                             <th>Status</th>
                             <th>Cost</th>
+                            <th>Date</th>
                           </tr>
                         </thead>
                         <tbody>
                           {mockServiceHistory.map((record) => (
-                            <tr key={record.id}>
-                              <td>{formatDate(record.date)}</td>
+                            <tr key={record.id}>                              
                               <td>{record.type}</td>
                               <td>{record.description}</td>
                               <td>{record.technician}</td>
@@ -479,6 +459,7 @@ export default function AssetDetailPage() {
                                 <Badge bg="success">{record.status}</Badge>
                               </td>
                               <td>${record.cost.toFixed(2)}</td>
+                              <td>{formatDate(record.date)}</td>
                             </tr>
                           ))}
                         </tbody>

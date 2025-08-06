@@ -1,4 +1,6 @@
 import { ASSET_API_URL } from '@/config/environment'
+import { AssetType } from './assetTypes'
+import { AssetSubType } from './assetSubTypes'
 
 // Asset interface
 export interface Asset {
@@ -24,6 +26,38 @@ export interface Asset {
   subModel: string;
   supplierCode: string;
   isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  departmentId?: string | null;
+  assetType?: AssetType;
+  assetSubType?: AssetSubType;
+  locations?: Location[];
+  installations?: Installation[];
+  department?: any;
+}
+
+// Location interface
+export interface Location {
+  id: string;
+  assetId: string;
+  departmentId: string;
+  building: string;
+  floorNumber: string;
+  roomNumber: string;
+  isCurrentLocation: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Installation interface
+export interface Installation {
+  id: string;
+  assetId: string;
+  locationId: string;
+  departmentId: string;
+  installationDate: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Create Asset Request interface

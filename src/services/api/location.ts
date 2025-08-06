@@ -11,6 +11,12 @@ export interface Location {
   isCurrentLocation: boolean;
 }
 
+
+// Location interface for array of locations
+export interface LocationArray {
+  locations: Location[];
+}
+
 // Create Location Request interface
 export interface CreateLocationRequest {
   assetId: string;

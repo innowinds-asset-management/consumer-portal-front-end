@@ -49,6 +49,19 @@ export const MENU_ITEMS: MenuItemType[] = [
     ],
   },
   {
+    key: 'warranty',
+    label: 'Warranty',
+    icon: CircleAlert,
+    children: [
+      {
+        key: 'warranty',
+        label: 'Warranty',
+        url: '/warranty ',
+        parentKey: 'warranty',
+      },     
+    ],
+  },
+  {
     key: 'invoice',
     label: 'Invoice',
     icon: FileText,
