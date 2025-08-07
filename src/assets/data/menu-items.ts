@@ -1,5 +1,5 @@
 import { MenuItemType } from '@/types/menu'
-import { Airplay, Box, Calendar, ChartNoAxesColumn, CircleAlert, Disc, File, FileText, LayoutGrid, Mail, Map, Paintbrush, Share, Sparkles, Table, Users } from 'lucide-react'
+import { Airplay, Box, Calendar, ChartNoAxesColumn, CircleAlert, Disc, File, FileText, HandCoins, HeadsetIcon, LayoutDashboard, LayoutGrid, Logs, LogsIcon, Mail, Map, Paintbrush, Shapes, Share, Sparkles, Table, Users } from 'lucide-react'
 
 
 export const MENU_ITEMS: MenuItemType[] = [
@@ -10,56 +10,97 @@ export const MENU_ITEMS: MenuItemType[] = [
   },
   {
     key: 'dashboard',
-    label: 'Dashboard',
-    icon: Airplay,
+    label: 'Home',
+    icon: LayoutDashboard,
     badge: {
       text: '3',
       variant: 'danger',
     },
     url: '/dashboard',
   },
-  {
-    key: 'apps',
-    label: 'Apps',
-    isTitle: true,
-  },
-  {
-    key: 'calendar',
-    label: 'Calendar',
-    icon: Calendar,
-    url: '/calendar',
-  },
-  {
-    key: 'email',
-    label: 'Email',
-    icon: Mail,
-    url: '/email',
-  },
-  {
-    key: 'assets',
-    label: 'Assets',
-    icon: Disc,
-    children: [
+  // {
+  //   key: 'apps',
+  //   label: 'Apps',
+  //   isTitle: true,
+  // },
+   {
+        key: 'purchaseorders',
+        label: 'Purchase Orders',
+        icon: LogsIcon,
+        url: '/purchaseorders ',
+       
+      }, 
+      {
+        key: 'grn',
+        label: 'GRN',
+         icon: HandCoins,
+        url: '/grns ',
+       
+      }, 
       {
         key: 'assets',
         label: 'Assets',
+        icon: Shapes,
         url: '/assets ',
-        parentKey: 'assets',
-      },     
-    ],
-  },
-  {
-    key: 'warranty',
-    label: 'Warranty',
-    icon: CircleAlert,
-    children: [
+        
+      }, 
       {
         key: 'warranty',
         label: 'Warranty',
+         icon: File, 
         url: '/warranty ',
         parentKey: 'warranty',
-      },     
-    ],
+      },
+  // {
+  //   key: 'receive',
+  //   label: 'Receive',
+  //   icon: Disc,
+  //   children: [
+  //     {
+  //       key: 'purchaseorders',
+  //       label: 'Purchase Orders',
+  //       url: '/purchaseorders ',
+  //       parentKey: 'receive',
+  //     },     
+  //   ],
+  // },
+  // {
+  //   key: 'email',
+  //   label: 'Email',
+  //   icon: Mail,
+  //   url: '/email',
+  // },
+  // {
+  //   key: 'assets',
+  //   label: 'Assets',
+  //   icon: Disc,
+  //   children: [
+  //     {
+  //       key: 'assets',
+  //       label: 'Assets',
+  //       url: '/assets ',
+  //       parentKey: 'assets',
+  //     },     
+  //   ],
+  // },
+  // {
+  //   key: 'warranty',
+  //   label: 'Warranty',
+  //   icon: CircleAlert,
+  //   children: [
+  //     {
+  //       key: 'warranty',
+  //       label: 'Warranty',
+  //       url: '/warranty ',
+  //       parentKey: 'warranty',
+  //     },     
+  //   ],
+  // },
+  {
+    key: 'service_request',
+    label: 'Service Requests',
+    icon: HeadsetIcon,
+    url: '/service_request',
   },
   {
     key: 'invoice',

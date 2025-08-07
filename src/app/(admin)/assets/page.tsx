@@ -102,11 +102,11 @@ export default function AssetListingPage() {
 
   return (
     <>
-      <PageTitle title="Asset Listing" />
+      <PageTitle title="" />
       
       <ComponentContainerCard title={
         <div className="d-flex justify-content-between align-items-center">
-          <span>Asset Management</span>
+          <span>Assets</span>
           <Button 
             variant="primary" 
             onClick={() => router.push('/assets/create')}
@@ -117,7 +117,7 @@ export default function AssetListingPage() {
             Add Asset
           </Button>
         </div>
-      } description="View and manage all assets">
+      } description="">
         {loading && (
           <div className="text-center my-4">
             <div className="spinner-border" role="status">
@@ -137,13 +137,13 @@ export default function AssetListingPage() {
             <Grid
               data={gridData}
               columns={[
-                { name: "Asset Name", sort: true, search: true },
-                { name: "Brand", sort: true, search: true },
-                { name: "Model", sort: true, search: true },
-                { name: "Sub-Model", sort: true, search: true },
-                { name: "Installation Date", sort: true, search: true },
-                { name: "Warranty Period", sort: true, search: true },
-                { name: "Warranty Start", sort: true, search: true },
+                { name: "Asset Name", sort: false, search: true },
+                { name: "Brand", sort: false, search: true },
+                { name: "Model", sort: false, search: true },
+                { name: "Sub-Model", sort: false, search: true },
+                { name: "Installed On", sort: true, search: true },
+                { name: "Warranty Period", sort: false, search: true },
+                { name: "Warranty Start", sort: false, search: true },
                 { name: "Warranty End", sort: true, search: true },
                 { 
                   name: "Status", 
@@ -159,7 +159,7 @@ export default function AssetListingPage() {
                   }
                 }
               ]}
-              search={true}
+              // search={true}
               pagination={{
                 limit: 10
               }}

@@ -207,11 +207,12 @@ export default function AssetDetailPage() {
                     <div className="mb-3">
                       <strong>Part Number:</strong> {asset.partNo}
                     </div>
+                    
                     <div className="mb-3">
-                      <strong>Supplier Serial No:</strong> {asset.supplierSerialNo}
+                      <strong> Serial No:</strong> {asset.consumerSerialNo}
                     </div>
                     <div className="mb-3">
-                      <strong>Consumer Serial No:</strong> {asset.consumerSerialNo}
+                      <strong>Supplier Serial No:</strong> {asset.supplierSerialNo}
                     </div>
                     <div className="mb-3">
                       <strong>Supplier Code:</strong> {asset.supplierCode}
