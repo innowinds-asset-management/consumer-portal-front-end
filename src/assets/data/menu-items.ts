@@ -1,5 +1,5 @@
 import { MenuItemType } from '@/types/menu'
-import { Airplay, Box, Calendar, ChartNoAxesColumn, CircleAlert, Disc, File, FileText, HandCoins, HeadsetIcon, LayoutDashboard, LayoutGrid, Logs, LogsIcon, Mail, Map, Paintbrush, Shapes, Share, Sparkles, Table, Users } from 'lucide-react'
+import { Airplay, Box, Calendar, ChartNoAxesColumn, CircleAlert, Disc, Disc2, File, FileText, HandCoins, HeadsetIcon, LayoutDashboard, LayoutGrid, Logs, LogsIcon, Mail, Map, Paintbrush, Shapes, Share, Signature, Sparkles, Table, Users } from 'lucide-react'
 
 
 export const MENU_ITEMS: MenuItemType[] = [
@@ -101,6 +101,18 @@ export const MENU_ITEMS: MenuItemType[] = [
     label: 'Service Requests',
     icon: HeadsetIcon,
     url: '/service_request',
+  },
+  {
+    key: 'suppliers',
+    label: 'Suppliers',
+    icon: Disc,
+    url: '/suppliers',
+  },
+  {
+    key: 'servicecontracts',
+    label: 'Serive Contracts',
+    icon: FileText,
+    url: '/servicecontracts',
   },
   {
     key: 'invoice',
