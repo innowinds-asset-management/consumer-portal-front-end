@@ -1,11 +1,13 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Alert } from "react-bootstrap";
+import { Button, Alert, Card, CardBody, Col, Row } from "react-bootstrap";
 import { Grid } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
 import PageTitle from "@/components/PageTitle";
 import ComponentContainerCard from "@/components/ComponentContainerCard";
+import IconifyIcon from "@/components/wrappers/IconifyIcon";
 
 const WarrantyListingPage = () => {
   const router = useRouter();
@@ -105,6 +107,166 @@ const WarrantyListingPage = () => {
   return (
     <>
       <PageTitle title="Warranty Listing" />
+      
+      {/* Six Stat Boxes - Two Rows */}
+      <Row className="row-cols-3 row-cols-md-3 row-cols-sm-2 row-cols-1 mb-4">
+        <Col>
+          <Card>
+            <CardBody>
+              <div className="d-flex align-items-start gap-2 justify-content-between">
+                <div>
+                  <h5 className="text-muted fs-13 fw-bold text-uppercase" title="Total Warranties">
+                    Expiring Soon
+                  </h5>
+                  <h3 className="mt-2 mb-1 fw-bold">10</h3>
+                  <p className="mb-0 text-muted">
+                    <span className="text-success me-1">
+                      <IconifyIcon icon="ri:arrow-up-line" style={{ marginBottom: '5px', marginRight: '5px' }} />
+                      12.5%
+                    </span>
+                    <span className="text-nowrap">In coming 5 days</span>
+                  </p>
+                </div>
+                <div className="avatar-lg flex-shrink-0">
+                  <span className="avatar-title bg-success-subtle text-success rounded fs-28">
+                    <IconifyIcon icon="solar:shield-check-bold-duotone" />
+                  </span>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+        </Col>
+        <Col>
+          <Card>
+            <CardBody>
+              <div className="d-flex align-items-start gap-2 justify-content-between">
+                <div>
+                  <h5 className="text-muted fs-13 fw-bold text-uppercase" title="Active Warranties">
+                  Expiring Soon
+                  </h5>
+                  <h3 className="mt-2 mb-1 fw-bold">12</h3>
+                  <p className="mb-0 text-muted">
+                    <span className="text-success me-1">
+                      <IconifyIcon icon="ri:arrow-up-line" style={{ marginBottom: '5px', marginRight: '5px' }} />
+                      8.3%
+                    </span>
+                    <span className="text-nowrap">In coming 10 days</span>
+                  </p>
+                </div>
+                <div className="avatar-lg flex-shrink-0">
+                  <span className="avatar-title bg-info-subtle text-info rounded fs-28">
+                    <IconifyIcon icon="solar:check-circle-bold-duotone" />
+                  </span>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+        </Col>
+        <Col>
+          <Card>
+            <CardBody>
+              <div className="d-flex align-items-start gap-2 justify-content-between">
+                <div>
+                  <h5 className="text-muted fs-13 fw-bold text-uppercase" title="Expiring Soon">
+                    Expiring Soon
+                  </h5>
+                  <h3 className="mt-2 mb-1 fw-bold">8</h3>
+                  <p className="mb-0 text-muted">
+                    <span className="text-warning me-1">
+                      <IconifyIcon icon="ri:arrow-up-line" style={{ marginBottom: '5px', marginRight: '5px' }} />
+                      2.1%
+                    </span>
+                    <span className="text-nowrap">Next 30 days</span>
+                  </p>
+                </div>
+                <div className="avatar-lg flex-shrink-0">
+                  <span className="avatar-title bg-warning-subtle text-warning rounded fs-28">
+                    <IconifyIcon icon="solar:calendar-bold-duotone" />
+                  </span>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+        </Col>
+        <Col>
+          <Card>
+            <CardBody>
+              <div className="d-flex align-items-start gap-2 justify-content-between">
+                <div>
+                  <h5 className="text-muted fs-13 fw-bold text-uppercase" title="Total Cost">
+                    Expired 
+                  </h5>
+                  <h3 className="mt-2 mb-1 fw-bold">10</h3>
+                  <p className="mb-0 text-muted">
+                    <span className="text-success me-1">
+                      <IconifyIcon icon="ri:arrow-up-line" style={{ marginBottom: '5px', marginRight: '5px' }} />
+                      15.7%
+                    </span>
+                    <span className="text-nowrap">Since last 5 days</span>
+                  </p>
+                </div>
+                <div className="avatar-lg flex-shrink-0">
+                  <span className="avatar-title bg-primary-subtle text-primary rounded fs-28">
+                    <IconifyIcon icon="solar:wallet-bold-duotone" />
+                  </span>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+        </Col>
+        <Col>
+          <Card>
+            <CardBody>
+              <div className="d-flex align-items-start gap-2 justify-content-between">
+                <div>
+                  <h5 className="text-muted fs-13 fw-bold text-uppercase" title="Expired Warranties">
+                    Expired 
+                  </h5>
+                  <h3 className="mt-2 mb-1 fw-bold">14</h3>
+                  <p className="mb-0 text-muted">
+                    <span className="text-danger me-1">
+                      <IconifyIcon icon="ri:arrow-down-line" style={{ marginBottom: '5px', marginRight: '5px' }} />
+                      3.2%
+                    </span>
+                    <span className="text-nowrap">Since last 10 days</span>
+                  </p>
+                </div>
+                <div className="avatar-lg flex-shrink-0">
+                  <span className="avatar-title bg-danger-subtle text-danger rounded fs-28">
+                    <IconifyIcon icon="solar:close-circle-bold-duotone" />
+                  </span>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+        </Col>
+        <Col>
+          <Card>
+            <CardBody>
+              <div className="d-flex align-items-start gap-2 justify-content-between">
+                <div>
+                  <h5 className="text-muted fs-13 fw-bold text-uppercase" title="Average Duration">
+                    Expired 
+                  </h5>
+                  <h3 className="mt-2 mb-1 fw-bold">120</h3>
+                  <p className="mb-0 text-muted">
+                    <span className="text-info me-1">
+                      <IconifyIcon icon="ri:arrow-up-line" style={{ marginBottom: '5px', marginRight: '5px' }} />
+                      0.3y
+                    </span>
+                    <span className="text-nowrap">Since last month</span>
+                  </p>
+                </div>
+                <div className="avatar-lg flex-shrink-0">
+                  <span className="avatar-title bg-secondary-subtle text-secondary rounded fs-28">
+                    <IconifyIcon icon="solar:clock-circle-bold-duotone" />
+                  </span>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
       
       <ComponentContainerCard title={
         <div className="d-flex justify-content-between align-items-center">

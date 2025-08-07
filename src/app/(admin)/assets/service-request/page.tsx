@@ -62,6 +62,23 @@ interface FormErrors {
 export default function ServiceRequestPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  
+  // Enhanced back navigation handler
+  const handleBackNavigation = () => {
+    const assetId = searchParams.get('id');
+    
+    // Try to go back, but with fallback
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      // Fallback navigation based on available data
+      if (assetId) {
+        router.push(`/assets/detail?id=${assetId}`);
+      } else {
+        router.push('/assets');
+      }
+    }
+  };
   const [assets, setAssets] = useState<Asset[]>([]);
   const [warranties, setWarranties] = useState<Warranty[]>([]);
   const [loadingAssets, setLoadingAssets] = useState(true);
@@ -78,7 +95,6 @@ export default function ServiceRequestPage() {
     serviceDescription: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -179,21 +195,15 @@ export default function ServiceRequestPage() {
       };
 
       // Call the API to create service request
-      await serviceRequestService.createServiceRequest(serviceRequestData);
-      
-      setSubmitted(true);
-      setFormData({
-        assetId: "",
-        technicianId: "",
-        supplierId: "",
-        warrantyNumber: "",
-        warrantyStatus: "",
-        serviceDate: "",
-        serviceType: "",
-        serviceStatus: "",
-        serviceDescription: "",
-      });
-      setErrors({});
+      await serviceRequestService.createServiceRequest(serviceRequestData);      
+      // Redirect to asset detail page on successful submission
+      const assetId = searchParams.get('id');
+      if (assetId) {
+        router.push(`/assets/detail?id=${assetId}`);
+      } else {
+        // Fallback to assets list if no asset ID
+        router.push('/assets');
+      }
     } catch (err) {
       console.error('Error creating service request:', err);
       setError("Failed to submit service request. Please try again.");
@@ -202,11 +212,11 @@ export default function ServiceRequestPage() {
     }
   };
 
-  const resetForm = () => {
+    const resetForm = () => {
     setFormData({
       assetId: "",
       technicianId: "",
-      supplierId: "", 
+      supplierId: "",
       warrantyNumber: "",
       warrantyStatus: "",
       serviceDate: "",
@@ -215,7 +225,6 @@ export default function ServiceRequestPage() {
       serviceDescription: "",
     });
     setErrors({});
-    setSubmitted(false);
     setError("");
   };
 
@@ -246,25 +255,7 @@ export default function ServiceRequestPage() {
     );
   }
 
-  if (submitted) {
-    return (
-      <>
-        <PageTitle title="Create Service Request" />
-        <ComponentContainerCard title="Service Request Created Successfully">
-          <Alert variant="success">
-            <h4 className="alert-heading">Service Request Submitted!</h4>
-            <p>Your service request has been successfully created and submitted for processing.</p>
-            <hr />
-            <p className="mb-0">
-              <Button variant="primary" onClick={resetForm}>
-                Create Another Service Request
-              </Button>
-            </p>
-          </Alert>
-        </ComponentContainerCard>
-      </>
-    );
-  }
+
 
   return (
     <>
@@ -276,7 +267,7 @@ export default function ServiceRequestPage() {
             <Button 
               variant="outline-secondary" 
               size="sm"
-              onClick={() => router.back()}
+              onClick={handleBackNavigation}
             >
               <IconifyIcon icon="tabler:arrow-left" className="me-1" />
               Back

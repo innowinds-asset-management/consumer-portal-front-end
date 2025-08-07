@@ -90,6 +90,10 @@ class ServiceRequestService {
   async getServiceRequestById(id: number): Promise<ServiceRequest> {
     return serviceRequestHttp.get<ServiceRequest>(`/service-request/${id}`)
   }
+  async getServiceRequestByAssetId(assetId: string): Promise<ServiceRequest[]> {
+    return serviceRequestHttp.get<ServiceRequest[]>(`/service-request/asset/${assetId}`)
+  }
+
 }
 
 export const serviceRequestService = new ServiceRequestService() 

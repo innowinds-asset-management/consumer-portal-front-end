@@ -97,10 +97,6 @@ export default function AssetListingPage() {
     asset.warrantyPeriod || 0,
     formatDate(asset.warrantyStartDate),
     formatDate(asset.warrantyEndDate),
-    asset.buildingNumber || "",
-    asset.departmentName || "",
-    asset.floorNumber || "",
-    asset.roomNumber || "",
     asset.isActive // Pass boolean value instead of HTML string
   ]);
 
@@ -149,10 +145,6 @@ export default function AssetListingPage() {
                 { name: "Warranty Period", sort: true, search: true },
                 { name: "Warranty Start", sort: true, search: true },
                 { name: "Warranty End", sort: true, search: true },
-                { name: "Building", sort: true, search: true },
-                { name: "Department", sort: true, search: true },
-                { name: "Floor", sort: true, search: true },
-                { name: "Room", sort: true, search: true },
                 { 
                   name: "Status", 
                   sort: true, 

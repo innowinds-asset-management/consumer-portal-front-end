@@ -10,40 +10,12 @@ import { assetTypesService, AssetType } from '@/services/api/assetTypes'
 import { assetSubTypesService, AssetSubType } from '@/services/api/assetSubTypes'
 import {departmentService, Department } from '@/services/api/departments'
 import { warrantyService, Warranty } from '@/services/api/warranty'
+import { serviceRequestService, ServiceRequest } from '@/services/api/serviceRequest'
 import { Location } from '@/services/api/assets'
 import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation';
 
-// Mock service request data
-const mockServiceHistory = [
-  {
-    id: '1',
-    date: '2024-01-15',
-    type: 'Preventive Maintenance',
-    description: 'Regular cleaning and inspection',
-    technician: 'John Smith',
-    status: 'Completed',
-    cost: 150.00
-  },
-  {
-    id: '2',
-    date: '2023-12-10',
-    type: 'Repair',
-    description: 'Replaced faulty component',
-    technician: 'Mike Johnson',
-    status: 'Completed',
-    cost: 450.00
-  },
-  {
-    id: '3',
-    date: '2023-11-05',
-    type: 'Inspection',
-    description: 'Annual safety inspection',
-    technician: 'Sarah Wilson',
-    status: 'Completed',
-    cost: 75.00
-  }
-];
+
 
 export default function AssetDetailPage() {
   const router = useRouter();
@@ -54,9 +26,14 @@ export default function AssetDetailPage() {
   const [assetType, setAssetType] = useState<AssetType | null>(null);
   const [assetSubType, setAssetSubType] = useState<AssetSubType | null>(null);
   const [warranties, setWarranties] = useState<Warranty[]>([]);
+  const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([]);
   const [assetLocation, setAssetLocation] = useState<{ locations: Location[] } | null>(null);
   const [assetDepartment,setDepartmnet] = useState<{ department: Department } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingServiceRequests, setLoadingServiceRequests] = useState(false);
+  const [loadingWarranties, setLoadingWarranties] = useState(false);
+  const [serviceRequestsLoaded, setServiceRequestsLoaded] = useState(false);
+  const [warrantiesLoaded, setWarrantiesLoaded] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -86,9 +63,7 @@ export default function AssetDetailPage() {
         const departmentData = { department: assetData.department || null };
         setDepartmnet(departmentData);
         
-        // Fetch warranty details
-        const warrantyData = await warrantyService.getWarrantiesByAssetId(assetId);
-        setWarranties(warrantyData);
+        // Warranty data will be loaded on-demand when user clicks Warranty tab
         
       } catch (err) {
         console.error('Error fetching asset details:', err);
@@ -104,6 +79,49 @@ export default function AssetDetailPage() {
 
   const handleClick = (asset: Asset) => {
     router.push(`/assets/service-request?id=${asset.id}`);
+  };
+
+  const loadServiceRequests = async () => {
+    if (!assetId || serviceRequestsLoaded) return;
+    
+    try {
+      setLoadingServiceRequests(true);
+      const serviceRequestData = await serviceRequestService.getServiceRequestByAssetId(assetId);
+      setServiceRequests(serviceRequestData);
+      setServiceRequestsLoaded(true);
+    } catch (serviceRequestErr) {
+      console.error('Error fetching service requests:', serviceRequestErr);
+      setServiceRequests([]);
+      setServiceRequestsLoaded(true);
+    } finally {
+      setLoadingServiceRequests(false);
+    }
+  };
+
+  const loadWarranties = async () => {
+    if (!assetId || warrantiesLoaded) return;
+    
+    try {
+      setLoadingWarranties(true);
+      const warrantyData = await warrantyService.getWarrantiesByAssetId(assetId);
+      setWarranties(warrantyData);
+      setWarrantiesLoaded(true);
+    } catch (warrantyErr) {
+      console.error('Error fetching warranty data:', warrantyErr);
+      setWarranties([]);
+      setWarrantiesLoaded(true);
+    } finally {
+      setLoadingWarranties(false);
+    }
+  };
+
+  const handleTabSelect = (eventKey: string | null) => {
+    if (eventKey === 'serviceRequest' && !serviceRequestsLoaded) {
+      loadServiceRequests();
+    }
+    if (eventKey === 'warranty' && !warrantiesLoaded) {
+      loadWarranties();
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -211,18 +229,18 @@ export default function AssetDetailPage() {
           </Col>
         </Row>
 
-        <TabContainer defaultActiveKey="warranty">
+        <TabContainer defaultActiveKey="department" onSelect={handleTabSelect}>
           <Nav role="tablist" className="nav-tabs nav-bordered mb-3">
+            <NavItem as="li" role="presentation">
+              <NavLink eventKey="department">
+                <IconifyIcon icon="tabler:building" className="fs-18 me-1" />
+                Transferable 
+              </NavLink>
+            </NavItem>
             <NavItem as="li" role="presentation">
               <NavLink eventKey="warranty">
                 <IconifyIcon icon="tabler:shield-check" className="fs-18 me-1" />
                 Warranty
-              </NavLink>
-            </NavItem>
-            <NavItem as="li" role="presentation">
-              <NavLink eventKey="department">
-                <IconifyIcon icon="tabler:building" className="fs-18 me-1" />
-                Transferable Department
               </NavLink>
             </NavItem>
             <NavItem as="li" role="presentation">
@@ -242,7 +260,14 @@ export default function AssetDetailPage() {
                   <Card className="border-0">
                     <CardBody>
                       <h6 className="text-muted mb-3">Warranty Information</h6>
-                      {warranties.length === 0 ? (
+                      {loadingWarranties ? (
+                        <div className="text-center py-4">
+                          <div className="spinner-border text-primary" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
+                          <p className="mt-2 text-muted">Loading warranty information...</p>
+                        </div>
+                      ) : warranties.length === 0 ? (
                         <div className="text-center py-4">
                           <p className="text-muted">No warranty information available</p>
                         </div>
@@ -438,37 +463,60 @@ export default function AssetDetailPage() {
                           Service Request
                         </Button>
                       </div>
-                      <Table responsive striped>
-                        <thead>
-                          <tr>                           
-                            <th>Type</th>
-                            <th>Description</th>
-                            <th>Technician</th>
-                            <th>Status</th>
-                            <th>Cost</th>
-                            <th>Date</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {mockServiceHistory.map((record) => (
-                            <tr key={record.id}>                              
-                              <td>{record.type}</td>
-                              <td>{record.description}</td>
-                              <td>{record.technician}</td>
-                              <td>
-                                <Badge bg="success">{record.status}</Badge>
-                              </td>
-                              <td>${record.cost.toFixed(2)}</td>
-                              <td>{formatDate(record.date)}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </Table>
-                      <div className="text-center mt-3">
-                        <small className="text-muted">
-                          Showing last 3 service history records
-                        </small>
-                      </div>
+                      {loadingServiceRequests ? (
+                        <div className="text-center py-4">
+                          <div className="spinner-border text-primary" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
+                          <p className="mt-2 text-muted">Loading service requests...</p>
+                        </div>
+                      ) : (
+                        <>
+                          <Table responsive striped>
+                            <thead>
+                              <tr>                           
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Technician Name</th>
+                                <th>Service Supplier Name</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {serviceRequests.length === 0 ? (
+                                <tr>
+                                  <td colSpan={6} className="text-center text-muted">
+                                    No service requests found for this asset
+                                  </td>
+                                </tr>
+                              ) : (
+                                serviceRequests.map((record, index) => (
+                                  <tr key={record.id || `service-request-${index}-${record.serviceDate}`}>                              
+                                    <td>{record.serviceType}</td>
+                                    <td>{record.serviceDescription}</td>
+                                    <td>{record.technicianName}</td>
+                                    <td>{record.serviceSupplierName}</td>
+                                    <td>
+                                      <Badge bg={record.serviceStatus === 'completed' ? 'success' : 
+                                               record.serviceStatus === 'in_progress' ? 'warning' : 
+                                               record.serviceStatus === 'cancelled' ? 'danger' : 'secondary'}>
+                                        {record.serviceStatus}
+                                      </Badge>
+                                    </td>
+                                    <td>{formatDate(record.serviceDate)}</td>
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </Table>
+                          <div className="text-center mt-3">
+                            <small className="text-muted">
+                              Showing {serviceRequests.length} service request records
+                            </small>
+                          </div>
+                        </>
+                      )}
                     </CardBody>
                   </Card>
                 </Col>
