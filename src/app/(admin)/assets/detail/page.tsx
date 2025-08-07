@@ -167,11 +167,11 @@ export default function AssetDetailPage() {
 
   return (
     <>
-      <PageTitle title="Asset Details" />
+      <PageTitle title="" />
       
       <ComponentContainerCard 
-        title={`Asset: ${asset.assetName}`}
-        description="Detailed information about the selected asset"
+        title={`${asset.assetName}(${asset.consumerSerialNo})`}
+        // description="Detailed information about the selected asset"
       >
         {/* Overview Section - Above Tabs */}
         <Row className="mb-4">
@@ -180,7 +180,7 @@ export default function AssetDetailPage() {
               <CardBody>
                 <Row>
                   <Col lg={6}>
-                    <h6 className="text-muted mb-3">Asset Information</h6>
+                    {/* <h6 className="text-muted mb-3">Asset Information</h6> */}
                     <div className="mb-3">
                       <strong>Asset Name:</strong> {asset.assetName}
                     </div>
@@ -203,7 +203,7 @@ export default function AssetDetailPage() {
                     )}
                   </Col>
                   <Col lg={6}>
-                    <h6 className="text-muted mb-3">Technical Details</h6>
+                    {/* <h6 className="text-muted mb-3">Technical Details</h6> */}
                     <div className="mb-3">
                       <strong>Part Number:</strong> {asset.partNo}
                     </div>
@@ -234,7 +234,7 @@ export default function AssetDetailPage() {
             <NavItem as="li" role="presentation">
               <NavLink eventKey="department">
                 <IconifyIcon icon="tabler:building" className="fs-18 me-1" />
-                Transferable 
+                Transfers
               </NavLink>
             </NavItem>
             <NavItem as="li" role="presentation">
