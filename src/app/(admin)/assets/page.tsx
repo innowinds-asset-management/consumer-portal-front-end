@@ -26,6 +26,11 @@ interface Asset {
   floorNumber?: string;
   roomNumber?: string;
   isActive: boolean;
+  // Nested data as per API payload
+  supplier?: { name?: string };
+  assetType?: { assetName?: string };
+  assetSubType?: { name?: string };
+  department?: { deptName?: string };
   [key: string]: any;
 }
 
@@ -87,17 +92,27 @@ export default function AssetListingPage() {
     return dateString.split("T")[0];
   };
 
-  // Prepare data for GridJS
+  // Compute warranty status from dates
+  const getWarrantyStatus = (startDate: string, endDate: string): string => {
+    if (!startDate || !endDate) return "";
+    const now = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (now < start) return "Not Started";
+    if (now > end) return "Expired";
+    return "Active";
+  };
+
+  // Prepare data for GridJS (in requested column order)
   const gridData = assets.map((asset) => [
     asset.assetName || "",
-    asset.brand || "",
-    asset.model || "",
-    asset.subModel || "",
+    asset.assetType?.assetName || "",
+    asset.assetSubType?.name || "",
+    asset.department?.deptName || asset.departmentName || "",
+    [asset.brand, asset.model].filter(Boolean).join(" - ") || "",
+    asset.supplier?.name || "",
     formatDate(asset.installationDate),
-    asset.warrantyPeriod || 0,
-    formatDate(asset.warrantyStartDate),
-    formatDate(asset.warrantyEndDate),
-    asset.isActive // Pass boolean value instead of HTML string
+    getWarrantyStatus(asset.warrantyStartDate, asset.warrantyEndDate)
   ]);
 
   return (
@@ -138,24 +153,23 @@ export default function AssetListingPage() {
               data={gridData}
               columns={[
                 { name: "Asset Name", sort: false, search: true },
-                { name: "Brand", sort: false, search: true },
+                { name: "Asset Type", sort: false, search: true },
+                { name: "Asset Sub Type", sort: false, search: true },
+                { name: "Department", sort: false, search: true },
                 { name: "Model", sort: false, search: true },
-                { name: "Sub-Model", sort: false, search: true },
+                { name: "Supplier", sort: false, search: true },
                 { name: "Installed On", sort: true, search: true },
-                { name: "Warranty Period", sort: false, search: true },
-                { name: "Warranty Start", sort: false, search: true },
-                { name: "Warranty End", sort: true, search: true },
                 { 
-                  name: "Status", 
+                  name: "Warranty Status", 
                   sort: true, 
                   search: true,
                   formatter: (cell: any) => {
-                    const isActive = cell;
-                    return {
-                      html: isActive ? 
-                        '<span class="badge bg-success">Active</span>' : 
-                        '<span class="badge bg-secondary">Inactive</span>'
-                    };
+                    const status = cell as string;
+                    let badgeClass = 'bg-secondary';
+                    if (status === 'Active') badgeClass = 'bg-success';
+                    else if (status === 'Expired') badgeClass = 'bg-danger';
+                    else if (status === 'Not Started') badgeClass = 'bg-warning';
+                    return { html: `<span class="badge ${badgeClass}">${status || ''}</span>` };
                   }
                 }
               ]}

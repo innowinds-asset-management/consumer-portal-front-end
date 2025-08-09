@@ -9,6 +9,7 @@ import { assetSubTypesService, AssetSubType } from '@/services/api/assetSubTypes
 import { departmentService, Department } from '@/services/api/departments'
 import { assetCompleteService, CreateAssetCompleteRequest } from '@/services/api/assetComplete'
 import { STORAGE_KEYS } from "@/utils/constants";
+import { supplierService, Supplier } from '@/services/api/suppliers'
 
 // Form data interface
 interface FormData {
@@ -26,6 +27,7 @@ interface FormData {
   departmentId: string;
   floorNumber: string;
   roomNumber: string;
+  supplierId: string;
 }
 
 // Form errors interface
@@ -44,6 +46,7 @@ interface FormErrors {
   departmentId?: string;
   floorNumber?: string;
   roomNumber?: string;
+  supplierId?: string;
 }
 
 export default function AssetPage() {
@@ -53,11 +56,14 @@ export default function AssetPage() {
   const [assetTypes, setAssetTypes] = useState<AssetType[]>([]);
   const [assetSubTypes, setAssetSubTypes] = useState<AssetSubType[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loadingAssetTypes, setLoadingAssetTypes] = useState(true);
   const [loadingDepartments, setLoadingDepartments] = useState(true);
+  const [loadingSuppliers, setLoadingSuppliers] = useState(true);
   const [assetTypesError, setAssetTypesError] = useState("");
   const [assetSubTypesError, setAssetSubTypesError] = useState("");
   const [departmentsError, setDepartmentsError] = useState("");
+  const [suppliersError, setSuppliersError] = useState("");
 
   // Form data state
   const [formData, setFormData] = useState<FormData>({
@@ -75,12 +81,13 @@ export default function AssetPage() {
     departmentId: "",
     floorNumber: "",
     roomNumber: "",
+    supplierId: "",
   });
 
   // Form errors state
   const [errors, setErrors] = useState<FormErrors>({});
 
-  // Fetch asset types and departments on component mount
+  // Fetch asset types, departments and suppliers on component mount
   useEffect(() => {
     const fetchAssetTypes = async () => {
       try {
@@ -113,8 +120,30 @@ export default function AssetPage() {
       }
     };
 
+    const fetchSuppliers = async () => {
+      try {
+        setLoadingSuppliers(true);
+        setSuppliersError("");
+        const consumerId = JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "";
+        if (consumerId) {
+          const data = await supplierService.getSuppliersByConsumerId(consumerId);
+          console.log("suppliers", data);
+          setSuppliers(data);
+        } else {
+          const data = await supplierService.getAllSuppliers();
+          setSuppliers(data);
+        }
+      } catch (err) {
+        console.error('Error fetching suppliers:', err);
+        setSuppliersError("Failed to load suppliers. Please refresh the page.");
+      } finally {
+        setLoadingSuppliers(false);
+      }
+    };
+
     fetchAssetTypes();
     fetchDepartments();
+    fetchSuppliers();
   }, []);
 
   // Fetch asset sub-types when asset type changes
@@ -209,6 +238,7 @@ export default function AssetPage() {
     if (!formData.departmentId) newErrors.departmentId = "Department is required";
     if (!formData.floorNumber.trim()) newErrors.floorNumber = "Floor number is required";
     if (!formData.roomNumber.trim()) newErrors.roomNumber = "Room number is required";
+    if (!formData.supplierId) newErrors.supplierId = "Supplier is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -225,70 +255,71 @@ export default function AssetPage() {
       return;
     }
 
-          try {
-        // Find the selected asset type and sub-type
-        const selectedAssetType = assetTypes.find(at => at.code.toLowerCase() === formData.assetType);
-        const selectedAssetSubType = assetSubTypes.find(ast => ast.code.toLowerCase() === formData.subAssetType);
+    try {
+      // Find the selected asset type and sub-type
+      const selectedAssetType = assetTypes.find(at => at.code.toLowerCase() === formData.assetType);
+      const selectedAssetSubType = assetSubTypes.find(ast => ast.code.toLowerCase() === formData.subAssetType);
 
-        if (!selectedAssetType || !selectedAssetSubType) {
-          throw new Error("Invalid asset type or sub-type selected");
-        }
+      if (!selectedAssetType || !selectedAssetSubType) {
+        throw new Error("Invalid asset type or sub-type selected");
+      }
 
-        // Create the complete asset request
-        const completeAssetData: CreateAssetCompleteRequest = {
-          assetTypeId: selectedAssetType.id,
-          assetSubTypeId: selectedAssetSubType.id,
-          assetName: formData.name,
-          warrantyPeriod: formData.warrantyDuration,
-          warrantyStartDate: new Date(formData.warrantyStartDate),
-          warrantyEndDate: new Date(formData.warrantyEndDate),
-          installationDate: new Date(formData.installationDate),
-          brand: formData.brand,
-          model: formData.model,
-          subModel: formData.subModel,
-          isActive: true,
-          consumerId: JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "",
-          partNo: formData.model, // Using model as part number
-          supplierCode: formData.brand.toUpperCase() + "-" + formData.model.replace(/\s+/g, "-"),
-          warrantyId: "WARR-001", // Default value
-          consumerSerialNo: formData.name, // Using asset name as consumer serial
-          grnId: "cmdsjhwoh000z14faps90yrw2", // Default value
-          grnItemId: "cmdsjhwvp001714faegmv1mf1", // Default value
-          poLineItemId: "clx1234567890abcdeh", // Default value
-          supplierId: "sup_dell", // Default value
-          supplierSerialNo: formData.model, // Using model as serial number
-          departmentId: formData.departmentId,
-          building: formData.buildingNumber,
-          floorNumber: formData.floorNumber,
-          roomNumber: formData.roomNumber,
-          isCurrentLocation: true
-        };
+      // Create the complete asset request
+      const completeAssetData: CreateAssetCompleteRequest = {
+        assetTypeId: selectedAssetType.id,
+        assetSubTypeId: selectedAssetSubType.id,
+        assetName: formData.name,
+        warrantyPeriod: formData.warrantyDuration,
+        warrantyStartDate: new Date(formData.warrantyStartDate),
+        warrantyEndDate: new Date(formData.warrantyEndDate),
+        installationDate: new Date(formData.installationDate),
+        brand: formData.brand,
+        model: formData.model,
+        subModel: formData.subModel,
+        isActive: true,
+        consumerId: JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "",
+        partNo: formData.model, // Using model as part number
+        supplierCode: formData.brand.toUpperCase() + "-" + formData.model.replace(/\s+/g, "-"),
+        warrantyId: "WARR-001", // Default value
+        consumerSerialNo: formData.name, // Using asset name as consumer serial
+        grnId: "cmdsjhwoh000z14faps90yrw2", // Default value
+        grnItemId: "cmdsjhwvp001714faegmv1mf1", // Default value
+        poLineItemId: "clx1234567890abcdeh", // Default value
+        supplierId: formData.supplierId,
+        supplierSerialNo: formData.model, // Using model as serial number
+        departmentId: formData.departmentId,
+        building: formData.buildingNumber,
+        floorNumber: formData.floorNumber,
+        roomNumber: formData.roomNumber,
+        isCurrentLocation: true
+      };
 
-        // Single API call to create asset, location, and installation
-        const result = await assetCompleteService.createAssetComplete(completeAssetData);
-        
-        console.log("Asset created successfully:", result);
+      // Single API call to create asset, location, and installation
+      const result = await assetCompleteService.createAssetComplete(completeAssetData);
       
+      console.log("Asset created successfully:", result);
+    
       console.log("Form submitted:", formData);
       setSubmitted(true);
       
-              // Reset form
-        setFormData({
-          name: "",
-          assetType: "",
-          subAssetType: "",
-          brand: "",
-          model: "",
-          subModel: "",
-          installationDate: "",
-          warrantyDuration: 0,
-          warrantyStartDate: new Date().toISOString().split('T')[0],
-          warrantyEndDate: new Date().toISOString().split('T')[0],
-          buildingNumber: "",
-          departmentId: "",
-          floorNumber: "",
-          roomNumber: "",
-        });
+      // Reset form
+      setFormData({
+        name: "",
+        assetType: "",
+        subAssetType: "",
+        brand: "",
+        model: "",
+        subModel: "",
+        installationDate: "",
+        warrantyDuration: 0,
+        warrantyStartDate: new Date().toISOString().split('T')[0],
+        warrantyEndDate: new Date().toISOString().split('T')[0],
+        buildingNumber: "",
+        departmentId: "",
+        floorNumber: "",
+        roomNumber: "",
+        supplierId: "",
+      });
       setErrors({});
       
       // Reset submitted state after 3 seconds
@@ -329,11 +360,17 @@ export default function AssetPage() {
           </Alert>
         )}
 
-        {departmentsError && (
+        {suppliersError && (
+          <Alert variant="warning" className="mb-3">
+            {suppliersError}
+          </Alert>
+        )}
+
+        {/* {departmentsError && (
           <Alert variant="warning" className="mb-3">
             {departmentsError}
           </Alert>
-        )}
+        )} */}
         
         <Form onSubmit={handleSubmit}>
           <Row>
@@ -576,37 +613,66 @@ export default function AssetPage() {
               </div>
             </Col>
             
-                          <Col lg={6}>
-                <div className="mb-3">
-                  <Form.Label htmlFor="departmentId">Department</Form.Label>
-                  <Form.Select
-                    id="departmentId"
-                    value={formData.departmentId}
-                    onChange={(e) => handleFieldChange("departmentId", e.target.value)}
-                    isInvalid={!!errors.departmentId}
-                    disabled={loadingDepartments}
-                  >
-                    <option value="">
-                      {loadingDepartments ? "Loading departments..." : "Select department"}
+            <Col lg={6}>
+              <div className="mb-3">
+                <Form.Label htmlFor="departmentId">Department</Form.Label>
+                <Form.Select
+                  id="departmentId"
+                  value={formData.departmentId}
+                  onChange={(e) => handleFieldChange("departmentId", e.target.value)}
+                  isInvalid={!!errors.departmentId}
+                  disabled={loadingDepartments}
+                >
+                  <option value="">
+                    {loadingDepartments ? "Loading departments..." : "Select department"}
+                  </option>
+                  {departments.map((department) => (
+                    <option key={department.deptId} value={department.deptId}>
+                      {department.deptName}
                     </option>
-                    {departments.map((department) => (
-                      <option key={department.deptId} value={department.deptId}>
-                        {department.deptName}
-                      </option>
-                    ))}
-                  </Form.Select>
-                  {loadingDepartments && (
-                    <div className="mt-2">
-                      <small className="text-muted">Loading departments...</small>
-                    </div>
-                  )}
-                  {errors.departmentId && (
-                    <Form.Control.Feedback type="invalid">
-                      {errors.departmentId}
-                    </Form.Control.Feedback>
-                  )}
-                </div>
-              </Col>
+                  ))}
+                </Form.Select>
+                {loadingDepartments && (
+                  <div className="mt-2">
+                    <small className="text-muted">Loading departments...</small>
+                  </div>
+                )}
+                {errors.departmentId && (
+                  <Form.Control.Feedback type="invalid">
+                    {errors.departmentId}
+                  </Form.Control.Feedback>
+                )}
+              </div>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col lg={6}>
+              <div className="mb-3">
+                <Form.Label htmlFor="supplierId">Supplier</Form.Label>
+                <Form.Select
+                  id="supplierId"
+                  value={formData.supplierId}
+                  onChange={(e) => handleFieldChange("supplierId", e.target.value)}
+                  isInvalid={!!errors.supplierId}
+                  disabled={loadingSuppliers}
+                >
+                  <option value="">
+                    {loadingSuppliers ? "Loading suppliers..." : "Select supplier"}
+                  </option>
+                  {suppliers.map((supplier) => (
+                    <option key={supplier.id} value={supplier.id}>
+                      {supplier.name}
+                    </option>
+                  ))}
+                </Form.Select>
+                {errors.supplierId && (
+                  <Form.Control.Feedback type="invalid">
+                    {errors.supplierId}
+                  </Form.Control.Feedback>
+                )}
+              </div>
+            </Col>
           </Row>
 
           <Row>
@@ -654,22 +720,23 @@ export default function AssetPage() {
               variant="secondary" 
               type="button" 
               onClick={() => {
-                        setFormData({
-          name: "",
-          assetType: "",
-          subAssetType: "",
-          brand: "",
-          model: "",
-          subModel: "",
-          installationDate: "",
-          warrantyDuration: 0,
-          warrantyStartDate: new Date().toISOString().split('T')[0], // Current date
-          warrantyEndDate: new Date().toISOString().split('T')[0], // Current date
-          buildingNumber: "",
-          departmentId: "",
-          floorNumber: "",
-          roomNumber: "",
-        });
+                setFormData({
+                  name: "",
+                  assetType: "",
+                  subAssetType: "",
+                  brand: "",
+                  model: "",
+                  subModel: "",
+                  installationDate: "",
+                  warrantyDuration: 0,
+                  warrantyStartDate: new Date().toISOString().split('T')[0], // Current date
+                  warrantyEndDate: new Date().toISOString().split('T')[0], // Current date
+                  buildingNumber: "",
+                  departmentId: "",
+                  floorNumber: "",
+                  roomNumber: "",
+                  supplierId: "",
+                });
                 setErrors({});
               }}
               className="me-2"
