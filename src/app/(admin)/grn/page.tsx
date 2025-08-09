@@ -32,21 +32,16 @@ export default function GrnListingPage() {
     fetchGrns();
   }, []);
 
-  // Add click handlers to first column after grid is rendered
+  // Add click handlers to first column after grid is rendered (kept for style; link handles navigation)
   useEffect(() => {
     if (!loading && grns.length > 0) {
       const addClickHandlers = () => {
         const firstColCells = document.querySelectorAll('td:first-child');
         if (firstColCells.length > 0) {
-          firstColCells.forEach((cell, index) => {
-            if (index < grns.length) {
-              const row = grns[index];
-              (cell as HTMLElement).style.cursor = 'pointer';
-              (cell as HTMLElement).style.color = '#0d6efd';
-              (cell as HTMLElement).style.textDecoration = 'underline';
-              // Placeholder for potential detail route
-              // cell.addEventListener('click', () => router.push(`/grn/detail?id=${row.id}`));
-            }
+          firstColCells.forEach((cell) => {
+            (cell as HTMLElement).style.cursor = 'pointer';
+            (cell as HTMLElement).style.color = '#0d6efd';
+            (cell as HTMLElement).style.textDecoration = 'underline';
           });
         }
       };
@@ -62,7 +57,7 @@ export default function GrnListingPage() {
   };
 
   const gridData = grns.map((g) => [
-    g.grnNo || g.id || "",
+    g.grnNo ,
     g.po?.poNumber || g.poId || "",
     g.challan || "",
     g.po?.status || "",
@@ -107,7 +102,11 @@ export default function GrnListingPage() {
             <Grid
               data={gridData}
               columns={[
-                { name: "GRN Number", sort: false, search: true },
+                { 
+                  name: "GRN Number", 
+                  sort: false, 
+                  search: true,
+                                  },
                 { name: "PO Number", sort: false, search: true },
                 { name: "Challan", sort: false, search: true },
                 { name: "PO Status", sort: true, search: true },
