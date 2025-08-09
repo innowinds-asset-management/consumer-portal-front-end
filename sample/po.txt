@@ -1,0 +1,40 @@
+{
+    "id": "P123",
+    "poNumber": "PO123",
+    "consumerId": "A123",
+    "supplierId": "S123",
+    "createdAt": "2025-08-09T11:54:33.000Z",
+    "updatedAt": "2025-08-09T11:54:36.000Z",
+    "status": "Issued",
+    "totalAmount": "250000",
+    "poLineItem": [
+        {
+            "id": "PL123",
+            "createdAt": "2025-08-09T12:04:44.000Z",
+            "updatedAt": "2025-08-09T12:04:45.000Z",
+            "grnId": null,
+            "itemName": "Unknown",
+            "partNo": "PART123",
+            "poId": "P123",
+            "price": "22222",
+            "quantity": "10",
+            "totalAmount": "222220",
+            "receivedQty": "0",
+            "remainingQty": "0"
+        },
+        {
+            "id": "PL124",
+            "createdAt": "2025-08-09T12:04:44.000Z",
+            "updatedAt": "2025-08-09T12:04:45.000Z",
+            "grnId": null,
+            "itemName": "Unknown",
+            "partNo": "PART1243",
+            "poId": "P123",
+            "price": "22222",
+            "quantity": "10",
+            "totalAmount": "222220",
+            "receivedQty": "0",
+            "remainingQty": "0"
+        }
+    ]
+}

@@ -34,7 +34,7 @@ export const MENU_ITEMS: MenuItemType[] = [
         key: 'grn',
         label: 'GRN',
          icon: HandCoins,
-        url: '/grns ',
+        url: '/grn ',
        
       }, 
       {

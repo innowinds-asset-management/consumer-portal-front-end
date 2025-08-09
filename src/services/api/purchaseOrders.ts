@@ -6,6 +6,7 @@ export interface PoLineItem {
   createdAt: string;
   updatedAt: string;
   grnId: string;
+  itemName?: string;
   partNo: string;
   poId: string;
   price: string;

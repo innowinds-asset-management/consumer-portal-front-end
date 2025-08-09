@@ -1,0 +1,29 @@
+{
+  "id": "grn_123",
+  "poId": "po_1",
+  "dateTime": "2025-08-10T10:00:00.000Z",
+  "challan": "CH-123",
+  "deliveryNote": "DN-456",
+  "deliveryDate": "2025-08-10T09:00:00.000Z",
+  "driverName": "John Doe",
+  "receivedBy": "Jane Smith",
+  "createdAt": "2025-08-10T10:05:00.000Z",
+  "updatedAt": "2025-08-10T10:05:00.000Z",
+  "po": { "...": "PO header fields" },
+  "grnItem": [
+    {
+      "id": "grni_1",
+      "grnId": "grn_123",
+      "poLineItemId": "poli_1",
+      "quantityOrdered": 10,
+      "quantityReceived": 8,
+      "quantityAccepted": 8,
+      "quantityRejected": 0,
+      "quantityRemaining": 2,
+      "remarks": "Two pending from supplier",
+      "createdAt": "2025-08-10T10:05:00.000Z",
+      "updatedAt": "2025-08-10T10:05:00.000Z",
+      "poLineItem": { "...": "PO line item fields incl. itemName" }
+    }
+  ]
+}
