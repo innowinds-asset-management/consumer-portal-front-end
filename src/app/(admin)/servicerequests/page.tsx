@@ -112,7 +112,7 @@ export default function ServiceRequestListingPage() {
             <span>Service Requests</span>
             <Button
               variant="primary"
-              onClick={() => router.push("/assets")}
+              onClick={() => router.push("/servicerequests/create")}
               className="d-flex align-items-center gap-2"
               size="sm"
             >

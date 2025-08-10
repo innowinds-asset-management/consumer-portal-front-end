@@ -97,10 +97,10 @@ export const MENU_ITEMS: MenuItemType[] = [
   //   ],
   // },
   {
-    key: 'service_request',
+    key: 'servicerequests',
     label: 'Service Requests',
     icon: HeadsetIcon,
-    url: '/service_request',
+    url: '/servicerequests',
   },
   {
     key: 'suppliers',

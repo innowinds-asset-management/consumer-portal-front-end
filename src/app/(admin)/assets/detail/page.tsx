@@ -78,7 +78,7 @@ export default function AssetDetailPage() {
 
 
   const handleClick = (asset: Asset) => {
-    router.push(`/assets/service-request?id=${asset.id}`);
+    router.push(`/servicerequests/create?aid=${asset.id}`);
   };
 
   const loadServiceRequests = async () => {

@@ -26,7 +26,40 @@ export interface ServiceRequest {
   asset?: any;
   serviceSupplier?: any;
   serviceContract?: any;
-  serviceRequestItems?: any[];
+  serviceRequestItems?: ServiceRequestItem[];
+}
+
+// Service Request Item interface
+export interface ServiceRequestItem {
+  serviceRequestItemId?: number;
+  serviceRequestId?: string;
+  partName: string;
+  partCost: number;
+  labourCost: number;
+  quantity: number;
+  totalCost: number;
+  defectDescription: string;
+  createdAt?: string;
+  updatedAt?: string | null;
+}
+
+// Create Service Request Item interface
+export interface CreateServiceRequestItemRequest {
+  serviceRequestId: string;
+  partName: string;
+  partCost: number;
+  labourCost: number;
+  quantity: number;
+  defectDescription: string;
+}
+
+// Update Service Request Item interface
+export interface UpdateServiceRequestItemRequest {
+  partName?: string;
+  partCost?: number;
+  labourCost?: number;
+  quantity?: number;
+  defectDescription?: string;
 }
 
 // Create Service Request Request interface
@@ -112,6 +145,20 @@ class ServiceRequestHttpClient {
 
     return response.json()
   }
+
+  async delete<T>(endpoint: string): Promise<T> {
+    const url = `${this.baseURL}${endpoint}`
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    return response.json()
+  }
 }
 
 const serviceRequestHttp = new ServiceRequestHttpClient()
@@ -135,6 +182,18 @@ class ServiceRequestService {
 
   async updateServiceRequest(id: string, data: UpdateServiceRequestRequest): Promise<ServiceRequest> {
     return serviceRequestHttp.put<ServiceRequest>(`/servicerequest/${id}`, data)
+  }
+
+  async createServiceRequestItem(data: CreateServiceRequestItemRequest): Promise<ServiceRequestItem> {
+    return serviceRequestHttp.post<ServiceRequestItem>('/servicerequest/item', data)
+  }
+
+  async updateServiceRequestItem(id: number, data: UpdateServiceRequestItemRequest): Promise<ServiceRequestItem> {
+    return serviceRequestHttp.put<ServiceRequestItem>(`/servicerequest/item/${id}`, data)
+  }
+
+  async deleteServiceRequestItem(id: number): Promise<void> {
+    return serviceRequestHttp.delete<void>(`/servicerequest/item/${id}`)
   }
 
 }

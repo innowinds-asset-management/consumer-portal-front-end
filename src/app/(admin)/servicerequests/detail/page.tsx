@@ -4,17 +4,174 @@ import React, { useState, useEffect } from "react";
 import PageTitle from '@/components/PageTitle'
 import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
-import { Card, CardBody, Col, Nav, NavItem, NavLink, Row, TabContainer, TabContent, TabPane, Badge, Table, Alert, Button, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
+import { Card, CardBody, Col, Nav, NavItem, NavLink, Row, TabContainer, TabContent, TabPane, Badge, Table, Alert, Button, Form, FormControl, FormGroup, FormLabel, Modal, ModalHeader, ModalBody, ModalFooter, ModalTitle } from 'react-bootstrap'
 import { assetsService, Asset } from '@/services/api/assets'
 import { assetTypesService, AssetType } from '@/services/api/assetTypes'
 import { assetSubTypesService, AssetSubType } from '@/services/api/assetSubTypes'
 import {departmentService, Department } from '@/services/api/departments'
 import { warrantyService, Warranty } from '@/services/api/warranty'
-import { serviceRequestService, ServiceRequest, UpdateServiceRequestRequest } from '@/services/api/serviceRequest'
+import { serviceRequestService, ServiceRequest, UpdateServiceRequestRequest, ServiceRequestItem, CreateServiceRequestItemRequest, UpdateServiceRequestItemRequest } from '@/services/api/serviceRequest'
 import { Location } from '@/services/api/assets'
 import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation';
 import {  CardFooter, CardHeader, CardTitle,  } from 'react-bootstrap'
+
+// Service Request Item Modal Component
+interface ServiceRequestItemModalProps {
+  show: boolean;
+  onHide: () => void;
+  onSubmit: (data: CreateServiceRequestItemRequest | UpdateServiceRequestItemRequest) => void;
+  item?: ServiceRequestItem | null;
+  serviceRequestId: string;
+  loading: boolean;
+}
+
+function ServiceRequestItemModal({ show, onHide, onSubmit, item, serviceRequestId, loading }: ServiceRequestItemModalProps) {
+  const [formData, setFormData] = useState({
+    partName: '',
+    partCost: 0,
+    labourCost: 0,
+    quantity: 1,
+    defectDescription: ''
+  });
+
+  useEffect(() => {
+    if (item) {
+      setFormData({
+        partName: item.partName,
+        partCost: item.partCost,
+        labourCost: item.labourCost,
+        quantity: item.quantity,
+        defectDescription: item.defectDescription
+      });
+    } else {
+      setFormData({
+        partName: '',
+        partCost: 0,
+        labourCost: 0,
+        quantity: 1,
+        defectDescription: ''
+      });
+    }
+  }, [item]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (item) {
+      // Update existing item
+      onSubmit(formData as UpdateServiceRequestItemRequest);
+    } else {
+      // Create new item
+      onSubmit({
+        ...formData,
+        serviceRequestId
+      } as CreateServiceRequestItemRequest);
+    }
+  };
+
+  const totalCost = (formData.partCost * formData.quantity) + formData.labourCost;
+
+  return (
+    <Modal show={show} onHide={onHide} size="lg">
+      <ModalHeader closeButton>
+        <h5 className="modal-title">
+          <IconifyIcon icon="mdi:plus-circle" className="me-2" />
+          {item ? 'Edit Service Request Item' : 'Add Service Request Item'}
+        </h5>
+      </ModalHeader>
+      <Form onSubmit={handleSubmit}>
+        <ModalBody>
+          <Row>
+            <Col md={6}>
+              <FormGroup className="mb-3">
+                <FormLabel>Part Name *</FormLabel>
+                <FormControl
+                  type="text"
+                  value={formData.partName}
+                  onChange={(e) => setFormData({ ...formData, partName: e.target.value })}
+                  required
+                />
+              </FormGroup>
+            </Col>
+            <Col md={6}>
+              <FormGroup className="mb-3">
+                <FormLabel>Quantity *</FormLabel>
+                <FormControl
+                  type="number"
+                  min="1"
+                  value={formData.quantity}
+                  onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })}
+                  required
+                />
+              </FormGroup>
+            </Col>
+          </Row>
+          <Row>
+            <Col md={6}>
+              <FormGroup className="mb-3">
+                <FormLabel>Part Cost *</FormLabel>
+                <FormControl
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.partCost}
+                  onChange={(e) => setFormData({ ...formData, partCost: parseFloat(e.target.value) || 0 })}
+                  required
+                />
+              </FormGroup>
+            </Col>
+            <Col md={6}>
+              <FormGroup className="mb-3">
+                <FormLabel>Labour Cost *</FormLabel>
+                <FormControl
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.labourCost}
+                  onChange={(e) => setFormData({ ...formData, labourCost: parseFloat(e.target.value) || 0 })}
+                  required
+                />
+              </FormGroup>
+            </Col>
+          </Row>
+          <FormGroup className="mb-3">
+            <FormLabel>Defect Description *</FormLabel>
+            <FormControl
+              as="textarea"
+              rows={3}
+              value={formData.defectDescription}
+              onChange={(e) => setFormData({ ...formData, defectDescription: e.target.value })}
+              required
+            />
+          </FormGroup>
+          <Alert variant="info">
+            <strong>Total Cost: ₹{totalCost.toFixed(2)}</strong>
+            <br />
+            (Part Cost: ₹{(formData.partCost * formData.quantity).toFixed(2)} + Labour Cost: ₹{formData.labourCost.toFixed(2)})
+          </Alert>
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="secondary" onClick={onHide} disabled={loading}>
+            Cancel
+          </Button>
+          <Button variant="primary" type="submit" disabled={loading}>
+            {loading ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                {item ? 'Updating...' : 'Creating...'}
+              </>
+            ) : (
+              <>
+                <IconifyIcon icon="mdi:content-save" className="me-2" />
+                {item ? 'Update Item' : 'Add Item'}
+              </>
+            )}
+          </Button>
+        </ModalFooter>
+      </Form>
+    </Modal>
+  );
+}
 
 export default function ServiceRequestDetailPage() {
   const router = useRouter();
@@ -26,6 +183,11 @@ export default function ServiceRequestDetailPage() {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<{[key: string]: string}>({});
   const [saving, setSaving] = useState(false);
+  
+  // Service Request Items state
+  const [showItemModal, setShowItemModal] = useState(false);
+  const [editingItem, setEditingItem] = useState<ServiceRequestItem | null>(null);
+  const [itemLoading, setItemLoading] = useState(false);
 
   useEffect(() => { 
     const fetchServiceRequest = async () => {
@@ -76,6 +238,58 @@ export default function ServiceRequestDetailPage() {
   const handleCancelEdit = () => {
     setEditingField(null);
     setEditValues({});
+  };
+
+  // Service Request Items handlers
+  const handleAddItem = () => {
+    setEditingItem(null);
+    setShowItemModal(true);
+  };
+
+  const handleEditItem = (item: ServiceRequestItem) => {
+    setEditingItem(item);
+    setShowItemModal(true);
+  };
+
+  const handleDeleteItem = async (itemId: number) => {
+    if (!confirm('Are you sure you want to delete this item?')) return;
+
+    setItemLoading(true);
+    try {
+      await serviceRequestService.deleteServiceRequestItem(itemId);
+      // Refresh the service request to get updated items
+      const updatedServiceRequest = await serviceRequestService.getServiceRequestById(serviceRequestId!);
+      setServiceRequest(updatedServiceRequest);
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      setError("Failed to delete item. Please try again.");
+    } finally {
+      setItemLoading(false);
+    }
+  };
+
+  const handleSubmitItem = async (data: CreateServiceRequestItemRequest | UpdateServiceRequestItemRequest) => {
+    setItemLoading(true);
+    try {
+      if (editingItem) {
+        // Update existing item
+        await serviceRequestService.updateServiceRequestItem(editingItem.serviceRequestItemId!, data as UpdateServiceRequestItemRequest);
+      } else {
+        // Create new item
+        await serviceRequestService.createServiceRequestItem(data as CreateServiceRequestItemRequest);
+      }
+      
+      // Refresh the service request to get updated items
+      const updatedServiceRequest = await serviceRequestService.getServiceRequestById(serviceRequestId!);
+      setServiceRequest(updatedServiceRequest);
+      setShowItemModal(false);
+      setEditingItem(null);
+    } catch (error) {
+      console.error('Error saving item:', error);
+      setError("Failed to save item. Please try again.");
+    } finally {
+      setItemLoading(false);
+    }
   };
 
   const renderEditableField = (fieldName: string, label: string, value: string, type: 'text' | 'textarea' | 'select' = 'text', options?: string[]) => {
@@ -193,6 +407,8 @@ export default function ServiceRequestDetailPage() {
     );
   }
 
+  const totalItemsCost = serviceRequest.serviceRequestItems?.reduce((sum, item) => sum + item.totalCost, 0) || 0;
+
   return (
     <>
       <PageTitle title={`Service Request - ${serviceRequest.srNo}`} />
@@ -239,6 +455,92 @@ export default function ServiceRequestDetailPage() {
                     </div>
                   </Col>
                 </Row>
+              </CardBody>
+            </Card>
+          </ComponentContainerCard>
+        </Col>
+      </Row>
+
+      {/* Service Request Items */}
+      <Row className="mt-4">
+        <Col md={12}>
+          <ComponentContainerCard title="Service Request Items" description="Parts and services used for this request">
+            <Card className="border-secondary border">
+              <CardHeader className="bg-light">
+                <div className="d-flex justify-content-between align-items-center">
+                  <CardTitle as="h5" className="mb-0">
+                    <IconifyIcon icon="mdi:clipboard-list-outline" className="me-2" />
+                    Items & Parts
+                  </CardTitle>
+                  <Button 
+                    variant="primary" 
+                    size="sm"
+                    onClick={handleAddItem}
+                    disabled={itemLoading}
+                  >
+                    <IconifyIcon icon="mdi:plus" className="me-2" />
+                    Add Item
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardBody>
+                {serviceRequest.serviceRequestItems && serviceRequest.serviceRequestItems.length > 0 ? (
+                  <>
+                    <Table responsive striped hover>
+                      <thead>
+                        <tr>
+                          <th>Part Name</th>
+                          <th>Quantity</th>
+                          <th>Part Cost</th>
+                          <th>Labour Cost</th>
+                          <th>Total Cost</th>
+                          <th>Defect Description</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {serviceRequest.serviceRequestItems.map((item) => (
+                          <tr key={item.serviceRequestItemId}>
+                            <td>{item.partName}</td>
+                            <td>{item.quantity}</td>
+                            <td>₹{item.partCost.toFixed(2)}</td>
+                            <td>₹{item.labourCost.toFixed(2)}</td>
+                            <td>₹{item.totalCost.toFixed(2)}</td>
+                            <td>{item.defectDescription}</td>
+                            <td>
+                              <div className="d-flex gap-1">
+                                <Button 
+                                  variant="outline-primary" 
+                                  size="sm"
+                                  onClick={() => handleEditItem(item)}
+                                  disabled={itemLoading}
+                                >
+                                  <IconifyIcon icon="mdi:pencil" />
+                                </Button>
+                                <Button 
+                                  variant="outline-danger" 
+                                  size="sm"
+                                  onClick={() => handleDeleteItem(item.serviceRequestItemId!)}
+                                  disabled={itemLoading}
+                                >
+                                  <IconifyIcon icon="mdi:delete" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                    <Alert variant="info" className="mt-3">
+                      <strong>Total Items Cost: ₹{totalItemsCost.toFixed(2)}</strong>
+                    </Alert>
+                  </>
+                ) : (
+                  <Alert variant="info">
+                    <IconifyIcon icon="mdi:information-outline" className="me-2" />
+                    No items have been added to this service request yet.
+                  </Alert>
+                )}
               </CardBody>
             </Card>
           </ComponentContainerCard>
@@ -296,6 +598,16 @@ export default function ServiceRequestDetailPage() {
           </ComponentContainerCard>
         </Col>
       </Row>
+
+      {/* Service Request Item Modal */}
+      <ServiceRequestItemModal
+        show={showItemModal}
+        onHide={() => setShowItemModal(false)}
+        onSubmit={handleSubmitItem}
+        item={editingItem}
+        serviceRequestId={serviceRequestId!}
+        loading={itemLoading}
+      />
     </>
   );
 }
