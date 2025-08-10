@@ -3,7 +3,7 @@
 
 export const ENV_CONFIG = {
   // API URLs
-  API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1',
+  API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://192.168.29.148:3001/api/v1',
   ASSET_API_URL: process.env.NEXT_PUBLIC_ASSET_API_URL || 'http://192.168.29.164:3003/api/v1',
   WARRANTY_API_URL: process.env.NEXT_PUBLIC_WARRANTY_API_URL || 'http://192.168.29.164:3003/api/v1',
   

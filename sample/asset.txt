@@ -1,0 +1,116 @@
+{
+    "id": "a123",
+    "assetTypeId": "cme3rl5z2000011ztxbl89gur",
+    "assetSubTypeId": "cme3rl6hs000511ztnk9s5c95",
+    "assetName": "Freezer",
+    "warrantyPeriod": 60,
+    "warrantyStartDate": "2025-08-09T00:00:00.000Z",
+    "warrantyEndDate": "2030-07-14T00:00:00.000Z",
+    "installationDate": "2025-08-09T00:00:00.000Z",
+    "brand": "LG",
+    "model": "2123",
+    "subModel": "",
+    "isActive": true,
+    "createdAt": "2025-08-09T05:16:54.064Z",
+    "updatedAt": "2025-08-09T05:16:54.064Z",
+    "consumerId": "A123",
+    "partNo": "2123",
+    "supplierCode": "LG-2123",
+    "isAmc": true,
+    "consumerSerialNo": "Freezer",
+    "departmentId": "12",
+    "grnId": "cmdsjhwoh000z14faps90yrw2",
+    "grnItemId": "cmdsjhwvp001714faegmv1mf1",
+    "poLineItemId": "clx1234567890abcdeh",
+    "supplierId": "S123",
+    "supplierSerialNo": "2123",
+    "locations": [
+        {
+            "id": "cme3syt2e0002jn0oonhmdso6",
+            "assetId": "a123",
+            "departmentId": "12",
+            "building": "123",
+            "floorNumber": "22",
+            "roomNumber": "12",
+            "isCurrentLocation": true,
+            "createdAt": "2025-08-09T05:16:54.567Z",
+            "updatedAt": "2025-08-09T05:16:54.567Z"
+        }
+    ],
+    "installations": [
+        {
+            "id": "cme3syt6m0003jn0omm1tl6e0",
+            "assetId": "a123",
+            "locationId": "cme3syt2e0002jn0oonhmdso6",
+            "departmentId": "12",
+            "installationDate": "2025-08-09T00:00:00.000Z",
+            "createdAt": "2025-08-09T05:16:54.718Z",
+            "updatedAt": "2025-08-09T05:16:54.718Z"
+        }
+    ],
+    "department": {
+        "deptId": "12",
+        "deptName": "Cardio",
+        "consumerId": "A123",
+        "createdAt": "2025-08-09T04:40:46.259Z",
+        "updatedAt": "2025-08-09T10:10:45.000Z"
+    },
+    "assetType": {
+        "id": "cme3rl5z2000011ztxbl89gur",
+        "assetName": "Equipment",
+        "code": "EQP",
+        "description": "Generic equipment",
+        "isActive": true,
+        "createdAt": "2025-08-09T04:38:18.492Z",
+        "updatedAt": "2025-08-09T04:38:18.492Z",
+        "industryId": "default"
+    },
+    "assetSubType": {
+        "id": "cme3rl6hs000511ztnk9s5c95",
+        "assetTypeId": "cme3rl5z2000011ztxbl89gur",
+        "name": "General Equipment",
+        "code": "EQP-GEN",
+        "description": null,
+        "isActive": true,
+        "createdAt": "2025-08-09T04:38:19.165Z",
+        "updatedAt": "2025-08-09T04:38:19.165Z"
+    },
+    "supplier": {
+        "id": "S123",
+        "name": "Aright",
+        "code": "ARIGHT",
+        "gstNumber": null,
+        "email": null,
+        "phone": null,
+        "address": null,
+        "isActive": true,
+        "createdAt": "2025-08-09T04:35:47.757Z",
+        "updatedAt": "2025-08-09T10:05:47.000Z"
+    },
+    "warranties": [],
+    "serviceContracts": [
+        {
+            "contractId": "11",
+            "contractNumber": "11",
+            "contractTypeId": 3,
+            "serviceSupplierId": "S123",
+            "assetId": "a123",
+            "contractName": "as",
+            "startDate": "2025-08-10T00:00:00.000Z",
+            "endDate": "2025-08-10T00:00:00.000Z",
+            "paymentTerms": "YEARLY",
+            "coverageType": "COMPREHENSIVE",
+            "includes": null,
+            "excludes": null,
+            "serviceFrequency": "QUARTERLY",
+            "preventiveMaintenanceIncluded": true,
+            "breakdownMaintenanceIncluded": true,
+            "autoRenewal": false,
+            "createdBy": null,
+            "updatedBy": null,
+            "createdAt": "2025-08-10T16:27:46.535Z",
+            "updatedAt": "2025-08-10T21:57:45.000Z",
+            "statusId": 123
+        }
+    ]
+}
