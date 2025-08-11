@@ -57,13 +57,19 @@ function ServiceRequestItemModal({ show, onHide, onSubmit, item, serviceRequestI
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const calculatedTotalCost = (formData.partCost * formData.quantity) + formData.labourCost;
+    
     if (item) {
       // Update existing item
-      onSubmit(formData as UpdateServiceRequestItemRequest);
+      onSubmit({
+        ...formData,
+        totalCost: calculatedTotalCost
+      } as UpdateServiceRequestItemRequest);
     } else {
       // Create new item
       onSubmit({
         ...formData,
+        totalCost: calculatedTotalCost,
         serviceRequestId
       } as CreateServiceRequestItemRequest);
     }
@@ -188,6 +194,10 @@ export default function ServiceRequestDetailPage() {
   const [showItemModal, setShowItemModal] = useState(false);
   const [editingItem, setEditingItem] = useState<ServiceRequestItem | null>(null);
   const [itemLoading, setItemLoading] = useState(false);
+  
+  // Delete confirmation modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<ServiceRequestItem | null>(null);
 
   useEffect(() => { 
     const fetchServiceRequest = async () => {
@@ -251,21 +261,33 @@ export default function ServiceRequestDetailPage() {
     setShowItemModal(true);
   };
 
-  const handleDeleteItem = async (itemId: number) => {
-    if (!confirm('Are you sure you want to delete this item?')) return;
+  const handleDeleteItem = (item: ServiceRequestItem) => {
+    setItemToDelete(item);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteItem = async () => {
+    if (!itemToDelete || !serviceRequestId) return;
 
     setItemLoading(true);
     try {
-      await serviceRequestService.deleteServiceRequestItem(itemId);
+      await serviceRequestService.deleteServiceRequestItem(itemToDelete.serviceRequestItemId!);
       // Refresh the service request to get updated items
-      const updatedServiceRequest = await serviceRequestService.getServiceRequestById(serviceRequestId!);
+      const updatedServiceRequest = await serviceRequestService.getServiceRequestById(serviceRequestId);
       setServiceRequest(updatedServiceRequest);
+      setShowDeleteModal(false);
+      setItemToDelete(null);
     } catch (error) {
       console.error('Error deleting item:', error);
       setError("Failed to delete item. Please try again.");
     } finally {
       setItemLoading(false);
     }
+  };
+
+  const cancelDeleteItem = () => {
+    setShowDeleteModal(false);
+    setItemToDelete(null);
   };
 
   const handleSubmitItem = async (data: CreateServiceRequestItemRequest | UpdateServiceRequestItemRequest) => {
@@ -517,14 +539,14 @@ export default function ServiceRequestDetailPage() {
                                 >
                                   <IconifyIcon icon="mdi:pencil" />
                                 </Button>
-                                <Button 
-                                  variant="outline-danger" 
-                                  size="sm"
-                                  onClick={() => handleDeleteItem(item.serviceRequestItemId!)}
-                                  disabled={itemLoading}
-                                >
-                                  <IconifyIcon icon="mdi:delete" />
-                                </Button>
+                                                                 <Button 
+                                   variant="outline-danger" 
+                                   size="sm"
+                                   onClick={() => handleDeleteItem(item)}
+                                   disabled={itemLoading}
+                                 >
+                                   <IconifyIcon icon="mdi:delete" />
+                                 </Button>
                               </div>
                             </td>
                           </tr>
@@ -599,15 +621,64 @@ export default function ServiceRequestDetailPage() {
         </Col>
       </Row>
 
-      {/* Service Request Item Modal */}
-      <ServiceRequestItemModal
-        show={showItemModal}
-        onHide={() => setShowItemModal(false)}
-        onSubmit={handleSubmitItem}
-        item={editingItem}
-        serviceRequestId={serviceRequestId!}
-        loading={itemLoading}
-      />
-    </>
-  );
-}
+             {/* Service Request Item Modal */}
+       <ServiceRequestItemModal
+         show={showItemModal}
+         onHide={() => setShowItemModal(false)}
+         onSubmit={handleSubmitItem}
+         item={editingItem}
+         serviceRequestId={serviceRequestId!}
+         loading={itemLoading}
+       />
+
+       {/* Delete Confirmation Modal */}
+       <Modal show={showDeleteModal} onHide={cancelDeleteItem} centered>
+         <ModalHeader closeButton>
+           <ModalTitle>
+             <IconifyIcon icon="mdi:delete-alert" className="me-2 text-danger" />
+             Confirm Delete
+           </ModalTitle>
+         </ModalHeader>
+         <ModalBody>
+           <p>Are you sure you want to delete this service request item?</p>
+           {itemToDelete && (
+             <div className="bg-light p-3 rounded">
+               <strong>Item Details:</strong>
+               <br />
+               <strong>Part Name:</strong> {itemToDelete.partName}
+               <br />
+               <strong>Quantity:</strong> {itemToDelete.quantity}
+               <br />
+               <strong>Total Cost:</strong> ₹{itemToDelete.totalCost.toFixed(2)}
+             </div>
+           )}
+           <p className="text-danger mt-3">
+             <strong>Warning:</strong> This action cannot be undone.
+           </p>
+         </ModalBody>
+         <ModalFooter>
+           <Button variant="secondary" onClick={cancelDeleteItem} disabled={itemLoading}>
+             Cancel
+           </Button>
+           <Button 
+             variant="danger" 
+             onClick={confirmDeleteItem} 
+             disabled={itemLoading}
+           >
+             {itemLoading ? (
+               <>
+                 <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                 Deleting...
+               </>
+             ) : (
+               <>
+                 <IconifyIcon icon="mdi:delete" className="me-2" />
+                 Delete Item
+               </>
+             )}
+           </Button>
+         </ModalFooter>
+       </Modal>
+     </>
+   );
+ }

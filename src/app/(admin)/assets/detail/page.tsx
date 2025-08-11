@@ -20,7 +20,7 @@ import { useRouter } from 'next/navigation';
 export default function AssetDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const assetId = searchParams.get('id');
+  const assetId = searchParams.get('aid');
   
   const [asset, setAsset] = useState<Asset | null>(null);
   const [assetType, setAssetType] = useState<AssetType | null>(null);
