@@ -10,7 +10,7 @@ interface AssetForm {
   assetType: string
   assetSubType: string
   poId: string
-  itemName: string
+  assetName: string
   partNo: string
   grnId: string
   grnItemId: string
@@ -25,7 +25,7 @@ interface GrnLineItem {
   poLineItemId: string
   icon: string
   partNo: string
-  itemName: string
+  assetName: string
   qtyOrdered: number
   qtyAccepted: number
   qtyRejected: number
@@ -163,7 +163,7 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
                                               {items.map((item, idx) => (
                           <tr key={idx}>
                             <td>{item.partNo}</td>
-                            <td>{item.itemName}</td>
+                            <td>{item.assetName}</td>
                             <td>{grn?.poId || ''}</td>
                             <td>{item.poLineItemId}</td>
                             <td>{grn?.id || ''}</td>

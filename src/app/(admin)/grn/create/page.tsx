@@ -199,14 +199,9 @@ export default function GrnCreatePage() {
       }
       
       await grnService.createGrn(payload)
-      setChallan('')
-      setVehicleNumber('')
-      setDriverName('')
-      setReceivedBy('')
-      setDeliveryDate('')
-      setDeliveryNote('')
-      setItems([])
-      setPoId('')
+      
+      // Redirect to GRN listing page after successful creation
+      router.push('/grn')
     } catch (e: any) {
       setError(e?.message || 'Failed to create GRN')
     } finally {

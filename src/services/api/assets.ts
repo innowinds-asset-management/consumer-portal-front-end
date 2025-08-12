@@ -168,6 +168,17 @@ class AssetsService {
       throw error
     }
   }
+
+  // Create asset from GRN PO line item
+  async createAssetFromGrnPoLineItem(assetData: any): Promise<any> {
+    try {
+      const response = await assetHttp.post<any>('/asset/grn-po-line-item', assetData)
+      return response
+    } catch (error) {
+      console.error('Error creating asset from GRN PO line item:', error)
+      throw error
+    }
+  }
 }
 
 export const assetsService = new AssetsService() 

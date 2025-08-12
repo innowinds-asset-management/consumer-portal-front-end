@@ -6,6 +6,7 @@ import PageTitle from '@/components/PageTitle'
 import { Button, Card, CardBody, Col, Row, Table, Alert } from 'react-bootstrap'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { grnService, Grn } from '@/services/api/grn'
+import { assetsService } from '@/services/api/assets'
 import CreateAssetModal from '@/components/CreateAssetModal'
 
 // Line item display type
@@ -14,7 +15,7 @@ type GrnLineItemDisplay = {
   poLineItemId: string
   icon: string
   partNo: string
-  itemName: string
+  assetName: string
   qtyOrdered: number
   qtyAccepted: number
   qtyRejected: number
@@ -41,6 +42,7 @@ const GrnDetailPage = () => {
   const [items, setItems] = useState<GrnLineItemDisplay[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string>("")
+  const [successMessage, setSuccessMessage] = useState<string>("")
   
   // Modal state
   const [showCreateAssetModal, setShowCreateAssetModal] = useState(false)
@@ -50,7 +52,7 @@ const GrnDetailPage = () => {
     assetType: '',
     assetSubType: '',
     poId: '',
-    itemName: '',
+    assetName: '',
     partNo: '',
     grnId: '',
     grnItemId: '',
@@ -76,7 +78,7 @@ const GrnDetailPage = () => {
           poLineItemId: it.poLineItemId || '',
           icon: 'tabler:package',
           partNo: it.poLineItem?.partNo || '-',
-          itemName: it.poLineItem?.itemName || '-',
+          assetName: it.poLineItem?.itemName || '-',
           qtyOrdered: parseInt(String(it.quantityOrdered || 0)) || 0,
           qtyAccepted: parseInt(String(it.quantityAccepted || 0)) || 0,
           qtyRejected: parseInt(String(it.quantityRejected || 0)) || 0,
@@ -108,7 +110,7 @@ const GrnDetailPage = () => {
         assetType: '',
         assetSubType: '',
         poId: grn?.poId || '',
-        itemName: firstItem.itemName,
+        assetName: firstItem.assetName,
         partNo: firstItem.partNo,
         grnId: grn?.id || '',
         grnItemId: firstItem.id,
@@ -126,7 +128,7 @@ const GrnDetailPage = () => {
       assetType: '',
       assetSubType: '',
       poId: '',
-      itemName: '',
+      assetName: '',
       partNo: '',
       grnId: '',
       grnItemId: '',
@@ -152,7 +154,7 @@ const GrnDetailPage = () => {
       if (field === 'poLineItemId' && value) {
         const selectedItem = items.find(item => item.poLineItemId === value)
         if (selectedItem) {
-          updatedForm.itemName = selectedItem.itemName
+          updatedForm.assetName = selectedItem.assetName
           updatedForm.partNo = selectedItem.partNo
           updatedForm.poId = grn?.poId || ''
           updatedForm.grnId = grn?.id || ''
@@ -203,11 +205,16 @@ const GrnDetailPage = () => {
       
       console.log('Final asset data for submission:', finalAssetData)
       
-      // TODO: Implement asset creation API call
-      // await assetService.createAsset(finalAssetData)
+      // Call the asset creation API endpoint
+      const response = await assetsService.createAssetFromGrnPoLineItem(finalAssetData)
+      
+      console.log('Asset created successfully:', response)
       
       handleCloseCreateAssetModal()
-      // Optionally refresh the page or show success message
+      // Show success message
+      setError('') // Clear any existing errors
+      setSuccessMessage('Asset created successfully!')
+      console.log('Asset created successfully!')
     } catch (error) {
       console.error('Error creating asset:', error)
       // Handle error
@@ -239,6 +246,11 @@ const GrnDetailPage = () => {
   return (
     <>
       <PageTitle title="GRN Details" subTitle="" />
+      {successMessage && (
+        <Alert variant="success" className="mb-3">
+          {successMessage}
+        </Alert>
+      )}
       <Row>
         <Col xs={12}>
           <Card>
@@ -338,7 +350,7 @@ const GrnDetailPage = () => {
                         <td className="text-start">
                           <div className="d-flex align-items-center gap-2">
                             <IconifyIcon icon={it.icon} className="fs-22" />
-                            <span className="fw-medium">{it.itemName}</span>
+                            <span className="fw-medium">{it.assetName}</span>
                           </div>
                         </td>
                         <td>{it.qtyOrdered}</td>
