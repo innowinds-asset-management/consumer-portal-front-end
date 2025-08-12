@@ -216,16 +216,16 @@ const PurchaseOrderDetail = () => {
                         Quantity
                       </th>
                       <th className="border-0" scope="col">
-                        Received
-                      </th>
-                      <th className="border-0" scope="col">
-                        Remaining
-                      </th>
-                      <th className="border-0" scope="col">
                         Unit price
                       </th>
                       <th className="text-end border-0" scope="col">
                         Amount
+                      </th>
+                      <th className="border-0" scope="col">
+                        Received
+                      </th>
+                      <th className="border-0" scope="col">
+                        Remaining
                       </th>
                     </tr>
                   </thead>
@@ -243,6 +243,8 @@ const PurchaseOrderDetail = () => {
                           </div>
                         </td>
                         <td>{item.quantity}</td>
+                        <td>₹{item.price.toFixed(2)}</td>
+                        <td className="text-end">₹{item.amount.toFixed(2)}</td>
                         <td>
                           <span className={`badge ${item.receivedQty > 0 ? 'bg-success' : 'bg-secondary'}`}>
                             {item.receivedQty}
@@ -253,8 +255,6 @@ const PurchaseOrderDetail = () => {
                             {item.remainingQty}
                           </span>
                         </td>
-                        <td>₹{item.price.toFixed(2)}</td>
-                        <td className="text-end">₹{item.amount.toFixed(2)}</td>
                       </tr>
                     ))}
                   </tbody>
