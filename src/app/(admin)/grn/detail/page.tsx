@@ -6,9 +6,12 @@ import PageTitle from '@/components/PageTitle'
 import { Button, Card, CardBody, Col, Row, Table, Alert } from 'react-bootstrap'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { grnService, Grn } from '@/services/api/grn'
+import CreateAssetModal from '@/components/CreateAssetModal'
 
 // Line item display type
 type GrnLineItemDisplay = {
+  id: string
+  poLineItemId: string
   icon: string
   partNo: string
   itemName: string
@@ -38,6 +41,23 @@ const GrnDetailPage = () => {
   const [items, setItems] = useState<GrnLineItemDisplay[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string>("")
+  
+  // Modal state
+  const [showCreateAssetModal, setShowCreateAssetModal] = useState(false)
+  
+  // Asset form state
+  const [assetForm, setAssetForm] = useState({
+    assetType: '',
+    assetSubType: '',
+    poId: '',
+    itemName: '',
+    partNo: '',
+    grnId: '',
+    grnItemId: '',
+    poLineItemId: '',
+    supplierId: '',
+    consumerId: ''
+  })
 
   useEffect(() => {
     const fetchGrn = async () => {
@@ -52,6 +72,8 @@ const GrnDetailPage = () => {
         const data = await grnService.getGrnById(grnId)
         setGrn(data)
         const mapped = (data.grnItem || []).map(it => ({
+          id: it.id || '',
+          poLineItemId: it.poLineItemId || '',
           icon: 'tabler:package',
           partNo: it.poLineItem?.partNo || '-',
           itemName: it.poLineItem?.itemName || '-',
@@ -73,6 +95,123 @@ const GrnDetailPage = () => {
   const formatDate = (dateString?: string | null) => {
     if (!dateString) return ''
     return new Date(dateString).toLocaleDateString()
+  }
+
+  // Modal handlers
+  const handleShowCreateAssetModal = () => {
+    setShowCreateAssetModal(true)
+    
+    // Auto-populate form with first item data
+    if (items.length > 0) {
+      const firstItem = items[0]
+      setAssetForm({
+        assetType: '',
+        assetSubType: '',
+        poId: grn?.poId || '',
+        itemName: firstItem.itemName,
+        partNo: firstItem.partNo,
+        grnId: grn?.id || '',
+        grnItemId: firstItem.id,
+        poLineItemId: firstItem.poLineItemId,
+        supplierId: '',
+        consumerId: ''
+      })
+    }
+  }
+
+  const handleCloseCreateAssetModal = () => {
+    setShowCreateAssetModal(false)
+    // Reset form
+    setAssetForm({
+      assetType: '',
+      assetSubType: '',
+      poId: '',
+      itemName: '',
+      partNo: '',
+      grnId: '',
+      grnItemId: '',
+      poLineItemId: '',
+      supplierId: '',
+      consumerId: ''
+    })
+  }
+
+  // Form handlers
+  const handleAssetFormChange = (field: string, value: string) => {
+    console.log('handleAssetFormChange called with:', field, value)
+    setAssetForm(prev => {
+      const updatedForm = { ...prev, [field]: value }
+      console.log('Updated asset form:', updatedForm)
+      
+      // If assetType is being changed, reset assetSubType
+      if (field === 'assetType') {
+        updatedForm.assetSubType = ''
+      }
+      
+      // If poLineItemId is being set, populate other fields from the selected item
+      if (field === 'poLineItemId' && value) {
+        const selectedItem = items.find(item => item.poLineItemId === value)
+        if (selectedItem) {
+          updatedForm.itemName = selectedItem.itemName
+          updatedForm.partNo = selectedItem.partNo
+          updatedForm.poId = grn?.poId || ''
+          updatedForm.grnId = grn?.id || ''
+          updatedForm.grnItemId = selectedItem.id
+        }
+      }
+      
+      return updatedForm
+    })
+  }
+
+  const handleCreateAsset = async () => {
+    try {
+      // Get consumer ID from storage and fetch supplier ID
+      const storedConsumerId = localStorage.getItem('consumerId') || sessionStorage.getItem('consumerId') || 'A123'
+      console.log('Stored Consumer ID:', storedConsumerId)
+      
+      let finalSupplierId = 'SP123' // fallback
+      
+      if (storedConsumerId) {
+        try {
+          // Import the service dynamically to avoid circular dependencies
+          const { consumerSupplierService } = await import('@/services/api/consumerSupplier')
+          const data = await consumerSupplierService.getSupplierByConsumerId(storedConsumerId)
+          console.log('Supplier data received:', data)
+          
+          if (data && data.length > 0) {
+            finalSupplierId = data[0].supplierId
+            console.log('Using supplier ID from API:', finalSupplierId)
+          } else {
+            console.log('No supplier data found, using fallback:', finalSupplierId)
+          }
+        } catch (error) {
+          console.error('Error fetching supplier, using fallback:', error)
+        }
+      }
+      
+      // Get qtyAccepted from the first item
+      const qtyAccepted = items.length > 0 ? items[0].qtyAccepted : 0
+      
+      // Create final asset data with consumer and supplier IDs
+      const finalAssetData = {
+        ...assetForm,
+        consumerId: storedConsumerId,
+        supplierId: finalSupplierId,
+        qtyAccepted: qtyAccepted
+      }
+      
+      console.log('Final asset data for submission:', finalAssetData)
+      
+      // TODO: Implement asset creation API call
+      // await assetService.createAsset(finalAssetData)
+      
+      handleCloseCreateAssetModal()
+      // Optionally refresh the page or show success message
+    } catch (error) {
+      console.error('Error creating asset:', error)
+      // Handle error
+    }
   }
 
   if (loading) {
@@ -120,6 +259,14 @@ const GrnDetailPage = () => {
                   >
                     <IconifyIcon icon="tabler:arrow-left" className="me-1" />
                     Back
+                  </Button>
+                  <Button 
+                    variant="primary" 
+                    size="sm"
+                    onClick={handleShowCreateAssetModal}
+                  >
+                    <IconifyIcon icon="tabler:plus" className="me-1" />
+                    Create Asset
                   </Button>
                 </div>
               </div>
@@ -207,6 +354,17 @@ const GrnDetailPage = () => {
           </Card>
         </Col>
       </Row>
+
+      {/* Create Asset Modal Component */}
+      <CreateAssetModal
+        show={showCreateAssetModal}
+        onHide={handleCloseCreateAssetModal}
+        grn={grn}
+        items={items}
+        assetForm={assetForm}
+        onAssetFormChange={handleAssetFormChange}
+        onCreateAsset={handleCreateAsset}
+      />
     </>
   )
 }
