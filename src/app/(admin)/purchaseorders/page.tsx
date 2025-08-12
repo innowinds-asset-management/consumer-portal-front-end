@@ -86,11 +86,18 @@ export default function PurchaseOrdersListingPage() {
     return poLineItem.reduce((total, item) => total + (parseInt(item.quantity) || 0), 0);
   };
 
+  // Calculate total received items count
+  const getTotalReceivedItems = (poLineItem: any[]) => {
+    if (!poLineItem || !Array.isArray(poLineItem)) return 0;
+    return poLineItem.reduce((total, item) => total + (parseInt(item.receivedQty) || 0), 0);
+  };
+
   // Prepare data for GridJS (order per request)
   const gridData = purchaseOrders.map((purchaseOrder) => [
     purchaseOrder.poNumber || purchaseOrder.id || "",
     purchaseOrder.supplier?.name || "",
     getTotalItems(purchaseOrder.poLineItem),
+    getTotalReceivedItems(purchaseOrder.poLineItem),
     parseFloat(purchaseOrder.totalAmount || "0").toFixed(2),
     purchaseOrder.status || "",
     formatDate(purchaseOrder.updatedAt)
@@ -136,6 +143,7 @@ export default function PurchaseOrdersListingPage() {
                 { name: "PO Number", sort: false, search: true },
                 { name: "Supplier", sort: false, search: true },
                 { name: "Total Items", sort: false, search: true },
+                { name: "Total Received Items", sort: false, search: true },
                 { name: "Total Amount (₹)", sort: false, search: true },
                 { 
                   name: "Status", 

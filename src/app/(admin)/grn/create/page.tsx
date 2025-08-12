@@ -85,30 +85,78 @@ export default function GrnCreatePage() {
       setItems([])
       return
     }
-    const nextItems: LineItemForm[] = (selectedPo.poLineItem || []).map(li => ({
-      poLineItemId: li.id,
-      quantityOrdered: parseInt(li.quantity || '0') || 0,
-      quantityReceived: parseInt(li.receivedQty || '0') || 0,
-      quantityAccepted: 0,
-      quantityRejected: 0,
-      quantityRemaining: parseInt(li.remainingQty || '0') || 0,
-      remarks: '',
-      poLineItem: li,
-    }))
+    const nextItems: LineItemForm[] = (selectedPo.poLineItem || []).map(li => {
+      const ordered = parseInt(li.quantity || '0') || 0
+      const previouslyReceived = parseInt(li.receivedQty || '0') || 0
+      const remainingToReceive = Math.max(ordered - previouslyReceived, 0)
+      
+      return {
+        poLineItemId: li.id,
+        quantityOrdered: ordered,
+        quantityReceived: previouslyReceived, // Show the previously received from DB
+        quantityAccepted: 0, // User will enter this
+        quantityRejected: 0, // User will enter this
+        quantityRemaining: remainingToReceive, // This is what's left to receive
+        remarks: '',
+        poLineItem: li,
+      }
+    })
     setItems(nextItems)
   }, [selectedPo])
-
+  
+ 
   const handleQtyChange = (index: number, field: keyof LineItemForm, value: number) => {
     setItems(prev => {
       const copy = [...prev]
       const row = { ...copy[index] }
-      ;(row as any)[field] = Number.isFinite(value) ? value : 0
+      
+      // Get previously received quantity from PO
+      const previouslyReceived = parseInt(row.poLineItem?.receivedQty || '0') || 0
       const ordered = row.quantityOrdered || 0
+      
+      // Validation for quantity accepted
+      if (field === 'quantityAccepted') {
+        const rejected = row.quantityRejected || 0
+        const totalRemaining = Math.max(ordered - previouslyReceived, 0)
+        
+        // Ensure accepted quantity doesn't exceed remaining quantity
+        if (value > totalRemaining) {
+          value = totalRemaining
+        }
+        
+        // Ensure accepted + rejected doesn't exceed remaining quantity
+        if (value + rejected > totalRemaining) {
+          value = Math.max(totalRemaining - rejected, 0)
+        }
+      }
+      
+      // Validation for quantity rejected
+      if (field === 'quantityRejected') {
+        const accepted = row.quantityAccepted || 0
+        const totalRemaining = Math.max(ordered - previouslyReceived, 0)
+        
+        // Ensure rejected quantity doesn't exceed remaining quantity
+        if (value > totalRemaining) {
+          value = totalRemaining
+        }
+        
+        // Ensure accepted + rejected doesn't exceed remaining quantity
+        if (accepted + value > totalRemaining) {
+          value = Math.max(totalRemaining - accepted, 0)
+        }
+      }
+      
+      ;(row as any)[field] = Number.isFinite(value) ? value : 0
+      
       const accepted = row.quantityAccepted || 0
       const rejected = row.quantityRejected || 0
-      const received = Math.max(accepted + rejected, 0)
-      row.quantityReceived = received
-      row.quantityRemaining = Math.max(ordered - received, 0)
+      const currentReceived = accepted + rejected
+      const totalReceived = previouslyReceived + currentReceived
+      const remaining = Math.max(ordered - totalReceived, 0)
+      
+      // Keep quantityReceived as the display value from DB, only update remaining
+      row.quantityRemaining = remaining
+      
       copy[index] = row
       return copy
     })
@@ -130,15 +178,24 @@ export default function GrnCreatePage() {
         driverName: driverName || null,
         receivedBy: receivedBy || null,
         vehicleNumber: vehicleNumber || null,
-        grnItem: items.map(item => ({
-          poLineItemId: item.poLineItemId,
-          quantityOrdered: item.quantityOrdered || 0,
-          quantityReceived: item.quantityReceived || 0,
-          quantityAccepted: item.quantityAccepted || 0,
-          quantityRejected: item.quantityRejected || 0,
-          quantityRemaining: item.quantityRemaining || 0,
-          remarks: item.remarks || null,
-        }))
+        grnItem: items.map(item => {
+          // Calculate the correct received quantity for submission
+          const previouslyReceived = parseInt(item.poLineItem?.receivedQty || '0') || 0
+          const currentAccepted = item.quantityAccepted || 0
+          const currentRejected = item.quantityRejected || 0
+          const currentReceived = currentAccepted + currentRejected
+          const totalReceived = previouslyReceived + currentReceived
+          
+          return {
+            poLineItemId: item.poLineItemId,
+            quantityOrdered: item.quantityOrdered || 0,
+            quantityReceived: totalReceived, // Total received (previous + current)
+            quantityAccepted: currentAccepted,
+            quantityRejected: currentRejected,
+            quantityRemaining: item.quantityRemaining || 0,
+            remarks: item.remarks || null,
+          }
+        })
       }
       
       await grnService.createGrn(payload)
@@ -276,12 +333,13 @@ export default function GrnCreatePage() {
                     <th className="text-end">Qty Ordered</th>
                     <th className="text-end">Qty Accepted</th>
                     <th className="text-end">Qty Rejected</th>
+                    <th className="text-end">Qty Received</th>
                     <th className="text-end">Pending Qty</th>
                   </tr>
                 </thead>
                 <tbody>
                   {items.length === 0 && (
-                    <tr><td colSpan={6} className="text-center text-muted">Select a PO to load items</td></tr>
+                    <tr><td colSpan={7} className="text-center text-muted">Select a PO to load items</td></tr>
                   )}
                   {items.map((it, idx) => (
                     <tr key={it.poLineItemId}>
@@ -289,13 +347,24 @@ export default function GrnCreatePage() {
                       <td>{it.poLineItem?.itemName || '-'}</td>
                       <td className="text-end">{it.quantityOrdered}</td>
                       <td className="text-end" style={{ width: 140 }}>
-                        <Form.Control type="number" min={0} value={it.quantityAccepted}
-                          onChange={e => handleQtyChange(idx, 'quantityAccepted', parseInt(e.target.value) || 0)} />
+                        <Form.Control 
+                          type="number" 
+                          min={0} 
+                          max={Math.max(it.quantityOrdered - parseInt(it.poLineItem?.receivedQty || '0') - (it.quantityRejected || 0), 0)}
+                          value={it.quantityAccepted}
+                          onChange={e => handleQtyChange(idx, 'quantityAccepted', parseInt(e.target.value) || 0)} 
+                        />
                       </td>
                       <td className="text-end" style={{ width: 140 }}>
-                        <Form.Control type="number" min={0} value={it.quantityRejected}
-                          onChange={e => handleQtyChange(idx, 'quantityRejected', parseInt(e.target.value) || 0)} />
+                        <Form.Control 
+                          type="number" 
+                          min={0} 
+                          max={Math.max(it.quantityOrdered - parseInt(it.poLineItem?.receivedQty || '0') - (it.quantityAccepted || 0), 0)}
+                          value={it.quantityRejected}
+                          onChange={e => handleQtyChange(idx, 'quantityRejected', parseInt(e.target.value) || 0)} 
+                        />
                       </td>
+                      <td className="text-end">{it.quantityReceived}</td>
                       <td className="text-end">{it.quantityRemaining}</td>
                     </tr>
                   ))}
