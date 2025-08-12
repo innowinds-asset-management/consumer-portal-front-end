@@ -29,9 +29,9 @@ interface ServiceRequestItemModalProps {
 function ServiceRequestItemModal({ show, onHide, onSubmit, item, serviceRequestId, loading }: ServiceRequestItemModalProps) {
   const [formData, setFormData] = useState({
     partName: '',
-    partCost: 0,
-    labourCost: 0,
-    quantity: 1,
+    partCost: undefined as number | undefined,
+    labourCost: undefined as number | undefined,
+    quantity: undefined as number | undefined,
     defectDescription: ''
   });
 
@@ -47,35 +47,47 @@ function ServiceRequestItemModal({ show, onHide, onSubmit, item, serviceRequestI
     } else {
       setFormData({
         partName: '',
-        partCost: 0,
-        labourCost: 0,
-        quantity: 1,
+        partCost: undefined,
+        labourCost: undefined,
+        quantity: undefined,
         defectDescription: ''
       });
     }
-  }, [item]);
+  }, [item, show]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const calculatedTotalCost = (formData.partCost * formData.quantity) + formData.labourCost;
+    
+    // Apply minimum values if fields are empty/undefined
+    const finalPartCost = formData.partCost ?? 0;
+    const finalLabourCost = formData.labourCost ?? 0;
+    const finalQuantity = formData.quantity ?? 1;
+    
+    const calculatedTotalCost = (finalPartCost * finalQuantity) + finalLabourCost;
     
     if (item) {
       // Update existing item
       onSubmit({
         ...formData,
+        partCost: finalPartCost,
+        labourCost: finalLabourCost,
+        quantity: finalQuantity,
         totalCost: calculatedTotalCost
       } as UpdateServiceRequestItemRequest);
     } else {
       // Create new item
       onSubmit({
         ...formData,
+        partCost: finalPartCost,
+        labourCost: finalLabourCost,
+        quantity: finalQuantity,
         totalCost: calculatedTotalCost,
         serviceRequestId
       } as CreateServiceRequestItemRequest);
     }
   };
 
-  const totalCost = (formData.partCost * formData.quantity) + formData.labourCost;
+  const totalCost = ((formData.partCost ?? 0) * (formData.quantity ?? 1)) + (formData.labourCost ?? 0);
 
   return (
     <Modal show={show} onHide={onHide} size="lg">
@@ -105,8 +117,14 @@ function ServiceRequestItemModal({ show, onHide, onSubmit, item, serviceRequestI
                 <FormControl
                   type="number"
                   min="1"
-                  value={formData.quantity}
-                  onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })}
+                  value={formData.quantity ?? ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData({ 
+                      ...formData, 
+                      quantity: value === '' ? undefined : parseInt(value) || 1 
+                    });
+                  }}
                   required
                 />
               </FormGroup>
@@ -120,8 +138,14 @@ function ServiceRequestItemModal({ show, onHide, onSubmit, item, serviceRequestI
                   type="number"
                   min="0"
                   step="0.01"
-                  value={formData.partCost}
-                  onChange={(e) => setFormData({ ...formData, partCost: parseFloat(e.target.value) || 0 })}
+                  value={formData.partCost ?? ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData({ 
+                      ...formData, 
+                      partCost: value === '' ? undefined : parseFloat(value) || 0 
+                    });
+                  }}
                   required
                 />
               </FormGroup>
@@ -133,8 +157,14 @@ function ServiceRequestItemModal({ show, onHide, onSubmit, item, serviceRequestI
                   type="number"
                   min="0"
                   step="0.01"
-                  value={formData.labourCost}
-                  onChange={(e) => setFormData({ ...formData, labourCost: parseFloat(e.target.value) || 0 })}
+                  value={formData.labourCost ?? ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData({ 
+                      ...formData, 
+                      labourCost: value === '' ? undefined : parseFloat(value) || 0 
+                    });
+                  }}
                   required
                 />
               </FormGroup>
@@ -150,11 +180,11 @@ function ServiceRequestItemModal({ show, onHide, onSubmit, item, serviceRequestI
               required
             />
           </FormGroup>
-          <Alert variant="info">
-            <strong>Total Cost: ₹{totalCost.toFixed(2)}</strong>
-            <br />
-            (Part Cost: ₹{(formData.partCost * formData.quantity).toFixed(2)} + Labour Cost: ₹{formData.labourCost.toFixed(2)})
-          </Alert>
+                     <Alert variant="info">
+             <strong>Total Cost: ₹{totalCost.toFixed(2)}</strong>
+             <br />
+             (Part Cost: ₹{((formData.partCost ?? 0) * (formData.quantity ?? 1)).toFixed(2)} + Labour Cost: ₹{(formData.labourCost ?? 0).toFixed(2)})
+           </Alert>
         </ModalBody>
         <ModalFooter>
           <Button variant="secondary" onClick={onHide} disabled={loading}>
@@ -228,13 +258,17 @@ export default function ServiceRequestDetailPage() {
     if (!serviceRequest || !serviceRequestId) return;
 
     setSaving(true);
+    setError(""); // Clear any previous errors
     try {
       const updateData: UpdateServiceRequestRequest = {
         [fieldName]: editValues[fieldName]
       };
 
-      const updatedServiceRequest = await serviceRequestService.updateServiceRequest(serviceRequestId, updateData);
-      setServiceRequest(updatedServiceRequest);
+      await serviceRequestService.updateServiceRequest(serviceRequestId, updateData);
+      
+      // Refresh the service request to get the complete updated data
+      const refreshedServiceRequest = await serviceRequestService.getServiceRequestById(serviceRequestId);
+      setServiceRequest(refreshedServiceRequest);
       setEditingField(null);
       setEditValues({});
     } catch (error) {
@@ -461,6 +495,9 @@ export default function ServiceRequestDetailPage() {
                     <div className="mb-3">
                       <strong>Model:</strong> {serviceRequest.asset?.model}
                     </div>
+                    <div className="mb-3">
+                      <strong>Asset Condition:</strong> {serviceRequest.assetCondition || 'Not specified'}
+                    </div>
                   </Col>
                   <Col md={6}>
                     <div className="mb-3">
@@ -474,6 +511,13 @@ export default function ServiceRequestDetailPage() {
                     </div>
                     <div className="mb-3">
                       <strong>Coverage Type:</strong> {serviceRequest.serviceContract?.coverageType}
+                    </div>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col md={12}>
+                    <div className="mb-3">
+                      <strong>Problem:</strong> {serviceRequest.problem || 'Not specified'}
                     </div>
                   </Col>
                 </Row>
@@ -593,9 +637,11 @@ export default function ServiceRequestDetailPage() {
                     {renderEditableField('srStatus', 'SR Status', serviceRequest.srStatus, 'select', [
                       'OPEN', 'IN_PROGRESS', 'PENDING', 'COMPLETED', 'CLOSED', 'CANCELLED'
                     ])}
+                    {renderEditableField('assetCondition', 'Asset Condition', serviceRequest.assetCondition || '')}
                   </Col>
                   <Col md={6}>
                     {renderEditableField('closureReason', 'Closure Reason', serviceRequest.closureReason || '')}
+                    {renderEditableField('problem', 'Problem', serviceRequest.problem || '', 'textarea')}
                   </Col>
                 </Row>
 
