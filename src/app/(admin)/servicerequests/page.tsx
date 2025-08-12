@@ -11,6 +11,7 @@ import { serviceRequestService } from "@/services/api/serviceRequest";
 
 interface ServiceRequestListItem {
   srNo: string;
+  serviceRequestId: string;
   serviceDate: string;
   assetId: string;
   technicianName: string;
@@ -20,6 +21,9 @@ interface ServiceRequestListItem {
   type: string;
   description: string;
   createdAt?: string;
+  serviceSupplier?: {
+    name: string;
+  };
 }
 
 export default function ServiceRequestListingPage() {
@@ -34,20 +38,21 @@ export default function ServiceRequestListingPage() {
       setError("");
       try {
         const data = (await serviceRequestService.getServiceRequests()) as unknown as any[];
-        const mapped: ServiceRequestListItem[] = Array.isArray(data)
-          ? data.map((record: any) => ({
-              srNo: record.srNo || record.serviceRequestId || String(record.id || ""),
-              serviceDate: record.serviceDate || "",
-              assetId: record.assetId || "",
-              technicianName: record.technicianName || "",
-              supplier: record.serviceSupplierName || record.serviceSupplierId || "",
-              warrantyStatus: record.warrantyStatus || "",
-              status: record.serviceStatus || record.srStatus || "",
-              type: record.serviceType || "",
-              description: record.serviceDescription || "",
-              createdAt: record.createdAt || undefined,
-            }))
-          : [];
+                 const mapped: ServiceRequestListItem[] = Array.isArray(data)
+           ? data.map((record: any) => ({
+             srNo: record.srNo || record.serviceRequestId || String(record.id || ""),
+             serviceRequestId: record.serviceRequestId || record.id || "",
+             serviceDate: record.serviceDate || "",
+             assetId: record.assetId || "",
+             technicianName: record.technicianName || "",
+             supplier: record.serviceSupplier?.name || "",
+             warrantyStatus: record.warranty?.isActive ? 'Active' : (record.warranty ? 'Expired' : 'Not applicable'),
+                status: record.serviceStatus || record.srStatus || "",
+             type: record.serviceType || "",
+             description: record.serviceDescription || "",
+             createdAt: record.createdAt || undefined,
+           }))
+           : [];
         setServiceRequests(mapped);
       } catch (err) {
         setError("Failed to load service requests. Please try again.");
@@ -59,22 +64,42 @@ export default function ServiceRequestListingPage() {
     fetchServiceRequests();
   }, []);
 
+
   useEffect(() => {
     if (!loading && serviceRequests.length > 0) {
       const addClickHandlers = () => {
-        const firstColCells = document.querySelectorAll("td:first-child");
-        if (firstColCells.length > 0) {
-          firstColCells.forEach((cell, index) => {
+        // Add click handlers for Service Request ID column (1st column, index 0)
+        const srIdCells = document.querySelectorAll("td:nth-child(1)");
+        if (srIdCells.length > 0) {
+          srIdCells.forEach((cell, index) => {
             if (index < serviceRequests.length) {
               const item = serviceRequests[index];
               (cell as HTMLElement).style.cursor = "pointer";
               (cell as HTMLElement).style.color = "#0d6efd";
               (cell as HTMLElement).style.textDecoration = "underline";
-              cell.addEventListener("click", () => {
-                if (item.assetId) {
-                  router.push(`/assets/detail?id=${item.assetId}`);
-                }
-              });
+                             cell.addEventListener("click", () => {
+                 if (item.serviceRequestId) {
+                   router.push(`/servicerequests/detail?srid=${item.serviceRequestId}`);
+                 }
+               });
+            }
+          });
+        }
+
+        // Add click handlers for Asset ID column (3rd column, index 2)
+        const assetIdCells = document.querySelectorAll("td:nth-child(3)");
+        if (assetIdCells.length > 0) {
+          assetIdCells.forEach((cell, index) => {
+            if (index < serviceRequests.length) {
+              const item = serviceRequests[index];
+              (cell as HTMLElement).style.cursor = "pointer";
+              (cell as HTMLElement).style.color = "#0d6efd";
+              (cell as HTMLElement).style.textDecoration = "underline";
+                             cell.addEventListener("click", () => {
+                 if (item.assetId) {
+                   router.push(`/assets/detail?aid=${item.assetId}`);
+                 }
+               });
             }
           });
         }
@@ -95,7 +120,7 @@ export default function ServiceRequestListingPage() {
     formatDate(sr.serviceDate),
     sr.assetId,
     sr.technicianName,
-    sr.supplier,
+    sr.supplier || "",
     sr.warrantyStatus,
     sr.status,
     sr.type,
@@ -142,22 +167,36 @@ export default function ServiceRequestListingPage() {
             <Grid
               data={gridData}
               columns={[
-                { name: "SR No", sort: false, search: true },
+                { 
+                  name: "SR No", 
+                  sort: false, 
+                  search: true,
+                  cell: (cell: any) => {
+                    return `<span style="color: #0d6efd; text-decoration: underline; cursor: pointer;">${cell}</span>`;
+                  }
+                },
                 { name: "Service Date", sort: true, search: true },
-                { name: "Asset Id", sort: false, search: true },
+                { 
+                  name: "Asset Id", 
+                  sort: false, 
+                  search: true,
+                  cell: (cell: any) => {
+                    return `<span style="color: #0d6efd; text-decoration: underline; cursor: pointer;">${cell}</span>`;
+                  }
+                },
                 { name: "Technician", sort: false, search: true },
                 { name: "Supplier", sort: false, search: true },
                 {
                   name: "Warranty Status",
                   sort: false,
                   search: true,
-                  formatter: (cell: any) => {
+                  cell: (cell: any) => {
                     const status = String(cell || "");
                     let badgeClass = "bg-secondary";
                     if (status.toUpperCase() === "ACTIVE") badgeClass = "bg-success";
                     else if (status.toUpperCase() === "EXPIRED") badgeClass = "bg-danger";
                     else if (status) badgeClass = "bg-warning";
-                    return { html: `<span class="badge ${badgeClass}">${status}</span>` };
+                    return `<span class="badge ${badgeClass}">${status}</span>`;
                   },
                 },
                 { name: "Status", sort: true, search: true },

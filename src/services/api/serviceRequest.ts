@@ -1,4 +1,4 @@
-import { WARRANTY_API_URL } from '@/config/environment'
+import { ASSET_API_URL } from '@/config/environment'
 
 // Service Request interface based on sample JSON
 export interface ServiceRequest {
@@ -50,6 +50,7 @@ export interface CreateServiceRequestItemRequest {
   partCost: number;
   labourCost: number;
   quantity: number;
+  totalCost: number;
   defectDescription: string;
 }
 
@@ -59,6 +60,7 @@ export interface UpdateServiceRequestItemRequest {
   partCost?: number;
   labourCost?: number;
   quantity?: number;
+  totalCost?: number;
   defectDescription?: string;
 }
 
@@ -92,7 +94,7 @@ class ServiceRequestHttpClient {
   private defaultHeaders: Record<string, string>
 
   constructor() {
-    this.baseURL = WARRANTY_API_URL
+    this.baseURL = ASSET_API_URL
     this.defaultHeaders = {
       'Content-Type': 'application/json',
     }
@@ -185,7 +187,7 @@ class ServiceRequestService {
   }
 
   async createServiceRequestItem(data: CreateServiceRequestItemRequest): Promise<ServiceRequestItem> {
-    return serviceRequestHttp.post<ServiceRequestItem>('/servicerequest/item', data)
+    return serviceRequestHttp.post<ServiceRequestItem>(`/servicerequest/${data.serviceRequestId}/item`, data)
   }
 
   async updateServiceRequestItem(id: number, data: UpdateServiceRequestItemRequest): Promise<ServiceRequestItem> {
