@@ -10,7 +10,6 @@ export interface ServiceRequest {
   warrantyStatus: string;
   srStatus: string;
   srNo: string;
-  serviceDate: string;
   serviceType: string | null;
   serviceDescription: string | null;
   assetCondition?: string;
@@ -72,7 +71,6 @@ export interface CreateServiceRequestRequest {
   warrantyStatus?: string;
   serviceStatus?: string | null;
   approverName?: string | null;
-  serviceDate?: string;
   serviceType?: string | null;
   serviceDescription?: string | null;
   problem?: string | null;
@@ -86,6 +84,8 @@ export interface UpdateServiceRequestRequest {
   closureNotes?: string;
   closureReason?: string;
   serviceDescription?: string;
+  assetCondition?: string;
+  problem?: string;
 }
 
 // Create a separate HTTP client for service request API calls

@@ -70,7 +70,7 @@ export default function AssetListingPage() {
               (cell as HTMLElement).style.color = '#0d6efd';
               (cell as HTMLElement).style.textDecoration = 'underline';
               cell.addEventListener('click', () => {
-                router.push(`/assets/detail?id=${asset.id}`);
+                router.push(`/assets/detail?aid=${asset.id}`);
               });
             }
           });

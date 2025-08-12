@@ -15,6 +15,7 @@ import { Location } from '@/services/api/assets'
 import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation';
 import {  CardFooter, CardHeader, CardTitle,  } from 'react-bootstrap'
+import ChoicesFormInput from '@/components/form/ChoicesFormInput'
 
 export default function ServiceRequestCreatePage() {
   const router = useRouter();
@@ -26,12 +27,24 @@ export default function ServiceRequestCreatePage() {
   const [submitting, setSubmitting] = useState(false);
   const [problemDescription, setProblemDescription] = useState("");
   const [assetCondition, setAssetCondition] = useState("Working");
+  const [allAssets, setAllAssets] = useState<Asset[]>([]);
+  const [loadingAssets, setLoadingAssets] = useState(false);
 
   useEffect(() => { 
     const fetchAsset = async () => {
       if (!assetId) {
-        setError("Asset ID is required");
-        setLoading(false);
+        // If no asset ID, fetch all assets for selection
+        setLoadingAssets(true);
+        try {
+          const assetsData = await assetsService.getAssets();
+          setAllAssets(assetsData);
+          setLoading(false);
+        } catch (error) {
+          setError("Failed to load assets. Please try again.");
+          setLoading(false);
+        } finally {
+          setLoadingAssets(false);
+        }
         return;
       }
       try {
@@ -68,30 +81,29 @@ export default function ServiceRequestCreatePage() {
     setError("");
 
     try {
-             const serviceRequestData: CreateServiceRequestRequest = {
-         assetId: assetId,
-         //technicianName: "", // Will be filled by backend or can be added as form field
-        // serviceSupplierName: "", // Will be filled by backend or can be added as form field
-        //warrantyStatus: "ACTIVE", // Default value, can be determined based on asset warranty
-        //serviceStatus: "PENDING", // Default status for new requests
-        // approverName: null, // Will be filled by backend
-        // serviceDate: new Date().toISOString().split('T')[0], // Current date
-        // serviceType: "REPAIR", // Default type, can be made selectable
-         //serviceDescription: `${assetCondition}: ${problemDescription}`
-         problem: problemDescription,
-         assetCondition: assetCondition,
-       };
+      const serviceRequestData: CreateServiceRequestRequest = {
+        assetId: assetId,
+        problem: problemDescription,
+        assetCondition: assetCondition,
+      };
 
       const result = await serviceRequestService.createServiceRequest(serviceRequestData);
       console.log('Service request created:', result);
       
       // Redirect to service requests list or show success message
-      router.push('/admin/servicerequests');
+      router.push('/servicerequests');
     } catch (error) {
       console.error('Error creating service request:', error);
       setError("Failed to create service request. Please try again.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleAssetSelect = (value: any) => {
+    if (typeof value === 'string' && value) {
+      // Redirect to the same page with the selected asset ID
+      router.push(`/servicerequests/create?aid=${value}`);
     }
   };
 
@@ -105,7 +117,7 @@ export default function ServiceRequestCreatePage() {
     );
   }
 
-  if (error && !asset) {
+  if (error && !asset && !assetId) {
     return (
       <div className="container-fluid">
         <Alert variant="danger">
@@ -119,62 +131,130 @@ export default function ServiceRequestCreatePage() {
     );
   }
 
+  // Show only asset selection when no asset ID is provided
+  if (!assetId) {
+    return (
+      <>
+        <PageTitle title="Select Asset for Service Request" />
+        <Row>
+          <Col md={12}>
+            <ComponentContainerCard title="Select Asset" description="Choose an asset to create a service request for">
+              <Card className="border-secondary border">
+                <CardHeader className="bg-light">
+                  <CardTitle as="h5" className="mb-0">
+                    <IconifyIcon icon="mdi:select" className="me-2" />
+                    Asset Selection
+                  </CardTitle>
+                </CardHeader>
+                <CardBody>
+                  {loadingAssets ? (
+                    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100px' }}>
+                      <div className="spinner-border" role="status">
+                        <span className="visually-hidden">Loading assets...</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <FormGroup className="mb-3">
+                      <FormLabel htmlFor="assetSelect">
+                        <strong>Select Asset *</strong>
+                      </FormLabel>
+                      <ChoicesFormInput
+                        id="assetSelect"
+                        className="form-select"
+                        data-choices
+                        onChange={handleAssetSelect}
+                        options={{
+                          searchEnabled: true,
+                          searchPlaceholderValue: "Search assets...",
+                          placeholder: true,
+                          placeholderValue: "Choose an asset",
+                          shouldSort: true,
+                          itemSelectText: "",
+                          removeItemButton: false,
+                        }}
+                      >
+                        <option value="">Choose an asset</option>
+                        {allAssets.map((asset) => (
+                          <option key={asset.id} value={asset.id}>
+                            {asset.id} - {asset.assetName}
+                          </option>
+                        ))}
+                      </ChoicesFormInput>
+                      <div className="form-text">
+                        Select the asset for which you want to create a service request.
+                      </div>
+                    </FormGroup>
+                  )}
+                </CardBody>
+              </Card>
+            </ComponentContainerCard>
+          </Col>
+        </Row>
+      </>
+    );
+  }
+
   return (
     <>
       <PageTitle title="Create Service Request" />
       
-      <Row>
-        <Col md={12}>
-          <ComponentContainerCard title="Asset Information" description="Details of the asset for service request">
-            <Card className="border-secondary border">
-              <CardHeader className="bg-light">
-                <CardTitle as="h5" className="mb-0">
-                  <IconifyIcon icon="mdi:information-outline" className="me-2" />
-                  Asset Details
-                </CardTitle>
-              </CardHeader>
-              <CardBody>
-                <Row>
-                  <Col md={6}>
-                    <div className="mb-3">
-                      <strong>Asset Name:</strong> {asset?.assetName}
-                    </div>
-                    <div className="mb-3">
-                      <strong>Asset Type:</strong> {asset?.assetType?.assetName}
-                    </div>
-                    <div className="mb-3">
-                      <strong>Asset Sub Type:</strong> {asset?.assetSubType?.name}
-                    </div>
-                    <div className="mb-3">
-                      <strong>Department:</strong> {asset?.department?.deptName}
-                    </div>
-                    <div className="mb-3">
-                      <strong>Brand:</strong> {asset?.brand}
-                    </div>
-                  </Col>
-                  <Col md={6}>
-                    <div className="mb-3">
-                      <strong>Model:</strong> {asset?.model}
-                    </div>
-                    <div className="mb-3">
-                      <strong>Sub Model:</strong> {asset?.subModel}
-                    </div>
-                    <div className="mb-3">
-                      <strong>Installation Date:</strong> {asset?.installationDate}
-                    </div>
-                    <div className="mb-3">
-                      <strong>Warranty Start Date:</strong> {asset?.warrantyStartDate}
-                    </div>
-                    <div className="mb-3">
-                      <strong>Warranty End Date:</strong> {asset?.warrantyEndDate}
-                    </div>
-                  </Col>
-                </Row>
-              </CardBody>
-            </Card>
-          </ComponentContainerCard>
-        </Col>
-      </Row>
+      
+      
+      {/* Asset Information - Show when asset is selected or provided via URL */}
+      {asset && (
+        <Row>
+          <Col md={12}>
+            <ComponentContainerCard title="Asset Information" description="Details of the asset for service request">
+              <Card className="border-secondary border">
+                <CardHeader className="bg-light">
+                  <CardTitle as="h5" className="mb-0">
+                    <IconifyIcon icon="mdi:information-outline" className="me-2" />
+                    Asset Details
+                  </CardTitle>
+                </CardHeader>
+                <CardBody>
+                  <Row>
+                    <Col md={6}>
+                      <div className="mb-3">
+                        <strong>Asset Name:</strong> {asset?.assetName}
+                      </div>
+                      <div className="mb-3">
+                        <strong>Asset Type:</strong> {asset?.assetType?.assetName}
+                      </div>
+                      <div className="mb-3">
+                        <strong>Asset Sub Type:</strong> {asset?.assetSubType?.name}
+                      </div>
+                      <div className="mb-3">
+                        <strong>Department:</strong> {asset?.department?.deptName}
+                      </div>
+                      <div className="mb-3">
+                        <strong>Brand:</strong> {asset?.brand}
+                      </div>
+                    </Col>
+                    <Col md={6}>
+                      <div className="mb-3">
+                        <strong>Model:</strong> {asset?.model}
+                      </div>
+                      <div className="mb-3">
+                        <strong>Sub Model:</strong> {asset?.subModel}
+                      </div>
+                      <div className="mb-3">
+                        <strong>Installation Date:</strong> {asset?.installationDate}
+                      </div>
+                      <div className="mb-3">
+                        <strong>Warranty Start Date:</strong> {asset?.warrantyStartDate}
+                      </div>
+                      <div className="mb-3">
+                        <strong>Warranty End Date:</strong> {asset?.warrantyEndDate}
+                      </div>
+                    </Col>
+                  </Row>
+                </CardBody>
+              </Card>
+            </ComponentContainerCard>
+          </Col>
+        </Row>
+      )}
 
       <Row className="mt-4">
         <Col md={12}>
