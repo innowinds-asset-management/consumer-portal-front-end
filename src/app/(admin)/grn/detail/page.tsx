@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from 'react'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import PageTitle from '@/components/PageTitle'
-import { Card, CardBody, Col, Row, Table, Alert } from 'react-bootstrap'
-import { useSearchParams } from 'next/navigation'
+import { Button, Card, CardBody, Col, Row, Table, Alert } from 'react-bootstrap'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { grnService, Grn } from '@/services/api/grn'
 
 // Line item display type
@@ -19,8 +19,20 @@ type GrnLineItemDisplay = {
 }
 
 const GrnDetailPage = () => {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const grnId = searchParams.get('id')
+
+  // Enhanced back navigation handler
+  const handleBackNavigation = () => {
+    // Try to go back, but with fallback
+    if (window.history.length > 1) {
+      router.back()
+    } else {
+      // Fallback to GRN listing page
+      router.push('/grn')
+    }
+  }
 
   const [grn, setGrn] = useState<Grn | null>(null)
   const [items, setItems] = useState<GrnLineItemDisplay[]>([])
@@ -94,11 +106,21 @@ const GrnDetailPage = () => {
             <CardBody>
               <div className="d-flex align-items-start justify-content-between mb-4">
                 <div>
-                  <span className="badge bg-info-subtle text-info px-1 fs-12 mb-3">{grn?.po?.status || '—'}</span>
+                  <span className="badge bg-info-subtle text-info px-1 fs-12 mb-3">GRN</span>
                   <h3 className="m-0 fw-bolder fs-20">GRN: #{grn?.grnNo || grn?.id || 'N/A'}</h3>
                 </div>
-                <div className="text-end">
-                  <h6 className="m-0">PO: {grn?.po?.poNumber || grn?.poId}</h6>
+                <div className="d-flex align-items-center gap-2">
+                  <div className="text-end">
+                    <h6 className="m-0">PO: {grn?.poId || 'N/A'}</h6>
+                  </div>
+                  <Button 
+                    variant="outline-secondary" 
+                    size="sm"
+                    onClick={handleBackNavigation}
+                  >
+                    <IconifyIcon icon="tabler:arrow-left" className="me-1" />
+                    Back
+                  </Button>
                 </div>
               </div>
               <Row>
@@ -126,6 +148,25 @@ const GrnDetailPage = () => {
                   <div className="mb-3">
                     <h5 className="fw-bold fs-14"> Driver Name </h5>
                     <h6 className="fs-14 text-muted">{grn?.driverName || '—'}</h6>
+                  </div>
+                  <div>
+                    <h5 className="fw-bold fs-14"> Received By </h5>
+                    <h6 className="fs-14 text-muted">{grn?.receivedBy || '—'}</h6>
+                  </div>
+                </Col>
+              </Row>
+              
+              <Row>
+                <Col xs={6}>
+                  <div className="mb-3">
+                    <h5 className="fw-bold fs-14"> Delivery Date </h5>
+                    <h6 className="fs-14 text-muted">{formatDate(grn?.deliveryDate)}</h6>
+                  </div>
+                </Col>
+                <Col xs={6}>
+                  <div className="mb-3">
+                    <h5 className="fw-bold fs-14"> Delivery Note </h5>
+                    <h6 className="fs-14 text-muted">{grn?.deliveryNote || '—'}</h6>
                   </div>
                 </Col>
               </Row>

@@ -32,16 +32,27 @@ export default function GrnListingPage() {
     fetchGrns();
   }, []);
 
-  // Add click handlers to first column after grid is rendered (kept for style; link handles navigation)
+  // Add click handlers to first column after grid is rendered
   useEffect(() => {
     if (!loading && grns.length > 0) {
       const addClickHandlers = () => {
         const firstColCells = document.querySelectorAll('td:first-child');
         if (firstColCells.length > 0) {
-          firstColCells.forEach((cell) => {
-            (cell as HTMLElement).style.cursor = 'pointer';
-            (cell as HTMLElement).style.color = '#0d6efd';
-            (cell as HTMLElement).style.textDecoration = 'underline';
+          firstColCells.forEach((cell, index) => {
+            const grn = grns[index];
+            if (grn && grn.id) {
+              (cell as HTMLElement).style.cursor = 'pointer';
+              (cell as HTMLElement).style.color = '#0d6efd';
+              (cell as HTMLElement).style.textDecoration = 'underline';
+              
+              // Remove existing click listeners to prevent duplicates
+              cell.removeEventListener('click', () => {});
+              
+              // Add click listener
+              cell.addEventListener('click', () => {
+                router.push(`/grn/detail?id=${grn.id}`);
+              });
+            }
           });
         }
       };
@@ -57,17 +68,17 @@ export default function GrnListingPage() {
   };
 
   const gridData = grns.map((g) => [
-    g.grnNo ,
-    g.po?.poNumber || g.poId || "",
+    g.grnNo || g.id || "",
+    g.poId || "",
     g.challan || "",
-    g.po?.status || "",
-    g.po?.totalAmount || "",
+    "N/A", // PO Status - not available in current API response
+    "N/A", // PO Total Amount - not available in current API response
     formatDate(g.createdAt),
   ]);
 
   return (
     <>
-      <PageTitle title="" />
+      <PageTitle title="GRN Listing" />
       
       <ComponentContainerCard title={
         <div className="d-flex justify-content-between align-items-center">

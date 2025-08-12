@@ -9,7 +9,7 @@ export interface GrnItem {
   quantityAccepted: number
   quantityRejected: number
   quantityRemaining?: number
-  remarks?: string
+  remarks?: string | null
   poLineItem?: {
     id?: string
     itemName?: string
@@ -21,23 +21,15 @@ export interface Grn {
   id?: string
   grnNo?: string
   poId: string
-  dateTime?: string
-  challan?: string
+  challan?: string | null
   deliveryNote?: string | null
   deliveryDate?: string | null
-  vehicleNumber?: string
-  driverName?: string
+  vehicleNumber?: string | null
+  driverName?: string | null
   receivedBy?: string | null
   createdAt?: string
   updatedAt?: string
-  po?: {
-    id?: string
-    poNumber?: string
-    supplierId?: string
-    status?: string
-    totalAmount?: string
-  }
-  grnItem: GrnItem[]
+  grnItem?: GrnItem[]
 }
 
 class GrnHttpClient {
