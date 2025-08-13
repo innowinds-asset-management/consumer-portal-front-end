@@ -9,10 +9,12 @@ export interface ServiceRequest {
   serviceContractId?: string;
   warrantyStatus: string;
   srStatus: string;
+  srStatusCode:string
   srNo: string;
   serviceType: string | null;
   serviceDescription: string | null;
   assetCondition?: string;
+  assetConditionCode?:string
   problem?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -75,6 +77,7 @@ export interface CreateServiceRequestRequest {
   serviceDescription?: string | null;
   problem?: string | null;
   assetCondition?: string | null;
+  assetConditionCode?: string | null;
 }
 
 // Update Service Request interface

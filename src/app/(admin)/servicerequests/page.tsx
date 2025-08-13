@@ -8,6 +8,7 @@ import { Grid } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
 import { useRouter } from "next/navigation";
 import { serviceRequestService } from "@/services/api/serviceRequest";
+import { formatDate, timeSince } from "@/utils/date";
 
 interface ServiceRequestListItem {
   srNo: string;
@@ -55,12 +56,12 @@ export default function ServiceRequestListingPage() {
             createdAt: record.createdAt || "",
             assetId: record.assetId || "",
             assetName: record.asset?.assetName || record.assetId || "",
-            assetCondition: record.assetCondition || "",
+            assetCondition: record.assetCondition?.displayName || "",
             departmentName: record.asset?.department?.deptName || "",
             technicianName: record.technicianName || "",
             supplier: record.serviceSupplier?.name || "",
-            warrantyStatus: record.warranty?.isActive ? 'Active' : (record.warranty ? 'Expired' : 'Not applicable'),
-            status: record.serviceStatus || record.srStatus || "",
+            warrantyStatus: record.warranty?.isActive ? 'Active' : (record.warranty ? 'Expired' : 'Not Available'),
+            status: record.serviceRequestStatus?.displayName || record.srStatus || "",
             //  type: record.serviceType || "",
             description: record.serviceDescription || "",
             //  createdAt: record.createdAt || undefined,
@@ -124,46 +125,11 @@ export default function ServiceRequestListingPage() {
     }
   }, [loading, serviceRequests, router]);
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "";
-    return dateString.split("T")[0];
-  };
-
-  const calculateAge = (dateString: string) => {
-    if (!dateString) return "";
-
-    const createdAt = new Date(dateString);
-    const today = new Date();
-    const diffInMs = today.getTime() - createdAt.getTime();
-
-    // If the date is in the future, return "Just created"
-    if (diffInMs < 0) {
-      return "Just created";
-    }
-
-    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-    const diffInMonths = Math.floor(diffInDays / 30.44); // Average days in a month
-    const diffInYears = Math.floor(diffInDays / 365.25); // Average days in a year
-
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes} Minutes ago`;
-    } else if (diffInHours < 24) {
-      return `${diffInHours} Hour${diffInHours > 1 ? 's' : ''} ago`;
-    } else if (diffInDays < 30) {
-      return `${diffInDays} Day${diffInDays > 1 ? 's' : ''}`;
-    } else if (diffInMonths < 12) {
-      return `${diffInMonths} Month${diffInMonths > 1 ? 's' : ''}`;
-    } else {
-      return `${diffInYears} Year${diffInYears > 1 ? 's' : ''}`;
-    }
-  };
 
   const gridData = serviceRequests.map((sr) => [
     sr.srNo || "",
     formatDate(sr.createdAt),
-    calculateAge(sr.createdAt),
+    timeSince(new Date(sr.createdAt)).replace(/ ago$/, ''),
     sr.assetName,
     sr.assetCondition,
     sr.departmentName,
@@ -214,107 +180,80 @@ export default function ServiceRequestListingPage() {
           <div className="table-responsive">
             <Grid
               data={gridData}
-                             columns={[
-                 {
-                   name: "SR No",
-                   sort: false,
-                   search: true,
-                   cell: (cell: any) => {
-                     return `<span style="color: #0d6efd; text-decoration: underline; cursor: pointer;">${cell}</span>`;
-                   }
-                 },
-                 { 
-                   name: "Created At", 
-                   sort: true, 
-                   search: true,
-                   attributes: {
-                     title: "Created At"
-                   }
-                 },
-                 { 
-                   name: "Service Request Age", 
-                   sort: true, 
-                   search: false,
-                   attributes: {
-                     title: "Service Request Age"
-                   }
-                 },
-                 {
-                   name: "Asset Name",
-                   sort: false,
-                   search: true,
-                   cell: (cell: any) => {
-                     return `<span style="color: #0d6efd; text-decoration: underline; cursor: pointer;">${cell}</span>`;
-                   },
-                   attributes: {
-                     title: "Asset Name"
-                   }
-                 },
-                 { 
-                   name: "Asset Condition", 
-                   sort: false, 
-                   search: true,
-                   attributes: {
-                     title: "Asset Condition"
-                   }
-                 },
-                 { 
-                   name: "Department", 
-                   sort: false, 
-                   search: true,
-                   attributes: {
-                     title: "Department"
-                   }
-                 },
-                 { 
-                   name: "Technician", 
-                   sort: false, 
-                   search: true,
-                   attributes: {
-                     title: "Technician"
-                   }
-                 },
-                 { 
-                   name: "Supplier", 
-                   sort: false, 
-                   search: true,
-                   attributes: {
-                     title: "Supplier"
-                   }
-                 },
-                 {
-                   name: "Warranty Status",
-                   sort: false,
-                   search: true,
-                   cell: (cell: any) => {
-                     const status = String(cell || "");
-                     let badgeClass = "bg-secondary";
-                     if (status.toUpperCase() === "ACTIVE") badgeClass = "bg-success";
-                     else if (status.toUpperCase() === "EXPIRED") badgeClass = "bg-danger";
-                     else if (status) badgeClass = "bg-warning";
-                     return `<span class="badge ${badgeClass}">${status}</span>`;
-                   },
-                   attributes: {
-                     title: "Warranty Status"
-                   }
-                 },
-                 { 
-                   name: "Status", 
-                   sort: true, 
-                   search: true,
-                   attributes: {
-                     title: "Status"
-                   }
-                 },
-                 // { name: "Type", sort: true, search: true },
-                 // { name: "Description", sort: false, search: true },
-               ]}
+              columns={[
+                {
+                  name: "SR No",
+                  sort: false,
+                  search: true,
+                  cell: (cell: any) => {
+                    return `<span style="color: #0d6efd; text-decoration: underline; cursor: pointer;">${cell}</span>`;
+                  }
+                },
+                {
+                  name: "Created At",
+                  sort: true,
+                  search: true,
+                },
+                {
+                  name: "Age",
+                  sort: true,
+                  search: false,
+                },
+                {
+                  name: "Asset Name",
+                  sort: false,
+                  search: true,
+                  cell: (cell: any) => {
+                    return `<span style="color: #0d6efd; text-decoration: underline; cursor: pointer;">${cell}</span>`;
+                  },
+                },
+                {
+                  name: "Asset Condition",
+                  sort: false,
+                  search: true,
+                },
+                {
+                  name: "Department",
+                  sort: false,
+                  search: true,
+                },
+                {
+                  name: "Technician",
+                  sort: false,
+                  search: true,
+                },
+                {
+                  name: "Supplier",
+                  sort: false,
+                  search: true,
+                },
+                {
+                  name: "Warranty Status",
+                  sort: false,
+                  search: true,
+                  cell: (cell: any) => {
+                    const status = String(cell || "");
+                    let badgeClass = "bg-secondary";
+                    if (status.toUpperCase() === "ACTIVE") badgeClass = "bg-success";
+                    else if (status.toUpperCase() === "EXPIRED") badgeClass = "bg-danger";
+                    else if (status) badgeClass = "bg-warning";
+                    return `<span class="badge ${badgeClass}">${status}</span>`;
+                  },
+                },
+                {
+                  name: "Status",
+                  sort: true,
+                  search: true,
+                },
+                // { name: "Type", sort: true, search: true },
+                // { name: "Description", sort: false, search: true },
+              ]}
               pagination={{
                 limit: 10,
               }}
               sort={true}
               className={{
-                container: "table table-striped table-hover",
+                container: "table table-striped",
                 table: "table",
                 thead: "table-light",
                 th: "border-0",

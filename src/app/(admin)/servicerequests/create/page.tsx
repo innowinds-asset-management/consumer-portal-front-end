@@ -11,6 +11,7 @@ import { assetSubTypesService, AssetSubType } from '@/services/api/assetSubTypes
 import {departmentService, Department } from '@/services/api/departments'
 import { warrantyService, Warranty } from '@/services/api/warranty'
 import { serviceRequestService, ServiceRequest, CreateServiceRequestRequest } from '@/services/api/serviceRequest'
+import { assetConditionService, AssetCondition } from '@/services/api/assetCondition'
 import { Location } from '@/services/api/assets'
 import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation';
@@ -26,9 +27,11 @@ export default function ServiceRequestCreatePage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [problemDescription, setProblemDescription] = useState("");
-  const [assetCondition, setAssetCondition] = useState("Working");
+  const [assetConditionCode, setAssetConditionCode] = useState("");
   const [allAssets, setAllAssets] = useState<Asset[]>([]);
   const [loadingAssets, setLoadingAssets] = useState(false);
+  const [assetConditions, setAssetConditions] = useState<AssetCondition[]>([]);
+  const [loadingAssetConditions, setLoadingAssetConditions] = useState(false);
 
   useEffect(() => { 
     const fetchAsset = async () => {
@@ -59,6 +62,27 @@ export default function ServiceRequestCreatePage() {
     fetchAsset();
   }, [assetId]);
 
+  // Load asset conditions when component mounts
+  useEffect(() => {
+    const fetchAssetConditions = async () => {
+      setLoadingAssetConditions(true);
+      try {
+        const conditionsData = await assetConditionService.getAllAssetConditions();
+        setAssetConditions(conditionsData);
+        // Set default value to first condition if available
+        if (conditionsData.length > 0 && !assetConditionCode) {
+          setAssetConditionCode(conditionsData[0].code);
+        }
+      } catch (error) {
+        console.error('Error fetching asset conditions:', error);
+        setError("Failed to load asset conditions. Please try again.");
+      } finally {
+        setLoadingAssetConditions(false);
+      }
+    };
+    fetchAssetConditions();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -67,7 +91,7 @@ export default function ServiceRequestCreatePage() {
       return;
     }
 
-    if (!assetCondition) {
+    if (!assetConditionCode) {
       setError("Asset condition is required");
       return;
     }
@@ -84,7 +108,7 @@ export default function ServiceRequestCreatePage() {
       const serviceRequestData: CreateServiceRequestRequest = {
         assetId: assetId,
         problem: problemDescription,
-        assetCondition: assetCondition,
+        assetConditionCode: assetConditionCode,
       };
 
       const result = await serviceRequestService.createServiceRequest(serviceRequestData);
@@ -278,20 +302,24 @@ export default function ServiceRequestCreatePage() {
                      <FormLabel htmlFor="assetCondition">
                        <strong>Asset Condition *</strong>
                      </FormLabel>
-                     <FormControl
-                       as="select"
-                       id="assetCondition"
-                       value={assetCondition}
-                       onChange={(e) => setAssetCondition(e.target.value)}
-                       required
-                     >
-                       <option value="Working">Working</option>
-                       <option value="Not Working">Not Working</option>
-                       <option value="Working with Conditions">Working with Conditions</option>
-                       <option value="Partially Working">Partially Working</option>
-                       <option value="Under Maintenance">Under Maintenance</option>
-                       <option value="Out of Service">Out of Service</option>
-                     </FormControl>
+                                                                 <FormControl
+                        as="select"
+                        id="assetCondition"
+                        value={assetConditionCode}
+                        onChange={(e) => setAssetConditionCode(e.target.value)}
+                        required
+                        disabled={loadingAssetConditions}
+                      >
+                        {loadingAssetConditions ? (
+                          <option value="">Loading conditions...</option>
+                        ) : (
+                          assetConditions.map((condition) => (
+                            <option key={condition.code} value={condition.code}>
+                              {condition.displayName}
+                            </option>
+                          ))
+                        )}
+                      </FormControl>
                      <div className="form-text">
                        Select the current condition of the asset.
                      </div>

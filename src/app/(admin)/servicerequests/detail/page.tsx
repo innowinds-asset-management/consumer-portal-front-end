@@ -4,17 +4,14 @@ import React, { useState, useEffect } from "react";
 import PageTitle from '@/components/PageTitle'
 import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
-import { Card, CardBody, Col, Nav, NavItem, NavLink, Row, TabContainer, TabContent, TabPane, Badge, Table, Alert, Button, Form, FormControl, FormGroup, FormLabel, Modal, ModalHeader, ModalBody, ModalFooter, ModalTitle } from 'react-bootstrap'
-import { assetsService, Asset } from '@/services/api/assets'
-import { assetTypesService, AssetType } from '@/services/api/assetTypes'
-import { assetSubTypesService, AssetSubType } from '@/services/api/assetSubTypes'
-import {departmentService, Department } from '@/services/api/departments'
-import { warrantyService, Warranty } from '@/services/api/warranty'
+import { Card, CardBody, Col, Row, Table, Alert, Button, Form, FormControl, FormGroup, FormLabel, Modal, ModalHeader, ModalBody, ModalFooter, ModalTitle } from 'react-bootstrap'
 import { serviceRequestService, ServiceRequest, UpdateServiceRequestRequest, ServiceRequestItem, CreateServiceRequestItemRequest, UpdateServiceRequestItemRequest } from '@/services/api/serviceRequest'
-import { Location } from '@/services/api/assets'
+import { serviceRequestStatusService, ServiceRequestStatus } from '@/services/api/serviceRequestStatus'
+import { assetConditionService, AssetCondition } from '@/services/api/assetCondition'
 import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation';
-import {  CardFooter, CardHeader, CardTitle,  } from 'react-bootstrap'
+import { CardHeader, CardTitle, } from 'react-bootstrap'
+import { formatDate } from "@/utils/date";
 
 // Service Request Item Modal Component
 interface ServiceRequestItemModalProps {
@@ -57,14 +54,14 @@ function ServiceRequestItemModal({ show, onHide, onSubmit, item, serviceRequestI
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Apply minimum values if fields are empty/undefined
     const finalPartCost = formData.partCost ?? 0;
     const finalLabourCost = formData.labourCost ?? 0;
     const finalQuantity = formData.quantity ?? 1;
-    
+
     const calculatedTotalCost = (finalPartCost * finalQuantity) + finalLabourCost;
-    
+
     if (item) {
       // Update existing item
       onSubmit({
@@ -120,9 +117,9 @@ function ServiceRequestItemModal({ show, onHide, onSubmit, item, serviceRequestI
                   value={formData.quantity ?? ''}
                   onChange={(e) => {
                     const value = e.target.value;
-                    setFormData({ 
-                      ...formData, 
-                      quantity: value === '' ? undefined : parseInt(value) || 1 
+                    setFormData({
+                      ...formData,
+                      quantity: value === '' ? undefined : parseInt(value) || 1
                     });
                   }}
                   required
@@ -141,9 +138,9 @@ function ServiceRequestItemModal({ show, onHide, onSubmit, item, serviceRequestI
                   value={formData.partCost ?? ''}
                   onChange={(e) => {
                     const value = e.target.value;
-                    setFormData({ 
-                      ...formData, 
-                      partCost: value === '' ? undefined : parseFloat(value) || 0 
+                    setFormData({
+                      ...formData,
+                      partCost: value === '' ? undefined : parseFloat(value) || 0
                     });
                   }}
                   required
@@ -160,9 +157,9 @@ function ServiceRequestItemModal({ show, onHide, onSubmit, item, serviceRequestI
                   value={formData.labourCost ?? ''}
                   onChange={(e) => {
                     const value = e.target.value;
-                    setFormData({ 
-                      ...formData, 
-                      labourCost: value === '' ? undefined : parseFloat(value) || 0 
+                    setFormData({
+                      ...formData,
+                      labourCost: value === '' ? undefined : parseFloat(value) || 0
                     });
                   }}
                   required
@@ -171,20 +168,19 @@ function ServiceRequestItemModal({ show, onHide, onSubmit, item, serviceRequestI
             </Col>
           </Row>
           <FormGroup className="mb-3">
-            <FormLabel>Defect Description *</FormLabel>
+            <FormLabel>Defect Description</FormLabel>
             <FormControl
               as="textarea"
               rows={3}
               value={formData.defectDescription}
               onChange={(e) => setFormData({ ...formData, defectDescription: e.target.value })}
-              required
             />
           </FormGroup>
-                     <Alert variant="info">
-             <strong>Total Cost: ₹{totalCost.toFixed(2)}</strong>
-             <br />
-             (Part Cost: ₹{((formData.partCost ?? 0) * (formData.quantity ?? 1)).toFixed(2)} + Labour Cost: ₹{(formData.labourCost ?? 0).toFixed(2)})
-           </Alert>
+          <Alert variant="info">
+            <strong>Total Cost: ₹{totalCost.toFixed(2)}</strong>
+            <br />
+            (Part Cost: ₹{((formData.partCost ?? 0) * (formData.quantity ?? 1)).toFixed(2)} + Labour Cost: ₹{(formData.labourCost ?? 0).toFixed(2)})
+          </Alert>
         </ModalBody>
         <ModalFooter>
           <Button variant="secondary" onClick={onHide} disabled={loading}>
@@ -217,19 +213,24 @@ export default function ServiceRequestDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editingField, setEditingField] = useState<string | null>(null);
-  const [editValues, setEditValues] = useState<{[key: string]: string}>({});
+  const [editValues, setEditValues] = useState<{ [key: string]: string }>({});
   const [saving, setSaving] = useState(false);
-  
+
   // Service Request Items state
   const [showItemModal, setShowItemModal] = useState(false);
   const [editingItem, setEditingItem] = useState<ServiceRequestItem | null>(null);
   const [itemLoading, setItemLoading] = useState(false);
-  
+
   // Delete confirmation modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<ServiceRequestItem | null>(null);
 
-  useEffect(() => { 
+  // API data state
+  const [serviceRequestStatuses, setServiceRequestStatuses] = useState<ServiceRequestStatus[]>([]);
+  const [assetConditions, setAssetConditions] = useState<AssetCondition[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
+
+  useEffect(() => {
     const fetchServiceRequest = async () => {
       if (!serviceRequestId) {
         setError("Service Request ID is required");
@@ -249,9 +250,48 @@ export default function ServiceRequestDetailPage() {
     fetchServiceRequest();
   }, [serviceRequestId]);
 
-  const handleEditField = (fieldName: string, currentValue: string) => {
+  // Fetch dropdown options
+  useEffect(() => {
+    const fetchOptions = async () => {
+      setLoadingOptions(true);
+      try {
+        const [statusesData, conditionsData] = await Promise.all([
+          serviceRequestStatusService.getAllServiceRequestStatuses(),
+          assetConditionService.getAllAssetConditions()
+        ]);
+        setServiceRequestStatuses(statusesData);
+        setAssetConditions(conditionsData);
+      } catch (error) {
+        console.error('Error fetching dropdown options:', error);
+        setError("Failed to load dropdown options. Please refresh the page.");
+      } finally {
+        setLoadingOptions(false);
+      }
+    };
+    fetchOptions();
+  }, []);
+
+  const handleEditField = async (fieldName: string, currentValue: string) => {
     setEditingField(fieldName);
     setEditValues({ ...editValues, [fieldName]: currentValue });
+    
+    // Fetch fresh data when editing SR Status or Asset Condition
+    if (fieldName === 'srStatusCode' || fieldName === 'assetConditionCode') {
+      setLoadingOptions(true);
+      try {
+        const [statusesData, conditionsData] = await Promise.all([
+          serviceRequestStatusService.getAllServiceRequestStatuses(),
+          assetConditionService.getAllAssetConditions()
+        ]);
+        setServiceRequestStatuses(statusesData);
+        setAssetConditions(conditionsData);
+      } catch (error) {
+        console.error('Error fetching dropdown options:', error);
+        setError("Failed to load dropdown options. Please try again.");
+      } finally {
+        setLoadingOptions(false);
+      }
+    }
   };
 
   const handleSaveField = async (fieldName: string) => {
@@ -265,7 +305,7 @@ export default function ServiceRequestDetailPage() {
       };
 
       await serviceRequestService.updateServiceRequest(serviceRequestId, updateData);
-      
+
       // Refresh the service request to get the complete updated data
       const refreshedServiceRequest = await serviceRequestService.getServiceRequestById(serviceRequestId);
       setServiceRequest(refreshedServiceRequest);
@@ -334,7 +374,7 @@ export default function ServiceRequestDetailPage() {
         // Create new item
         await serviceRequestService.createServiceRequestItem(data as CreateServiceRequestItemRequest);
       }
-      
+
       // Refresh the service request to get updated items
       const updatedServiceRequest = await serviceRequestService.getServiceRequestById(serviceRequestId!);
       setServiceRequest(updatedServiceRequest);
@@ -348,17 +388,40 @@ export default function ServiceRequestDetailPage() {
     }
   };
 
+
+
   const renderEditableField = (fieldName: string, label: string, value: string, type: 'text' | 'textarea' | 'select' = 'text', options?: string[]) => {
     const isEditing = editingField === fieldName;
-    const currentValue = isEditing ? editValues[fieldName] : value;
+    let currentValue = isEditing ? editValues[fieldName] : value;
+    
+    // For select fields, convert code to displayName for display in dropdown
+    if (isEditing && type === 'select') {
+      if (fieldName === 'srStatusCode' && currentValue) {
+        const status = serviceRequestStatuses.find(s => s.code === currentValue);
+        currentValue = status ? status.displayName : currentValue;
+      } else if (fieldName === 'assetConditionCode' && currentValue) {
+        const condition = assetConditions.find(c => c.code === currentValue);
+        currentValue = condition ? condition.displayName : currentValue;
+      }
+    }
+
+    // Get display value for select fields
+    let displayValue = value;
+    if (fieldName === 'srStatusCode' && value) {
+      const status = serviceRequestStatuses.find(s => s.code === value);
+      displayValue = status ? status.displayName : value;
+    } else if (fieldName === 'assetConditionCode' && value) {
+      const condition = assetConditions.find(c => c.code === value);
+      displayValue = condition ? condition.displayName : value;
+    }
 
     return (
       <div className="mb-3">
         <div className="d-flex justify-content-between align-items-center mb-2">
           <strong>{label}:</strong>
           {!isEditing && (
-            <Button 
-              variant="outline-primary" 
+            <Button
+              variant="outline-primary"
               size="sm"
               onClick={() => handleEditField(fieldName, value)}
             >
@@ -367,7 +430,7 @@ export default function ServiceRequestDetailPage() {
             </Button>
           )}
         </div>
-        
+
         {isEditing ? (
           <div className="d-flex gap-2 align-items-start">
             {type === 'textarea' ? (
@@ -379,15 +442,27 @@ export default function ServiceRequestDetailPage() {
                 className="flex-grow-1"
               />
             ) : type === 'select' ? (
-              <FormControl
-                as="select"
-                value={currentValue}
-                onChange={(e) => setEditValues({ ...editValues, [fieldName]: e.target.value })}
-                className="flex-grow-1"
-              >
-                {options?.map(option => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
+                             <FormControl
+                 as="select"
+                 value={currentValue}
+                 onChange={(e) => {
+                   // For select fields, we need to find the code for the selected displayName
+                   let selectedValue = e.target.value;
+                   if (fieldName === 'srStatusCode') {
+                     const status = serviceRequestStatuses.find(s => s.displayName === e.target.value);
+                     selectedValue = status ? status.code : e.target.value;
+                   } else if (fieldName === 'assetConditionCode') {
+                     const condition = assetConditions.find(c => c.displayName === e.target.value);
+                     selectedValue = condition ? condition.code : e.target.value;
+                   }
+                   setEditValues({ ...editValues, [fieldName]: selectedValue });
+                 }}
+                 className="flex-grow-1"
+               >
+                                 <option value="">Select {label}</option>
+                 {options?.map(option => (
+                   <option key={option} value={option}>{option}</option>
+                 ))}
               </FormControl>
             ) : (
               <FormControl
@@ -398,16 +473,16 @@ export default function ServiceRequestDetailPage() {
               />
             )}
             <div className="d-flex gap-1">
-              <Button 
-                variant="success" 
+              <Button
+                variant="success"
                 size="sm"
                 onClick={() => handleSaveField(fieldName)}
                 disabled={saving}
               >
                 <IconifyIcon icon="mdi:check" />
               </Button>
-              <Button 
-                variant="secondary" 
+              <Button
+                variant="secondary"
                 size="sm"
                 onClick={handleCancelEdit}
                 disabled={saving}
@@ -418,7 +493,7 @@ export default function ServiceRequestDetailPage() {
           </div>
         ) : (
           <div className="p-2 bg-light rounded">
-            {value || 'Not specified'}
+            {displayValue || 'Not specified'}
           </div>
         )}
       </div>
@@ -468,7 +543,7 @@ export default function ServiceRequestDetailPage() {
   return (
     <>
       <PageTitle title={`Service Request - ${serviceRequest.srNo}`} />
-      
+
       {/* Header Information */}
       <Row>
         <Col md={12}>
@@ -495,13 +570,16 @@ export default function ServiceRequestDetailPage() {
                     <div className="mb-3">
                       <strong>Model:</strong> {serviceRequest.asset?.model}
                     </div>
-                    <div className="mb-3">
-                      <strong>Asset Condition:</strong> {serviceRequest.assetCondition || 'Not specified'}
-                    </div>
+                                                               <div className="mb-3">
+                        <strong>Asset Condition:</strong> {serviceRequest.assetConditionCode ? (() => {
+                          const condition = assetConditions.find(c => c.code === serviceRequest.assetConditionCode);
+                          return condition ? condition.displayName : serviceRequest.assetConditionCode;
+                        })() : 'Not specified'}
+                      </div>
                   </Col>
                   <Col md={6}>
                     <div className="mb-3">
-                      <strong>Installation Date:</strong> {serviceRequest.asset?.installationDate}
+                      <strong>Installation Date:</strong> {serviceRequest.asset?.installationDate ? formatDate(serviceRequest.asset?.installationDate) : ''}
                     </div>
                     <div className="mb-3">
                       <strong>Service Supplier:</strong> {serviceRequest.serviceSupplier?.name}
@@ -517,10 +595,58 @@ export default function ServiceRequestDetailPage() {
                 <Row>
                   <Col md={12}>
                     <div className="mb-3">
-                      <strong>Problem:</strong> {serviceRequest.problem || 'Not specified'}
+                      <div className="d-flex align-items-start">
+                        <strong className="me-2">Problem:</strong>
+                        {editingField === 'problem' ? (
+                          <div className="d-flex gap-2 align-items-start">
+                            <FormControl
+                              as="textarea"
+                              rows={2}
+                              value={editValues['problem'] || ''}
+                              onChange={(e) => setEditValues({ ...editValues, 'problem': e.target.value })}
+                              style={{ width: '300px' }}
+                            />
+                            <div className="d-flex gap-1">
+                              <Button
+                                variant="success"
+                                size="sm"
+                                onClick={() => handleSaveField('problem')}
+                                disabled={saving}
+                              >
+                                <IconifyIcon icon="mdi:check" />
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={handleCancelEdit}
+                                disabled={saving}
+                              >
+                                <IconifyIcon icon="mdi:close" />
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="d-flex align-items-center">
+                            <div className="p-2 bg-light rounded me-2" style={{ width: '300px' }}>
+                              {serviceRequest.problem || 'Not specified'}
+                            </div>
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              onClick={() => handleEditField('problem', serviceRequest.problem || '')}
+                            >
+                              <IconifyIcon icon="mdi:pencil" className="me-1" />
+                              Edit
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </Col>
                 </Row>
+                <div className="mb-3">
+                  <strong>Created At:</strong> {formatDate(serviceRequest.createdAt!)}
+                </div>
               </CardBody>
             </Card>
           </ComponentContainerCard>
@@ -538,8 +664,8 @@ export default function ServiceRequestDetailPage() {
                     <IconifyIcon icon="mdi:clipboard-list-outline" className="me-2" />
                     Items & Parts
                   </CardTitle>
-                  <Button 
-                    variant="primary" 
+                  <Button
+                    variant="primary"
                     size="sm"
                     onClick={handleAddItem}
                     disabled={itemLoading}
@@ -575,22 +701,22 @@ export default function ServiceRequestDetailPage() {
                             <td>{item.defectDescription}</td>
                             <td>
                               <div className="d-flex gap-1">
-                                <Button 
-                                  variant="outline-primary" 
+                                <Button
+                                  variant="outline-primary"
                                   size="sm"
                                   onClick={() => handleEditItem(item)}
                                   disabled={itemLoading}
                                 >
                                   <IconifyIcon icon="mdi:pencil" />
                                 </Button>
-                                                                 <Button 
-                                   variant="outline-danger" 
-                                   size="sm"
-                                   onClick={() => handleDeleteItem(item)}
-                                   disabled={itemLoading}
-                                 >
-                                   <IconifyIcon icon="mdi:delete" />
-                                 </Button>
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => handleDeleteItem(item)}
+                                  disabled={itemLoading}
+                                >
+                                  <IconifyIcon icon="mdi:delete" />
+                                </Button>
                               </div>
                             </td>
                           </tr>
@@ -616,7 +742,7 @@ export default function ServiceRequestDetailPage() {
       {/* Editable Fields */}
       <Row className="mt-4">
         <Col md={12}>
-          <ComponentContainerCard title="Editable Information" description="Fields that can be updated">
+          <ComponentContainerCard title="Technician Action">
             <Card className="border-secondary border">
               <CardHeader className="bg-light">
                 <CardTitle as="h5" className="mb-0">
@@ -632,29 +758,23 @@ export default function ServiceRequestDetailPage() {
                 )}
 
                 <Row>
-                  <Col md={6}>
-                    {renderEditableField('technicianName', 'Technician Name', serviceRequest.technicianName || '')}
-                    {renderEditableField('srStatus', 'SR Status', serviceRequest.srStatus, 'select', [
-                      'OPEN', 'IN_PROGRESS', 'PENDING', 'COMPLETED', 'CLOSED', 'CANCELLED'
-                    ])}
-                    {renderEditableField('assetCondition', 'Asset Condition', serviceRequest.assetCondition || '')}
-                  </Col>
-                  <Col md={6}>
-                    {renderEditableField('closureReason', 'Closure Reason', serviceRequest.closureReason || '')}
-                    {renderEditableField('problem', 'Problem', serviceRequest.problem || '', 'textarea')}
-                  </Col>
-                </Row>
-
-                <Row>
                   <Col md={12}>
-                    {renderEditableField('serviceDescription', 'Service Description', serviceRequest.serviceDescription || '', 'textarea')}
+                    {renderEditableField('technicianName', 'Technician Name', serviceRequest.technicianName || '')}
+                                                              {renderEditableField('srStatusCode', 'SR Status', serviceRequest.srStatusCode || '', 'select', 
+                        serviceRequestStatuses.map(status => status.displayName)
+                      )}
+                      {renderEditableField('assetConditionCode', 'Asset Condition', serviceRequest.assetConditionCode || '', 'select', 
+                        assetConditions.map(condition => condition.displayName)
+                      )}
+                    {renderEditableField('serviceDescription', 'Technician Notes', serviceRequest.serviceDescription || '', 'textarea')}
                     {renderEditableField('closureNotes', 'Closure Notes', serviceRequest.closureNotes || '', 'textarea')}
+                    {renderEditableField('closureReason', 'Closure Reason', serviceRequest.closureReason || '')}
                   </Col>
                 </Row>
 
                 <div className="d-flex gap-2 mt-3">
-                  <Button 
-                    variant="secondary" 
+                  <Button
+                    variant="secondary"
                     onClick={() => router.back()}
                   >
                     <IconifyIcon icon="mdi:arrow-left" className="me-2" />
@@ -667,64 +787,64 @@ export default function ServiceRequestDetailPage() {
         </Col>
       </Row>
 
-             {/* Service Request Item Modal */}
-       <ServiceRequestItemModal
-         show={showItemModal}
-         onHide={() => setShowItemModal(false)}
-         onSubmit={handleSubmitItem}
-         item={editingItem}
-         serviceRequestId={serviceRequestId!}
-         loading={itemLoading}
-       />
+      {/* Service Request Item Modal */}
+      <ServiceRequestItemModal
+        show={showItemModal}
+        onHide={() => setShowItemModal(false)}
+        onSubmit={handleSubmitItem}
+        item={editingItem}
+        serviceRequestId={serviceRequestId!}
+        loading={itemLoading}
+      />
 
-       {/* Delete Confirmation Modal */}
-       <Modal show={showDeleteModal} onHide={cancelDeleteItem} centered>
-         <ModalHeader closeButton>
-           <ModalTitle>
-             <IconifyIcon icon="mdi:delete-alert" className="me-2 text-danger" />
-             Confirm Delete
-           </ModalTitle>
-         </ModalHeader>
-         <ModalBody>
-           <p>Are you sure you want to delete this service request item?</p>
-           {itemToDelete && (
-             <div className="bg-light p-3 rounded">
-               <strong>Item Details:</strong>
-               <br />
-               <strong>Part Name:</strong> {itemToDelete.partName}
-               <br />
-               <strong>Quantity:</strong> {itemToDelete.quantity}
-               <br />
-               <strong>Total Cost:</strong> ₹{itemToDelete.totalCost.toFixed(2)}
-             </div>
-           )}
-           <p className="text-danger mt-3">
-             <strong>Warning:</strong> This action cannot be undone.
-           </p>
-         </ModalBody>
-         <ModalFooter>
-           <Button variant="secondary" onClick={cancelDeleteItem} disabled={itemLoading}>
-             Cancel
-           </Button>
-           <Button 
-             variant="danger" 
-             onClick={confirmDeleteItem} 
-             disabled={itemLoading}
-           >
-             {itemLoading ? (
-               <>
-                 <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                 Deleting...
-               </>
-             ) : (
-               <>
-                 <IconifyIcon icon="mdi:delete" className="me-2" />
-                 Delete Item
-               </>
-             )}
-           </Button>
-         </ModalFooter>
-       </Modal>
-     </>
-   );
- }
+      {/* Delete Confirmation Modal */}
+      <Modal show={showDeleteModal} onHide={cancelDeleteItem} centered>
+        <ModalHeader closeButton>
+          <ModalTitle>
+            <IconifyIcon icon="mdi:delete-alert" className="me-2 text-danger" />
+            Confirm Delete
+          </ModalTitle>
+        </ModalHeader>
+        <ModalBody>
+          <p>Are you sure you want to delete this service request item?</p>
+          {itemToDelete && (
+            <div className="bg-light p-3 rounded">
+              <strong>Item Details:</strong>
+              <br />
+              <strong>Part Name:</strong> {itemToDelete.partName}
+              <br />
+              <strong>Quantity:</strong> {itemToDelete.quantity}
+              <br />
+              <strong>Total Cost:</strong> ₹{itemToDelete.totalCost.toFixed(2)}
+            </div>
+          )}
+          <p className="text-danger mt-3">
+            <strong>Warning:</strong> This action cannot be undone.
+          </p>
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="secondary" onClick={cancelDeleteItem} disabled={itemLoading}>
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            onClick={confirmDeleteItem}
+            disabled={itemLoading}
+          >
+            {itemLoading ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Deleting...
+              </>
+            ) : (
+              <>
+                <IconifyIcon icon="mdi:delete" className="me-2" />
+                Delete Item
+              </>
+            )}
+          </Button>
+        </ModalFooter>
+      </Modal>
+    </>
+  );
+}
