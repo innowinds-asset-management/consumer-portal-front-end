@@ -36,6 +36,7 @@ export interface Asset {
   department?: any;
 }
 
+
 // Location interface
 export interface Location {
   id: string;
@@ -118,17 +119,33 @@ class AssetHttpClient {
 
   async post<T>(endpoint: string, data: any): Promise<T> {
     const url = `${this.baseURL}${endpoint}`
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(data),
-    })
+    
+    console.log('Making POST request to:', url)
+    console.log('Request data:', data)
+    
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(data),
+      })
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      console.log('Response status:', response.status)
+      console.log('Response headers:', response.headers)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Response error text:', errorText)
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`)
+      }
+
+      const result = await response.json()
+      console.log('Response data:', result)
+      return result
+    } catch (error) {
+      console.error('Fetch error details:', error)
+      throw error
     }
-
-    return response.json()
   }
 }
 

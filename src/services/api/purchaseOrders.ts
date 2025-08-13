@@ -27,6 +27,30 @@ export interface PurchaseOrder {
   status: string;
   totalAmount: string;
   poLineItem: PoLineItem[];
+  supplier?: {
+    id: string;
+    name: string;
+    code: string;
+    gstNumber: string;
+    email: string;
+    phone: string;
+    address: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
+  consumer?: {
+    id: string;
+    name: string;
+    code: string;
+    contactName: string;
+    email: string;
+    phone: string;
+    address: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  };
 }
 
 // Create Purchase Order Request interface

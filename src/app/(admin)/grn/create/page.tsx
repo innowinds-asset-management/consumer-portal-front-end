@@ -8,6 +8,7 @@ import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { Alert, Button, Col, Form, Row, Table } from 'react-bootstrap'
 import { purchaseOrdersService, PurchaseOrder, PoLineItem } from '@/services/api/purchaseOrders'
 import { grnService, Grn, GrnItem } from '@/services/api/grn'
+import { supplierService } from '@/services/api/suppliers'
 
 interface LineItemForm extends GrnItem {
   poLineItem?: PoLineItem
@@ -48,8 +49,12 @@ export default function GrnCreatePage() {
   const [vehicleNumber, setVehicleNumber] = useState('')
   const [driverName, setDriverName] = useState('')
   const [receivedBy, setReceivedBy] = useState('')
-  const [deliveryDate, setDeliveryDate] = useState('')
+  const [deliveryDate, setDeliveryDate] = useState(() => {
+    const today = new Date()
+    return today.toISOString().split('T')[0] // Format as YYYY-MM-DD
+  })
   const [deliveryNote, setDeliveryNote] = useState('')
+  const [supplierName, setSupplierName] = useState('')
 
   // Derived selected PO
   const selectedPo = useMemo(() => pos.find(p => p.id === poId) || null, [pos, poId])
@@ -62,7 +67,8 @@ export default function GrnCreatePage() {
       try {
         setLoadingPos(true)
         setPoError('')
-        const data = await purchaseOrdersService.getPurchaseOrders()
+        // const data = await purchaseOrdersService.getPurchaseOrders()
+        const data = await purchaseOrdersService.getPurchaseOrderById(poId)
         setPos(Array.isArray(data) ? data : [])
         
         // Auto-select PO based on poId query parameter
@@ -79,12 +85,28 @@ export default function GrnCreatePage() {
     fetchPos()
   }, [searchParams])
 
-  // When PO changes, populate line items template from PO line items
+  // When PO changes, populate line items template from PO line items and fetch supplier name
   useEffect(() => {
     if (!selectedPo) {
       setItems([])
+      setSupplierName('')
       return
     }
+    
+    // Fetch supplier name
+    const fetchSupplierName = async () => {
+      try {
+        const suppliers = await supplierService.getAllSuppliers()
+        const supplier = suppliers.find(s => s.id === selectedPo.supplierId)
+        setSupplierName(supplier?.name || selectedPo.supplierId || 'N/A')
+      } catch (error) {
+        console.error('Error fetching supplier name:', error)
+        setSupplierName(selectedPo.supplierId || 'N/A')
+      }
+    }
+    
+    fetchSupplierName()
+    
     const nextItems: LineItemForm[] = (selectedPo.poLineItem || []).map(li => {
       const ordered = parseInt(li.quantity || '0') || 0
       const previouslyReceived = parseInt(li.receivedQty || '0') || 0
@@ -178,30 +200,32 @@ export default function GrnCreatePage() {
         driverName: driverName || null,
         receivedBy: receivedBy || null,
         vehicleNumber: vehicleNumber || null,
-        grnItem: items.map(item => {
-          // Calculate the correct received quantity for submission
-          const previouslyReceived = parseInt(item.poLineItem?.receivedQty || '0') || 0
-          const currentAccepted = item.quantityAccepted || 0
-          const currentRejected = item.quantityRejected || 0
-          const currentReceived = currentAccepted + currentRejected
-          const totalReceived = previouslyReceived + currentReceived
-          
-          return {
-            poLineItemId: item.poLineItemId,
-            quantityOrdered: item.quantityOrdered || 0,
-            quantityReceived: totalReceived, // Total received (previous + current)
-            quantityAccepted: currentAccepted,
-            quantityRejected: currentRejected,
-            quantityRemaining: item.quantityRemaining || 0,
-            remarks: item.remarks || null,
-          }
-        })
+        grnItem: items
+          .filter(item => (item.quantityRemaining || 0) > 0) // Only include items with pending quantity
+          .map(item => {
+            // Calculate the correct received quantity for submission
+            const previouslyReceived = parseInt(item.poLineItem?.receivedQty || '0') || 0
+            const currentAccepted = item.quantityAccepted || 0
+            const currentRejected = item.quantityRejected || 0
+            const currentReceived = currentAccepted + currentRejected
+            const totalReceived = previouslyReceived + currentReceived
+            
+            return {
+              poLineItemId: item.poLineItemId,
+              quantityOrdered: item.quantityOrdered || 0,
+              quantityReceived: totalReceived, // Total received (previous + current)
+              quantityAccepted: currentAccepted,
+              quantityRejected: currentRejected,
+              quantityRemaining: item.quantityRemaining || 0,
+              remarks: item.remarks || null,
+            }
+          })
       }
       
       await grnService.createGrn(payload)
       
-      // Redirect to GRN listing page after successful creation
-      router.push('/grn')
+      // Redirect to purchase orders detail page after successful creation
+      router.push(`/purchaseorders/detail?id=${selectedPo.id}`)
     } catch (e: any) {
       setError(e?.message || 'Failed to create GRN')
     } finally {
@@ -213,11 +237,16 @@ export default function GrnCreatePage() {
 
   return (
     <>
-      <PageTitle title="Create GRN" />
+      <PageTitle title="Create GRN" subTitle={supplierName ? `Supplier: ${supplierName}` : ''} />
       <ComponentContainerCard 
         title={
           <div className="d-flex justify-content-between align-items-center">
-            <span>Goods Receipt Note</span>
+            <div>
+              <span>Goods Receipt Note</span>
+              {supplierName && (
+                <div className="text-muted fs-14 mt-1">Supplier: {supplierName}</div>
+              )}
+            </div>
             <Button 
               variant="outline-secondary" 
               size="sm"
@@ -231,24 +260,36 @@ export default function GrnCreatePage() {
         description="Record received quantities against a Purchase Order"
       >
         {error && <Alert variant="danger" className="mb-3">{error}</Alert>}
+        
+
+        
         <Form onSubmit={handleSubmit}>
           <Row>
-            <Col lg={6}>
+            <Col lg={12}>
               <div className="mb-3">
                 <Form.Label>PO</Form.Label>
-                <Form.Select value={poId} onChange={e => setPoId(e.target.value)} disabled={loadingPos}>
-                  <option value="">{loadingPos ? 'Loading POs...' : 'Select PO'}</option>
-                  {pos.map(p => (
-                    <option key={p.id} value={p.id}>{p.poNumber || p.id}</option>
-                  ))}
-                </Form.Select>
-                {poError && <small className="text-warning d-block mt-1">{poError}</small>}
-              </div>
-            </Col>
-            <Col lg={6}>
-              <div className="mb-3">
-                <Form.Label>Challan</Form.Label>
-                <Form.Control value={challan} onChange={e => setChallan(e.target.value)} placeholder="Enter challan number" />
+                <div className="d-flex gap-2 align-items-end">
+                  <div className="flex-grow-1">
+                    <Form.Select value={poId} onChange={e => setPoId(e.target.value)} disabled={loadingPos}>
+                      <option value="">{loadingPos ? 'Loading POs...' : 'Select PO'}</option>
+                      {pos.map(p => (
+                        <option key={p.id} value={p.id}>{p.poNumber || p.id}</option>
+                      ))}
+                    </Form.Select>
+                    {poError && <small className="text-warning d-block mt-1">{poError}</small>}
+                  </div>
+                  {poId && (
+                    <Button 
+                      variant="outline-primary" 
+                      size="sm"
+                      onClick={() => router.push(`/purchaseorders/detail?id=${poId}`)}
+                      className="mb-0"
+                    >
+                      <IconifyIcon icon="tabler:eye" className="me-1" />
+                      View
+                    </Button>
+                  )}
+                </div>
               </div>
             </Col>
           </Row>
@@ -256,8 +297,8 @@ export default function GrnCreatePage() {
           <Row>
             <Col lg={6}>
               <div className="mb-3">
-                <Form.Label>Supplier Name</Form.Label>
-                <Form.Control value={selectedPo?.supplierId || ''} readOnly className="bg-light" />
+                <Form.Label>Challan Number</Form.Label>
+                <Form.Control value={challan} onChange={e => setChallan(e.target.value)} placeholder="Enter challan number" />
               </div>
             </Col>
             <Col lg={6}>
@@ -292,12 +333,6 @@ export default function GrnCreatePage() {
                   value={deliveryDate} 
                   onChange={e => setDeliveryDate(e.target.value)} 
                 />
-              </div>
-            </Col>
-            <Col lg={6}>
-              <div className="mb-3">
-                <Form.Label>PO Updated Date</Form.Label>
-                <Form.Control value={formatDate(selectedPo?.updatedAt)} readOnly className="bg-light" />
               </div>
             </Col>
           </Row>
@@ -348,6 +383,8 @@ export default function GrnCreatePage() {
                           max={Math.max(it.quantityOrdered - parseInt(it.poLineItem?.receivedQty || '0') - (it.quantityRejected || 0), 0)}
                           value={it.quantityAccepted}
                           onChange={e => handleQtyChange(idx, 'quantityAccepted', parseInt(e.target.value) || 0)} 
+                          disabled={it.quantityRemaining === 0}
+                          className={it.quantityRemaining === 0 ? 'bg-light' : ''}
                         />
                       </td>
                       <td className="text-end" style={{ width: 140 }}>
@@ -357,6 +394,8 @@ export default function GrnCreatePage() {
                           max={Math.max(it.quantityOrdered - parseInt(it.poLineItem?.receivedQty || '0') - (it.quantityAccepted || 0), 0)}
                           value={it.quantityRejected}
                           onChange={e => handleQtyChange(idx, 'quantityRejected', parseInt(e.target.value) || 0)} 
+                          disabled={it.quantityRemaining === 0}
+                          className={it.quantityRemaining === 0 ? 'bg-light' : ''}
                         />
                       </td>
                       <td className="text-end">{it.quantityReceived}</td>

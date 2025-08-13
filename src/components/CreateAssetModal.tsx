@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
-import { Button, Card, CardBody, Col, Row, Table, Modal, ModalHeader, ModalBody, ModalFooter, ModalTitle, Form } from 'react-bootstrap'
+import { Button, Card, CardBody, Col, Row, Modal, ModalHeader, ModalBody, ModalFooter, ModalTitle, Form } from 'react-bootstrap'
 import { AssetType, assetTypesService } from '@/services/api/assetTypes'
 import { AssetSubType, assetSubTypesService } from '@/services/api/assetSubTypes'
-import { consumerSupplierService } from '@/services/api/consumerSupplier'
 
 // Asset form interface
 interface AssetForm {
@@ -17,19 +16,16 @@ interface AssetForm {
   poLineItemId: string
   supplierId: string
   consumerId: string
+  serialNumbers: string
 }
 
 // GRN line item interface
 interface GrnLineItem {
   id: string
   poLineItemId: string
-  icon: string
   partNo: string
   assetName: string
-  qtyOrdered: number
   qtyAccepted: number
-  qtyRejected: number
-  qtyPending: number
 }
 
 // Props interface
@@ -65,8 +61,6 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
 
   //fetch asset sub type from DB
   const [assetSubTypes, setAssetSubTypes] = useState<AssetSubType[]>([])
-  const [supplierId, setSupplierId] = useState<string>('')
-  const [consumerId, setConsumerId] = useState<string>('')
   
   useEffect(() => {
     const fetchAssetSubTypes = async () => {
@@ -76,8 +70,38 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
     fetchAssetSubTypes()
   }, [])
 
-  
-  
+  // Validation function for serial numbers
+  const getSerialNumberValidation = () => {
+    // If no serial numbers entered, it's valid (optional field)
+    if (!assetForm.serialNumbers || assetForm.serialNumbers.trim() === '') {
+      return { isValid: true, message: 'Serial numbers are optional' }
+    }
+    
+    const serialNumbers = assetForm.serialNumbers
+      .split(',')
+      .map(sn => sn.trim())
+      .filter(sn => sn.length > 0)
+    
+    const expectedCount = items.length > 0 ? items[0].qtyAccepted : 0
+    
+
+    
+    // If serial numbers are provided, validate the count
+    if (serialNumbers.length > 0) {
+      if (serialNumbers.length < expectedCount) {
+        return { isValid: false, message: `Please enter ${expectedCount - serialNumbers.length} more serial number(s). Current: ${serialNumbers.length}, Expected: ${expectedCount}` }
+      }
+      
+      if (serialNumbers.length > expectedCount) {
+        return { isValid: false, message: `Please remove ${serialNumbers.length - expectedCount} serial number(s). Expected: ${expectedCount}` }
+      }
+      
+      return { isValid: true, message: `✓ Valid: ${serialNumbers.length} serial numbers entered` }
+    }
+    
+    return { isValid: true, message: 'Serial numbers are optional' }
+  }
+
   return (
     <Modal 
       show={show} 
@@ -89,8 +113,19 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
     >
       <ModalHeader closeButton>
         <ModalTitle>
-          <IconifyIcon icon="tabler:plus" className="me-2" />
-          Create Asset from GRN
+          <div>
+            <div className="d-flex align-items-center">
+              <IconifyIcon icon="tabler:plus" className="me-2" />
+              Create Asset from GRN
+            </div>
+            {items.length > 0 && (
+              <div className="mt-2 text-muted fs-14" style={{ marginLeft: '28px' }}>
+                <div className="mb-1"><strong>Part No:</strong> {items[0].partNo}</div>
+                <div className="mb-1"><strong>Item Name:</strong> {items[0].assetName}</div>
+                <div><strong>Qty Accepted:</strong> {items[0].qtyAccepted}</div>
+              </div>
+            )}
+          </div>
         </ModalTitle>
       </ModalHeader>
       <ModalBody className="p-3">
@@ -98,8 +133,8 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
                         <CardBody className="p-3">
                 <h5 className="card-title mb-3">Select Item from GRN to Create Asset</h5>
                 
-                <Row>
-                  <Col md={4}>
+                                <Row>
+                  <Col md={6}>
                     <div className="mb-3">
                       <Form.Label>Asset Type *</Form.Label>
                       <Form.Select
@@ -115,10 +150,10 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
                       </Form.Select>
                     </div>
                   </Col>
-                  <Col md={4}>
+                  <Col md={6}>
                     <div className="mb-3">
                       <Form.Label>Asset Sub Type</Form.Label>
-                                            <Form.Select
+                      <Form.Select
                         value={assetForm.assetSubType}
                         onChange={(e) => onAssetFormChange('assetSubType', e.target.value)}
                         disabled={!assetForm.assetType}
@@ -134,44 +169,27 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
                       </Form.Select>
                     </div>
                   </Col>
-                  <Col md={4}>
-                    <div className="mb-3">
-                      <Form.Label>Qty Accepted</Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={items.length > 0 ? items[0].qtyAccepted.toString() : '0'}
-                        readOnly
-                        className="bg-light"
-                      />
-                    </div>
-                  </Col>
                 </Row>
                 
-                <div className="table-responsive" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                  <Table className="table-nowrap align-middle mb-0 table-sm">
-                                          <thead>
-                        <tr className="bg-light bg-opacity-50">
-                          <th>Part No</th>
-                          <th>Item Name</th>
-                          <th>PO ID</th>
-                          <th>PO Line Item ID</th>
-                          <th>GRN ID</th>
-                          <th>GRN Item ID</th>
-                        </tr>
-                      </thead>
-                    <tbody>
-                                              {items.map((item, idx) => (
-                          <tr key={idx}>
-                            <td>{item.partNo}</td>
-                            <td>{item.assetName}</td>
-                            <td>{grn?.poId || ''}</td>
-                            <td>{item.poLineItemId}</td>
-                            <td>{grn?.id || ''}</td>
-                            <td>{item.id}</td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </Table>
+                <div className="mb-3">
+                  <Form.Label>Serial Numbers (Comma separated)</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    rows={3}
+                    placeholder="Enter serial numbers separated by commas (e.g., SR-01, SR-02, SR-03)"
+                    value={assetForm.serialNumbers || ''}
+                    onChange={(e) => onAssetFormChange('serialNumbers', e.target.value)}
+                  />
+                  <small className="text-muted">
+                    Serial numbers are optional. If provided, enter exactly {items.length > 0 ? items[0].qtyAccepted : 0} serial numbers separated by commas
+                  </small>
+                  {assetForm.serialNumbers && (
+                    <div className="mt-2">
+                      <small className={`${getSerialNumberValidation().isValid ? 'text-success' : 'text-danger'}`}>
+                        {getSerialNumberValidation().message}
+                      </small>
+                    </div>
+                  )}
                 </div>
               </CardBody>
             </Card>
@@ -183,7 +201,7 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
                   <Button 
             variant="primary" 
             onClick={onCreateAsset}
-            disabled={!assetForm.assetType}
+            disabled={!assetForm.assetType || !getSerialNumberValidation().isValid}
           >
           <IconifyIcon icon="tabler:plus" className="me-1" />
           Create Asset

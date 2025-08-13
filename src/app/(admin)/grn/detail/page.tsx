@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { grnService, Grn } from '@/services/api/grn'
 import { assetsService } from '@/services/api/assets'
 import CreateAssetModal from '@/components/CreateAssetModal'
+import PrintButton from '@/components/PrintButton';
 
 // Line item display type
 type GrnLineItemDisplay = {
@@ -46,6 +47,7 @@ const GrnDetailPage = () => {
   
   // Modal state
   const [showCreateAssetModal, setShowCreateAssetModal] = useState(false)
+  const [selectedItem, setSelectedItem] = useState<GrnLineItemDisplay | null>(null)
   
   // Asset form state
   const [assetForm, setAssetForm] = useState({
@@ -58,7 +60,8 @@ const GrnDetailPage = () => {
     grnItemId: '',
     poLineItemId: '',
     supplierId: '',
-    consumerId: ''
+    consumerId: '',
+    serialNumbers: ''
   })
 
   useEffect(() => {
@@ -100,29 +103,29 @@ const GrnDetailPage = () => {
   }
 
   // Modal handlers
-  const handleShowCreateAssetModal = () => {
+  const handleShowCreateAssetModal = (item: GrnLineItemDisplay) => {
+    setSelectedItem(item)
     setShowCreateAssetModal(true)
     
-    // Auto-populate form with first item data
-    if (items.length > 0) {
-      const firstItem = items[0]
-      setAssetForm({
-        assetType: '',
-        assetSubType: '',
-        poId: grn?.poId || '',
-        assetName: firstItem.assetName,
-        partNo: firstItem.partNo,
-        grnId: grn?.id || '',
-        grnItemId: firstItem.id,
-        poLineItemId: firstItem.poLineItemId,
-        supplierId: '',
-        consumerId: ''
-      })
-    }
+    // Auto-populate form with selected item data
+    setAssetForm({
+      assetType: '',
+      assetSubType: '',
+      poId: grn?.poId || '',
+      assetName: item.assetName,
+      partNo: item.partNo,
+      grnId: grn?.id || '',
+      grnItemId: item.id,
+      poLineItemId: item.poLineItemId,
+      supplierId: '',
+      consumerId: '',
+      serialNumbers: ''
+    })
   }
 
   const handleCloseCreateAssetModal = () => {
     setShowCreateAssetModal(false)
+    setSelectedItem(null)
     // Reset form
     setAssetForm({
       assetType: '',
@@ -134,7 +137,8 @@ const GrnDetailPage = () => {
       grnItemId: '',
       poLineItemId: '',
       supplierId: '',
-      consumerId: ''
+      consumerId: '',
+      serialNumbers: ''
     })
   }
 
@@ -192,32 +196,55 @@ const GrnDetailPage = () => {
         }
       }
       
-      // Get qtyAccepted from the first item
-      const qtyAccepted = items.length > 0 ? items[0].qtyAccepted : 0
+      // Parse serial numbers from textarea (optional)
+      const serialNumbers = assetForm.serialNumbers
+        ? assetForm.serialNumbers
+            .split(',')
+            .map(sn => sn.trim())
+            .filter(sn => sn.length > 0)
+        : []
       
-      // Create final asset data with consumer and supplier IDs
-      const finalAssetData = {
-        ...assetForm,
-        consumerId: storedConsumerId,
-        supplierId: finalSupplierId,
-        qtyAccepted: qtyAccepted
+      // If serial numbers are provided, validate the count
+      if (serialNumbers.length > 0) {
+        const expectedCount = selectedItem?.qtyAccepted || 0
+        if (serialNumbers.length !== expectedCount) {
+          setError(`Please enter exactly ${expectedCount} serial numbers. You entered ${serialNumbers.length}.`)
+          return
+        }
       }
       
-      console.log('Final asset data for submission:', finalAssetData)
+      // Generate single asset object
+      const assetData = {
+        assetSubType: assetForm.assetSubType,
+        assetType: assetForm.assetType,
+        consumerId: storedConsumerId,
+        grnId: assetForm.grnId,
+        grnItemId: assetForm.grnItemId,
+        assetName: assetForm.assetName,
+        partNo: assetForm.partNo,
+        poId: assetForm.poId,
+        poLineItemId: assetForm.poLineItemId,
+        qtyAccepted: selectedItem?.qtyAccepted || 0,
+        supplierId: finalSupplierId,
+        consumerSerialNo: serialNumbers.length > 0 ? serialNumbers[0] : "", // Use first serial number if provided, otherwise empty string
+        consumerSerialNoArray: serialNumbers // Array of all serial numbers from textarea
+      }
       
-      // Call the asset creation API endpoint
-      const response = await assetsService.createAssetFromGrnPoLineItem(finalAssetData)
+      console.log('Generated asset data:', assetData)
       
-      console.log('Asset created successfully:', response)
+      // Call the asset creation API endpoint with single asset object
+      await assetsService.createAssetFromGrnPoLineItem(assetData)
+      
+      console.log('Asset created successfully')
       
       handleCloseCreateAssetModal()
       // Show success message
       setError('') // Clear any existing errors
       setSuccessMessage('Asset created successfully!')
-      console.log('Asset created successfully!')
+      console.log('Assets created successfully!')
     } catch (error) {
-      console.error('Error creating asset:', error)
-      // Handle error
+      console.error('Error creating assets:', error)
+      setError('Failed to create assets. Please try again.')
     }
   }
 
@@ -258,12 +285,10 @@ const GrnDetailPage = () => {
               <div className="d-flex align-items-start justify-content-between mb-4">
                 <div>
                   <span className="badge bg-info-subtle text-info px-1 fs-12 mb-3">GRN</span>
-                  <h3 className="m-0 fw-bolder fs-20">GRN: #{grn?.grnNo || grn?.id || 'N/A'}</h3>
+                  <h3 className="m-0 fw-bolder fs-20">GRN Number: #{grn?.grnNo || grn?.id || 'N/A'}</h3>
+                  <p className="m-0 text-muted fs-14 mt-1">PO: {grn?.poId || 'N/A'}</p>
                 </div>
                 <div className="d-flex align-items-center gap-2">
-                  <div className="text-end">
-                    <h6 className="m-0">PO: {grn?.poId || 'N/A'}</h6>
-                  </div>
                   <Button 
                     variant="outline-secondary" 
                     size="sm"
@@ -272,60 +297,58 @@ const GrnDetailPage = () => {
                     <IconifyIcon icon="tabler:arrow-left" className="me-1" />
                     Back
                   </Button>
-                  <Button 
-                    variant="primary" 
-                    size="sm"
-                    onClick={handleShowCreateAssetModal}
-                  >
-                    <IconifyIcon icon="tabler:plus" className="me-1" />
-                    Create Asset
-                  </Button>
                 </div>
               </div>
               <Row>
-                <Col xs={4}>
+                <Col xs={3}>
                   <div className="mb-3">
-                    <h5 className="fw-bold fs-14"> Challan </h5>
+                    <h5 className="fw-bold fs-14"> Challan Number </h5>
                     <h6 className="fs-14 text-muted">{grn?.challan || '—'}</h6>
                   </div>
-                  <div>
-                    <h5 className="fw-bold fs-14"> Created Date </h5>
-                    <h6 className="fs-14 text-muted">{formatDate(grn?.createdAt)}</h6>
-                  </div>
                 </Col>
-                <Col xs={4}>
+                <Col xs={3}>
                   <div className="mb-3">
                     <h5 className="fw-bold fs-14"> Vehicle Number </h5>
                     <h6 className="fs-14 text-muted">{grn?.vehicleNumber || '—'}</h6>
                   </div>
-                  <div>
-                    <h5 className="fw-bold fs-14"> Updated Date </h5>
-                    <h6 className="fs-14 text-muted">{formatDate(grn?.updatedAt)}</h6>
+                </Col>
+                <Col xs={3}>
+                  <div className="mb-3">
+                    <h5 className="fw-bold fs-14"> Received By </h5>
+                    <h6 className="fs-14 text-muted">{grn?.receivedBy || '—'}</h6>
                   </div>
                 </Col>
-                <Col xs={4}>
+                <Col xs={3}>
                   <div className="mb-3">
                     <h5 className="fw-bold fs-14"> Driver Name </h5>
                     <h6 className="fs-14 text-muted">{grn?.driverName || '—'}</h6>
-                  </div>
-                  <div>
-                    <h5 className="fw-bold fs-14"> Received By </h5>
-                    <h6 className="fs-14 text-muted">{grn?.receivedBy || '—'}</h6>
                   </div>
                 </Col>
               </Row>
               
               <Row>
-                <Col xs={6}>
+                <Col xs={3}>
+                  <div className="mb-3">
+                    <h5 className="fw-bold fs-14"> Delivery Note </h5>
+                    <h6 className="fs-14 text-muted">{grn?.deliveryNote || '—'}</h6>
+                  </div>
+                </Col>
+                <Col xs={3}>
                   <div className="mb-3">
                     <h5 className="fw-bold fs-14"> Delivery Date </h5>
                     <h6 className="fs-14 text-muted">{formatDate(grn?.deliveryDate)}</h6>
                   </div>
                 </Col>
-                <Col xs={6}>
+                <Col xs={3}>
                   <div className="mb-3">
-                    <h5 className="fw-bold fs-14"> Delivery Note </h5>
-                    <h6 className="fs-14 text-muted">{grn?.deliveryNote || '—'}</h6>
+                    <h5 className="fw-bold fs-14"> Created Date </h5>
+                    <h6 className="fs-14 text-muted">{formatDate(grn?.createdAt)}</h6>
+                  </div>
+                </Col>
+                <Col xs={3}>
+                  <div className="mb-3">
+                    <h5 className="fw-bold fs-14"> Updated Date </h5>
+                    <h6 className="fs-14 text-muted">{formatDate(grn?.updatedAt)}</h6>
                   </div>
                 </Col>
               </Row>
@@ -341,6 +364,7 @@ const GrnDetailPage = () => {
                       <th className="border-0">Qty Accepted</th>
                       <th className="border-0">Qty Rejected</th>
                       <th className="border-0">Pending Qty</th>
+                      <th className="border-0">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -357,6 +381,19 @@ const GrnDetailPage = () => {
                         <td>{it.qtyAccepted}</td>
                         <td>{it.qtyRejected}</td>
                         <td>{it.qtyPending}</td>
+                        <td>
+                          <div 
+                            className={`d-inline-block ${it.qtyPending === 0 ? 'text-muted' : 'text-primary'}`}
+                            style={{ cursor: it.qtyPending === 0 ? 'not-allowed' : 'pointer' }}
+                            onClick={() => it.qtyPending > 0 && handleShowCreateAssetModal(it)}
+                            title={it.qtyPending === 0 ? 'No pending quantity' : 'Create Asset'}
+                          >
+                            <IconifyIcon 
+                              icon="tabler:device-desktop" 
+                              className="fs-20"
+                            />
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -364,6 +401,11 @@ const GrnDetailPage = () => {
               </div>
             </div>
           </Card>
+           <div className="d-print-none mb-5">
+              <div className="d-flex justify-content-center gap-2">
+                <PrintButton />
+              </div>
+            </div>
         </Col>
       </Row>
 
@@ -372,7 +414,7 @@ const GrnDetailPage = () => {
         show={showCreateAssetModal}
         onHide={handleCloseCreateAssetModal}
         grn={grn}
-        items={items}
+        items={selectedItem ? [selectedItem] : []}
         assetForm={assetForm}
         onAssetFormChange={handleAssetFormChange}
         onCreateAsset={handleCreateAsset}

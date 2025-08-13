@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import PageTitle from '@/components/PageTitle'
-import PrintButton from './PrintButton'
+import PrintButton from '@/components/PrintButton'  
 import { Button, Card, CardBody, Col, Row, Table, Alert } from 'react-bootstrap'
 import { purchaseOrdersService, PurchaseOrder, PoLineItem } from '@/services/api/purchaseOrders'
 import { grnService, Grn } from '@/services/api/grn'
@@ -176,10 +176,8 @@ const PurchaseOrderDetail = () => {
                 <Col xs={6}>
                   <div className="mb-4">
                     <h5 className="fw-bold pb-1 mb-2 fs-14"> Supplier : </h5>
-                    <h6 className="fs-14 mb-2">{purchaseOrder?.supplierId || 'N/A'}</h6>
-                    <h6 className="fs-14 text-muted mb-2 lh-base">
-                      Supplier Information
-                    </h6>
+                    <h6 className="fs-14 mb-2">{purchaseOrder?.supplier?.name || purchaseOrder?.supplierId || 'N/A'}</h6>
+                   
                   </div>
                   <div>
                     <h5 className="fw-bold fs-14"> Created Date : </h5>
@@ -189,10 +187,8 @@ const PurchaseOrderDetail = () => {
                 <Col xs={6}>
                   <div className="mb-4">
                     <h5 className="fw-bold pb-1 mb-2 fs-14"> Consumer : </h5>
-                    <h6 className="fs-14 mb-2">{purchaseOrder?.consumerId || 'N/A'}</h6>
-                    <h6 className="fs-14 text-muted mb-2 lh-base">
-                      Consumer Information
-                    </h6>
+                    <h6 className="fs-14 mb-2">{purchaseOrder?.consumer?.name || purchaseOrder?.consumerId || 'N/A'}</h6>
+                    
                   </div>
                   <div>
                     <h5 className="fw-bold fs-14"> Updated Date : </h5>
@@ -273,11 +269,7 @@ const PurchaseOrderDetail = () => {
             </div>
 
           </Card>
-          <div className="d-print-none mb-5">
-            <div className="d-flex justify-content-center gap-2">
-              <PrintButton />
-            </div>
-          </div>
+           
 
           {/* GRN Data Section */}
           {grnData.length > 0 && (
