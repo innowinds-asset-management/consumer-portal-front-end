@@ -36,9 +36,20 @@ export const timeSince = (date: Date) => {
     }
   }
 
-  if (interval > 1 || interval === 0) {
+  if (interval === 0) {
+    return 'Just created'
+  }
+
+  if (interval > 1) {
     intervalType += 's'
   }
 
   return `${interval} ${intervalType} ago`
 }
+
+
+ export const formatDate = (dateString: string) => {
+    if (!dateString) return "";
+    return dateString.split("T")[0];
+  };
+

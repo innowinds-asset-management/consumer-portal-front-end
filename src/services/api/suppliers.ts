@@ -3,9 +3,26 @@ import { ASSET_API_URL } from '@/config/environment'
 export interface Supplier {
   id: string;
   name: string;
-  //consumerId?: string;
+  code: string;
+  gstNumber?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface SupplierWithStats extends Supplier {
+  assetCount: number;
+  openServiceRequestCount: number;
+}
+
+export interface ConsumerSupplierWithStats {
+  supplier: Supplier;
+  assetCount: number;
+  openServiceRequestCount: number;
+  registeredFrom: string; // createdAt from consumerSupplier
 }
 
 class SupplierHttpClient {
@@ -47,6 +64,16 @@ class SupplierService {
 
   async getAllSuppliers(): Promise<Supplier[]> {
     return supplierHttp.get<Supplier[]>(`/supplier`)
+  }
+
+  async getSuppliersOfConsumerWithStats(consumerId: string): Promise<ConsumerSupplierWithStats[]> {
+    try {
+      const response = await supplierHttp.get<ConsumerSupplierWithStats[]>(`/supplier/?cid=${consumerId}`)
+      return response
+    } catch (error) {
+      console.error('Error fetching suppliers of consumer with stats:', error)
+      throw error
+    }
   }
 }
 
