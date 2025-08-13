@@ -71,8 +71,8 @@ export default function GrnListingPage() {
     g.grnNo || g.id || "",
     g.poId || "",
     g.challan || "",
-    "N/A", // PO Status - not available in current API response
-    "N/A", // PO Total Amount - not available in current API response
+    g.po?.status || "N/A",
+    g.po?.totalAmount || "N/A", 
     formatDate(g.createdAt),
   ]);
 

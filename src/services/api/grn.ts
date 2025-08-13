@@ -30,6 +30,10 @@ export interface Grn {
   createdAt?: string
   updatedAt?: string
   grnItem?: GrnItem[]
+  po?: {
+    status?: string
+    totalAmount?: string
+  }
 }
 
 class GrnHttpClient {
