@@ -106,10 +106,18 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
     <Modal 
       show={show} 
       onHide={onHide}
-      size="xl"
-      centered
+      size="lg"
       backdrop="static"
       keyboard={false}
+      centered
+      dialogClassName="modal-dialog-centered"
+      style={{ 
+        maxWidth: '600px',
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)'
+      }}
     >
       <ModalHeader closeButton>
         <ModalTitle>
@@ -128,12 +136,12 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
           </div>
         </ModalTitle>
       </ModalHeader>
-      <ModalBody className="p-3">
+      <ModalBody className="p-2">
         <Card>
-                        <CardBody className="p-3">
-                <h5 className="card-title mb-3">Select Item from GRN to Create Asset</h5>
+                        <CardBody className="p-2">
+                <h6 className="card-title mb-2">Select Item from GRN to Create Asset</h6>
                 
-                                <Row>
+                <Row>
                   <Col md={6}>
                     <div className="mb-3">
                       <Form.Label>Asset Type *</Form.Label>
@@ -171,11 +179,11 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
                   </Col>
                 </Row>
                 
-                <div className="mb-3">
+                <div className="mb-2">
                   <Form.Label>Serial Numbers (Comma separated)</Form.Label>
                   <Form.Control
                     as="textarea"
-                    rows={3}
+                    rows={2}
                     placeholder="Enter serial numbers separated by commas (e.g., SR-01, SR-02, SR-03)"
                     value={assetForm.serialNumbers || ''}
                     onChange={(e) => onAssetFormChange('serialNumbers', e.target.value)}
@@ -198,13 +206,13 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
         <Button variant="secondary" onClick={onHide}>
           Cancel
         </Button>
-                  <Button 
-            variant="primary" 
-            onClick={onCreateAsset}
-            disabled={!assetForm.assetType || !getSerialNumberValidation().isValid}
-          >
+        <Button 
+          variant="primary" 
+          onClick={onCreateAsset}
+          disabled={!assetForm.assetType || !getSerialNumberValidation().isValid}
+        >
           <IconifyIcon icon="tabler:plus" className="me-1" />
-          Create Asset
+          Generate serial number with asset
         </Button>
       </ModalFooter>
     </Modal>
