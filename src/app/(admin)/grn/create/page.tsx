@@ -8,7 +8,6 @@ import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { Alert, Button, Col, Form, Row, Table } from 'react-bootstrap'
 import { purchaseOrdersService, PurchaseOrder, PoLineItem } from '@/services/api/purchaseOrders'
 import { grnService, Grn, GrnItem } from '@/services/api/grn'
-import { supplierService } from '@/services/api/suppliers'
 
 interface LineItemForm extends GrnItem {
   poLineItem?: PoLineItem
@@ -93,19 +92,8 @@ export default function GrnCreatePage() {
       return
     }
     
-    // Fetch supplier name
-    const fetchSupplierName = async () => {
-      try {
-        const suppliers = await supplierService.getAllSuppliers()
-        const supplier = suppliers.find(s => s.id === selectedPo.supplierId)
-        setSupplierName(supplier?.name || selectedPo.supplierId || 'N/A')
-      } catch (error) {
-        console.error('Error fetching supplier name:', error)
-        setSupplierName(selectedPo.supplierId || 'N/A')
-      }
-    }
-    
-    fetchSupplierName()
+    // Set supplier name from PO data (if available) or fallback to ID
+    setSupplierName(selectedPo.supplier?.name || selectedPo.supplierId || 'N/A')
     
     const nextItems: LineItemForm[] = (selectedPo.poLineItem || []).map(li => {
       const ordered = parseInt(li.quantity || '0') || 0
