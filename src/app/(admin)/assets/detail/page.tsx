@@ -236,10 +236,26 @@ export default function AssetDetailPage() {
                       </Badge>
                     </div>
                     <div className="mb-3">
-                      <strong>Last Service Date:</strong> {asset.lastServiceDate ? formatDate(asset.lastServiceDate) : 'N/A'}
+                      <strong>Last Service Date:</strong> {
+                        (() => {
+                          // Get the most recent service request based on updatedAt
+                          if (asset.serviceRequests && asset.serviceRequests.length > 0) {
+                            const sortedRequests = [...asset.serviceRequests].sort((a, b) => 
+                              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+                            );
+                            return formatDate(sortedRequests[0].updatedAt);
+                          }
+                          // Fallback to lastServiceDate if no service requests
+                          return asset.lastServiceDate ? formatDate(asset.lastServiceDate) : 'N/A';
+                        })()
+                      }
                     </div>
                     <div className="mb-3">
-                      <strong>Asset Condition:</strong> {asset.assetCondition || 'N/A'}
+                      <strong>Asset Condition:</strong> {
+                        typeof asset.assetCondition === 'object' && asset.assetCondition?.name 
+                          ? asset.assetCondition.name 
+                          : (typeof asset.assetCondition === 'string' ? asset.assetCondition : 'N/A')
+                      }
                     </div>
                     <div className="mb-3">
                       <strong>AMC:</strong>

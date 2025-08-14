@@ -29,7 +29,11 @@ export interface Asset {
   isActive: boolean;
   isAmc?: boolean;
   lastServiceDate?: string;
-  assetCondition?: string;
+  assetCondition?: string | {
+    code: string;
+    name: string;
+    displayName: string;
+  };
   createdAt?: string;
   updatedAt?: string;
   departmentId?: string | null;
@@ -37,6 +41,7 @@ export interface Asset {
   assetSubType?: AssetSubType;
   locations?: Location[];
   installations?: Installation[];
+  serviceRequests?: ServiceRequest[];
   department?: any;
   supplier?: {
     id: string;
@@ -78,6 +83,30 @@ export interface Installation {
   installationDate: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// ServiceRequest interface
+export interface ServiceRequest {
+  serviceRequestId: string;
+  assetId: string;
+  technicianName: string;
+  serviceSupplierId: string;
+  serviceContractId: string | null;
+  srNo: string;
+  serviceType: string | null;
+  serviceDescription: string | null;
+  problem: string;
+  createdAt: string;
+  updatedAt: string;
+  approverName: string | null;
+  closureNotes: string | null;
+  closureDate: string | null;
+  closureBy: string | null;
+  closureReason: string | null;
+  totalCost: string | null;
+  warrantyId: number;
+  srStatusCode: string;
+  assetConditionCode: string;
 }
 
 // Create Asset Request interface
