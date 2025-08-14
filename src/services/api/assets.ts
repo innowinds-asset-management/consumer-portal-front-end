@@ -213,10 +213,27 @@ class AssetsService {
     }
   }
 
-  // Get all assets
-  async getAssets(): Promise<Asset[]> {
+  // Get all assets with optional query parameters
+  async getAssets(params?: { consumerId?: string; supplierId?: string; departmentId?: string }): Promise<Asset[]> {
     try {
-      const response = await assetHttp.get<Asset[]>('/asset')
+      let endpoint = '/asset'
+      const queryParams = new URLSearchParams()
+      
+      if (params?.consumerId) {
+        queryParams.append('consumerId', params.consumerId)
+      }
+      if (params?.supplierId) {
+        queryParams.append('supplierId', params.supplierId)
+      }
+      if (params?.departmentId) {
+        queryParams.append('departmentId', params.departmentId)
+      }
+      
+      if (queryParams.toString()) {
+        endpoint += `?${queryParams.toString()}`
+      }
+      
+      const response = await assetHttp.get<Asset[]>(endpoint)
       return response
     } catch (error) {
       console.error('Error fetching assets:', error)

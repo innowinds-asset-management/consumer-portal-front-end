@@ -1,6 +1,7 @@
 import { ASSET_API_URL } from '@/config/environment'
 
 export interface Supplier {
+  primaryContactName?: string;
   id: string;
   name: string;
   code: string;
@@ -11,9 +12,17 @@ export interface Supplier {
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
+  primaryContactPhone?:string
+  primaryContactEmail?:string
+  consumerSuppliers?:any
 }
 
 export interface SupplierWithStats extends Supplier {
+  assetCount: number;
+  openServiceRequestCount: number;
+}
+
+export interface SupplierDetails extends Supplier {
   assetCount: number;
   openServiceRequestCount: number;
 }
@@ -72,6 +81,16 @@ class SupplierService {
       return response
     } catch (error) {
       console.error('Error fetching suppliers of consumer with stats:', error)
+      throw error
+    }
+  }
+
+  async getSupplierDetailsById(supplierId: string): Promise<SupplierDetails> {
+    try {
+      const response = await supplierHttp.get<SupplierDetails>(`/supplier/${supplierId}/details`)
+      return response
+    } catch (error) {
+      console.error('Error fetching supplier details:', error)
       throw error
     }
   }

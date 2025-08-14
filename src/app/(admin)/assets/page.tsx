@@ -7,7 +7,7 @@ import { Alert, Button } from "react-bootstrap";
 import { assetsService } from "@/services/api/assets";
 import { Grid } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface Asset {
   id: string;
@@ -36,17 +36,38 @@ interface Asset {
 
 export default function AssetListingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [assets, setAssets] = useState<Asset[]>([]);
+  const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
+
+  // Get filter parameters from URL
+  const consumerId = searchParams.get('cid');
+  const supplierId = searchParams.get('sid');
+  const departmentId = searchParams.get('did');
 
   useEffect(() => {
     const fetchAssets = async () => {
       setLoading(true);
       setError("");
       try {
-        const data = await assetsService.getAssets();
-        setAssets(Array.isArray(data) ? data : []);
+        // Build query parameters object
+        const queryParams: { consumerId?: string; supplierId?: string; departmentId?: string } = {};
+        if (consumerId) {
+          queryParams.consumerId = consumerId;
+        }
+        if (supplierId) {
+          queryParams.supplierId = supplierId;
+        }
+        if (departmentId) {
+          queryParams.departmentId = departmentId;
+        }
+        
+        const data = await assetsService.getAssets(queryParams);
+        const allAssets = Array.isArray(data) ? data : [];
+        setAssets(allAssets);
+        setFilteredAssets(allAssets); // API already returns filtered results
       } catch (err) {
         setError("Failed to load assets. Please try again.");
       } finally {
@@ -55,17 +76,17 @@ export default function AssetListingPage() {
     };
 
     fetchAssets();
-  }, []);
+  }, [consumerId, supplierId, departmentId]);
 
   // Add click handlers to asset names after grid is rendered
   useEffect(() => {
-    if (!loading && assets.length > 0) {
+    if (!loading && filteredAssets.length > 0) {
       const addClickHandlers = () => {
         const assetNameCells = document.querySelectorAll('td:first-child');
         if (assetNameCells.length > 0) {
           assetNameCells.forEach((cell, index) => {
-            if (index < assets.length) {
-              const asset = assets[index];
+            if (index < filteredAssets.length) {
+              const asset = filteredAssets[index];
               (cell as HTMLElement).style.cursor = 'pointer';
               (cell as HTMLElement).style.color = '#0d6efd';
               (cell as HTMLElement).style.textDecoration = 'underline';
@@ -84,7 +105,7 @@ export default function AssetListingPage() {
       // Cleanup timeout
       return () => clearTimeout(timeoutId);
     }
-  }, [loading, assets, router]);
+  }, [loading, filteredAssets, router]);
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -104,7 +125,7 @@ export default function AssetListingPage() {
   };
 
   // Prepare data for GridJS (in requested column order)
-  const gridData = assets.map((asset) => [
+  const gridData = filteredAssets.map((asset) => [
     asset.assetName || "",
     asset.assetType?.assetName || "",
     asset.assetSubType?.name || "",
@@ -118,18 +139,18 @@ export default function AssetListingPage() {
     <>
       <PageTitle title="" />
       
-      <ComponentContainerCard title={
-        <div className="d-flex justify-content-between align-items-center">
-          <span>Assets</span>
-          <Button 
-            variant="primary" 
-            onClick={() => router.push('/assets/create')}
-            className="d-flex align-items-center gap-2"
-            size="sm"
-          >
-            <i className="ri-add-line"></i>
-            Add Asset
-          </Button>
+             <ComponentContainerCard title={
+         <div className="d-flex justify-content-between align-items-center">
+           <span>Assets</span>
+                     <Button 
+             variant="primary" 
+             onClick={() => router.push('/assets/create')}
+             className="d-flex align-items-center gap-2"
+             size="sm"
+           >
+             <i className="ri-add-line"></i>
+             Add Asset
+           </Button>
         </div>
       } description="">
         {loading && (
@@ -142,11 +163,11 @@ export default function AssetListingPage() {
         
         {error && <Alert variant="danger">{error}</Alert>}
         
-        {!loading && !error && assets.length === 0 && (
+        {!loading && !error && filteredAssets.length === 0 && (
           <div className="text-center text-muted my-4">No assets found.</div>
         )}
         
-        {!loading && !error && assets.length > 0 && (
+        {!loading && !error && filteredAssets.length > 0 && (
           <div className="table-responsive">
             <Grid
               data={gridData}

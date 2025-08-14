@@ -2,6 +2,7 @@ import { ASSET_API_URL } from '@/config/environment'
 
 // Service Request interface based on sample JSON
 export interface ServiceRequest {
+  serviceRequestStatus?: any;
   serviceRequestId?: string;
   assetId: string;
   technicianName: string;
@@ -174,8 +175,27 @@ class ServiceRequestService {
     return serviceRequestHttp.post<ServiceRequest>('/servicerequest', data)
   }
 
-  async getServiceRequests(): Promise<ServiceRequest[]> {
-    return serviceRequestHttp.get<ServiceRequest[]>('/servicerequest')
+  async getServiceRequests(params?: { status?: string; supplierId?: string; departmentId?: string }): Promise<ServiceRequest[]> {
+    let endpoint = '/servicerequest'
+    const queryParams = new URLSearchParams()
+    
+    if (params?.status) {
+      queryParams.append('status', params.status)
+    }
+    
+    if (params?.supplierId) {
+      queryParams.append('sid', params.supplierId)
+    }
+    
+    if (params?.departmentId) {
+      queryParams.append('did', params.departmentId)
+    }
+    
+    if (queryParams.toString()) {
+      endpoint += `?${queryParams.toString()}`
+    }
+    
+    return serviceRequestHttp.get<ServiceRequest[]>(endpoint)
   }
 
   async getServiceRequestById(id: string): Promise<ServiceRequest> {
