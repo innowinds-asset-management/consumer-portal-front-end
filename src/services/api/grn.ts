@@ -33,6 +33,11 @@ export interface Grn {
   po?: {
     status?: string
     totalAmount?: string
+    supplier?: {
+      id: string;
+      name: string;
+      code: string;      
+    };
   }
 }
 

@@ -25,7 +25,11 @@ export interface Asset {
   model: string;
   subModel: string;
   supplierCode: string;
+  supplierName: string;
   isActive: boolean;
+  isAmc?: boolean;
+  lastServiceDate?: string;
+  assetCondition?: string;
   createdAt?: string;
   updatedAt?: string;
   departmentId?: string | null;
@@ -34,6 +38,21 @@ export interface Asset {
   locations?: Location[];
   installations?: Installation[];
   department?: any;
+  supplier?: {
+    id: string;
+    name: string;
+    code: string;
+    gstNumber: string;
+    email: string;
+    phone: string;
+    address: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+    primaryContactName?: string | null;
+    primaryContactEmail?: string | null;
+    primaryContactPhone?: string | null;
+  };
 }
 
 
@@ -84,6 +103,7 @@ export interface CreateAssetRequest {
   model: string;
   subModel: string;
   supplierCode: string;
+  supplierName: string;
   isActive: boolean;
 }
 

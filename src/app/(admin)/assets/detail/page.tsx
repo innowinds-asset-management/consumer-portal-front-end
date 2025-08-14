@@ -201,26 +201,50 @@ export default function AssetDetailPage() {
                         <strong>Sub Model:</strong> {asset.subModel}
                       </div>
                     )}
-                  </Col>
-                  <Col lg={6}>
-                    {/* <h6 className="text-muted mb-3">Technical Details</h6> */}
                     <div className="mb-3">
                       <strong>Part Number:</strong> {asset.partNo}
-                    </div>
-
-                    <div className="mb-3">
-                      <strong> Serial No:</strong> {asset.consumerSerialNo}
-                    </div>
-                    <div className="mb-3">
-                      <strong>Supplier Serial No:</strong> {asset.supplierSerialNo}
-                    </div>
-                    <div className="mb-3">
-                      <strong>Supplier Code:</strong> {asset.supplierCode}
                     </div>
                     <div className="mb-3">
                       <strong>Status:</strong>
                       <Badge bg={asset.isActive ? 'success' : 'danger'} className="ms-2">
                         {asset.isActive ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </div>
+                  </Col>
+                  <Col lg={6}>
+                    {/* <h6 className="text-muted mb-3">Technical Details</h6> */}
+                    <div className="mb-3">
+                      <strong>Serial No:</strong> {asset.consumerSerialNo}
+                    </div>
+                    <div className="mb-3">
+                      <strong>Supplier Name:</strong> {asset.supplier?.name || 'N/A'}
+                    </div>
+                    <div className="mb-3">
+                      <strong>Supplier Serial No:</strong> {asset.supplierSerialNo}
+                    </div>
+                    <div className="mb-3">
+                      <strong>Department:</strong> {asset.department?.deptName || 'N/A'}
+                    </div>
+                    <div className="mb-3">
+                      <strong>Warranty Status:</strong>
+                      <Badge bg={
+                        new Date() < new Date(asset.warrantyStartDate) ? 'warning' :
+                        new Date() > new Date(asset.warrantyEndDate) ? 'danger' : 'success'
+                      } className="ms-2">
+                        {new Date() < new Date(asset.warrantyStartDate) ? 'Not Started' :
+                         new Date() > new Date(asset.warrantyEndDate) ? 'Expired' : 'Active'}
+                      </Badge>
+                    </div>
+                    <div className="mb-3">
+                      <strong>Last Service Date:</strong> {asset.lastServiceDate ? formatDate(asset.lastServiceDate) : 'N/A'}
+                    </div>
+                    <div className="mb-3">
+                      <strong>Asset Condition:</strong> {asset.assetCondition || 'N/A'}
+                    </div>
+                    <div className="mb-3">
+                      <strong>AMC:</strong>
+                      <Badge bg={asset.isAmc ? 'success' : 'secondary'} className="ms-2">
+                        {asset.isAmc ? 'Yes' : 'No'}
                       </Badge>
                     </div>
                   </Col>

@@ -173,25 +173,21 @@ const PurchaseOrderDetail = () => {
                 </div>                
               </div>
               <Row>
-                <Col xs={6}>
+                <Col xs={4}>
                   <div className="mb-4">
                     <h5 className="fw-bold pb-1 mb-2 fs-14"> Supplier : </h5>
                     <h6 className="fs-14 mb-2">{purchaseOrder?.supplier?.name || purchaseOrder?.supplierId || 'N/A'}</h6>
-                   
                   </div>
-                  <div>
-                    <h5 className="fw-bold fs-14"> Created Date : </h5>
+                </Col>
+                <Col xs={4}>
+                  <div className="mb-4">
+                    <h5 className="fw-bold pb-1 mb-2 fs-14"> Created Date : </h5>
                     <h6 className="fs-14 text-muted">{formatDate(purchaseOrder?.createdAt || '')}</h6>
                   </div>
                 </Col>
-                <Col xs={6}>
+                <Col xs={4}>
                   <div className="mb-4">
-                    <h5 className="fw-bold pb-1 mb-2 fs-14"> Consumer : </h5>
-                    <h6 className="fs-14 mb-2">{purchaseOrder?.consumer?.name || purchaseOrder?.consumerId || 'N/A'}</h6>
-                    
-                  </div>
-                  <div>
-                    <h5 className="fw-bold fs-14"> Updated Date : </h5>
+                    <h5 className="fw-bold pb-1 mb-2 fs-14"> Updated Date : </h5>
                     <h6 className="fs-14 text-muted">{formatDate(purchaseOrder?.updatedAt || '')}</h6>
                   </div>
                 </Col>

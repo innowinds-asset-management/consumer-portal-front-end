@@ -111,7 +111,6 @@ export default function AssetListingPage() {
     asset.department?.deptName || asset.departmentName || "",
     [asset.brand, asset.model].filter(Boolean).join(" - ") || "",
     asset.supplier?.name || "",
-    formatDate(asset.installationDate),
     getWarrantyStatus(asset.warrantyStartDate, asset.warrantyEndDate)
   ]);
 
@@ -158,10 +157,9 @@ export default function AssetListingPage() {
                 { name: "Department", sort: false, search: true },
                 { name: "Model", sort: false, search: true },
                 { name: "Supplier", sort: false, search: true },
-                { name: "Installed On", sort: true, search: true },
                 { 
                   name: "Warranty Status", 
-                  sort: true, 
+                  sort: false, 
                   search: true,
                   formatter: (cell: any) => {
                     const status = cell as string;

@@ -286,7 +286,22 @@ const GrnDetailPage = () => {
                 <div>
                   <span className="badge bg-info-subtle text-info px-1 fs-12 mb-3">GRN</span>
                   <h3 className="m-0 fw-bolder fs-20">GRN Number: #{grn?.grnNo || grn?.id || 'N/A'}</h3>
-                  <p className="m-0 text-muted fs-14 mt-1">PO: {grn?.poId || 'N/A'}</p>
+                  <p className="m-0 text-muted fs-14 mt-1">
+                    PO: <span 
+                      style={{ 
+                        color: '#0d6efd', 
+                        textDecoration: 'underline', 
+                        cursor: 'pointer' 
+                      }}
+                      onClick={() => {
+                        if (grn?.poId) {
+                          router.push(`/purchaseorders/detail?id=${grn.poId}`);
+                        }
+                      }}
+                    >
+                      {grn?.poId || 'N/A'}
+                    </span>
+                  </p>
                 </div>
                 <div className="d-flex align-items-center gap-2">
                   <Button 

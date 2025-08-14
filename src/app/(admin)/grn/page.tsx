@@ -70,8 +70,8 @@ export default function GrnListingPage() {
   const gridData = grns.map((g) => [
     g.grnNo || g.id || "",
     g.poId || "",
+    g.po?.supplier?.name || "N/A",
     g.challan || "",
-    g.po?.status || "N/A",
     g.po?.totalAmount || "N/A", 
     formatDate(g.createdAt),
   ]);
@@ -119,8 +119,8 @@ export default function GrnListingPage() {
                   search: true,
                                   },
                 { name: "PO Number", sort: false, search: true },
+                { name: "Supplier Name", sort: false, search: true },
                 { name: "Challan", sort: false, search: true },
-                { name: "PO Status", sort: true, search: true },
                 { name: "PO Total Amount (₹)", sort: true, search: true },
                 { name: "Created Date", sort: true, search: true },
               ]}
