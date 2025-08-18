@@ -43,6 +43,12 @@ export const MENU_ITEMS: MenuItemType[] = [
         icon: Shapes,
         url: '/assets ',
         
+      },
+      {
+        key: 'departments',
+        label: 'Departments',
+        icon: LayoutGrid,
+        url: '/departments',
       }, 
       {
         key: 'warranty',

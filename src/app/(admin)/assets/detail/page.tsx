@@ -4,13 +4,13 @@ import React, { useState, useEffect } from "react";
 import PageTitle from '@/components/PageTitle'
 import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
+import ServiceRequestTab from '@/components/ServiceRequestTab'
 import { Card, CardBody, Col, Nav, NavItem, NavLink, Row, TabContainer, TabContent, TabPane, Badge, Table, Alert, Button } from 'react-bootstrap'
 import { assetsService, Asset } from '@/services/api/assets'
 import { assetTypesService, AssetType } from '@/services/api/assetTypes'
 import { assetSubTypesService, AssetSubType } from '@/services/api/assetSubTypes'
 import { departmentService, Department } from '@/services/api/departments'
 import { warrantyService, Warranty } from '@/services/api/warranty'
-import { serviceRequestService, ServiceRequest } from '@/services/api/serviceRequest'
 import { Location } from '@/services/api/assets'
 import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation';
@@ -26,13 +26,10 @@ export default function AssetDetailPage() {
   const [assetType, setAssetType] = useState<AssetType | null>(null);
   const [assetSubType, setAssetSubType] = useState<AssetSubType | null>(null);
   const [warranties, setWarranties] = useState<Warranty[]>([]);
-  const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([]);
   const [assetLocation, setAssetLocation] = useState<{ locations: Location[] } | null>(null);
   const [assetDepartment, setDepartmnet] = useState<{ department: Department } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [loadingServiceRequests, setLoadingServiceRequests] = useState(false);
   const [loadingWarranties, setLoadingWarranties] = useState(false);
-  const [serviceRequestsLoaded, setServiceRequestsLoaded] = useState(false);
   const [warrantiesLoaded, setWarrantiesLoaded] = useState(false);
   const [error, setError] = useState("");
 
@@ -77,26 +74,7 @@ export default function AssetDetailPage() {
   }, [assetId]);
 
 
-  const handleClick = (asset: Asset) => {
-    router.push(`/servicerequests/create?aid=${asset.id}`);
-  };
 
-  const loadServiceRequests = async () => {
-    if (!assetId || serviceRequestsLoaded) return;
-
-    try {
-      setLoadingServiceRequests(true);
-      const serviceRequestData = await serviceRequestService.getServiceRequestByAssetId(assetId);
-      setServiceRequests(serviceRequestData);
-      setServiceRequestsLoaded(true);
-    } catch (serviceRequestErr) {
-      console.error('Error fetching service requests:', serviceRequestErr);
-      setServiceRequests([]);
-      setServiceRequestsLoaded(true);
-    } finally {
-      setLoadingServiceRequests(false);
-    }
-  };
 
   const loadWarranties = async () => {
     if (!assetId || warrantiesLoaded) return;
@@ -116,9 +94,6 @@ export default function AssetDetailPage() {
   };
 
   const handleTabSelect = (eventKey: string | null) => {
-    if (eventKey === 'serviceRequest' && !serviceRequestsLoaded) {
-      loadServiceRequests();
-    }
     if (eventKey === 'warranty' && !warrantiesLoaded) {
       loadWarranties();
     }
@@ -489,100 +464,12 @@ export default function AssetDetailPage() {
 
             {/* Service Request Tab */}
             <TabPane eventKey="serviceRequest" id="serviceRequest">
-              <Row>
-                <Col sm="12">
-                  <Card className="border-0">
-                    <CardBody>
-                      <div className="d-flex justify-content-between align-items-center mb-3">
-                        <h6 className="text-muted mb-0">Service History</h6>
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={() => handleClick(asset)}
-                        >
-                          <IconifyIcon icon="tabler:plus" className="me-1" />
-                          Service Request
-                        </Button>
-                      </div>
-                      {loadingServiceRequests ? (
-                        <div className="text-center py-4">
-                          <div className="spinner-border text-primary" role="status">
-                            <span className="visually-hidden">Loading...</span>
-                          </div>
-                          <p className="mt-2 text-muted">Loading service requests...</p>
-                        </div>
-                      ) : (
-                        <>
-                          <Table responsive striped>
-                            <thead>
-                              <tr>
-                                <th>Sr Number</th>
-                                <th>Description</th>
-                                <th>Technician Name</th>
-                                <th>Service Supplier Name</th>
-                                <th>Status</th>
-                                <th>Date</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {serviceRequests.length === 0 ? (
-                                <tr>
-                                  <td colSpan={6} className="text-center text-muted">
-                                    No service requests found for this asset
-                                  </td>
-                                </tr>
-                              ) : (
-                                serviceRequests.map((record, index) => (
-                                  <tr key={record.serviceRequestId || `service-request-${index}-${record.createdAt}`}>
-                                    {/* <td>{record.createdAt}</td> */}
-                                    <td>
-                                      <span 
-                                        style={{ 
-                                          color: '#0d6efd', 
-                                          textDecoration: 'underline', 
-                                          cursor: 'pointer' 
-                                        }}
-                                        onClick={() => {
-                                          if (record.serviceRequestId) {
-                                            router.push(`/servicerequests/detail?srid=${record.serviceRequestId}`);
-                                          }
-                                        }}
-                                      >
-                                        {record.srNo}
-                                      </span>
-                                    </td>
-                                    <td>{record.problem}</td>
-                                    <td>{record.technicianName}</td>
-                                    <td>{record.serviceSupplier?.name || ''}</td>
-                                    <td>
-                                      <Badge bg={
-                                        record.srStatus === 'OPEN' ? 'primary' :
-                                        record.srStatus === 'IN_PROGRESS' ? 'warning' :
-                                        record.srStatus === 'PENDING' ? 'info' :
-                                        record.srStatus === 'COMPLETED' ? 'success' :
-                                        record.srStatus === 'CLOSED' ? 'secondary' :
-                                        record.srStatus === 'CANCELLED' ? 'danger' : 'secondary'
-                                      }>
-                                        {record.srStatus}
-                                      </Badge>
-                                    </td>
-                                    <td>{formatDate(record.createdAt!)}</td>
-                                  </tr>
-                                ))
-                              )}
-                            </tbody>
-                          </Table>
-                          <div className="text-center mt-3">
-                            <small className="text-muted">
-                              Showing {serviceRequests.length} service request records
-                            </small>
-                          </div>
-                        </>
-                      )}
-                    </CardBody>
-                  </Card>
-                </Col>
-              </Row>
+              <ServiceRequestTab 
+                assetId={assetId!} 
+                asset={asset}
+                showCreateButton={true}
+                title="Service History"
+              />
             </TabPane>
           </TabContent>
         </TabContainer>

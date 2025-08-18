@@ -6,7 +6,7 @@ import ComponentContainerCard from "@/components/ComponentContainerCard";
 import { Alert, Button } from "react-bootstrap";
 import { Grid } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { serviceRequestService } from "@/services/api/serviceRequest";
 import { formatDate, timeSince } from "@/utils/date";
 
@@ -39,16 +39,35 @@ interface ServiceRequestListItem {
 
 export default function ServiceRequestListingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [serviceRequests, setServiceRequests] = useState<ServiceRequestListItem[]>([]);
+  const [filteredServiceRequests, setFilteredServiceRequests] = useState<ServiceRequestListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
+
+  // Get filter parameters from URL
+  const status = searchParams.get('status');
+  const supplierId = searchParams.get('sid');
+  const departmentId = searchParams.get('did');
 
   useEffect(() => {
     const fetchServiceRequests = async () => {
       setLoading(true);
       setError("");
       try {
-        const data = (await serviceRequestService.getServiceRequests()) as unknown as any[];
+        // Build query parameters object
+        const queryParams: { status?: string; supplierId?: string; departmentId?: string } = {};
+        if (status) {
+          queryParams.status = status;
+        }
+        if (supplierId) {
+          queryParams.supplierId = supplierId;
+        }
+        if (departmentId) {
+          queryParams.departmentId = departmentId;
+        }
+        
+        const data = (await serviceRequestService.getServiceRequests(queryParams)) as unknown as any[];
         const mapped: ServiceRequestListItem[] = Array.isArray(data)
           ? data.map((record: any) => ({
             srNo: record.srNo || record.serviceRequestId || String(record.id || ""),
@@ -69,6 +88,7 @@ export default function ServiceRequestListingPage() {
           }))
           : [];
         setServiceRequests(mapped);
+        setFilteredServiceRequests(mapped); // API already returns filtered results
       } catch (err) {
         setError("Failed to load service requests. Please try again.");
       } finally {
@@ -77,18 +97,18 @@ export default function ServiceRequestListingPage() {
     };
 
     fetchServiceRequests();
-  }, []);
+  }, [status, supplierId, departmentId]);
 
 
   useEffect(() => {
-    if (!loading && serviceRequests.length > 0) {
+    if (!loading && filteredServiceRequests.length > 0) {
       const addClickHandlers = () => {
         // Add click handlers for Service Request ID column (1st column, index 0)
         const srIdCells = document.querySelectorAll("td:nth-child(1)");
         if (srIdCells.length > 0) {
           srIdCells.forEach((cell, index) => {
-            if (index < serviceRequests.length) {
-              const item = serviceRequests[index];
+            if (index < filteredServiceRequests.length) {
+              const item = filteredServiceRequests[index];
               (cell as HTMLElement).style.cursor = "pointer";
               (cell as HTMLElement).style.color = "#0d6efd";
               (cell as HTMLElement).style.textDecoration = "underline";
@@ -105,8 +125,8 @@ export default function ServiceRequestListingPage() {
         const assetNameCells = document.querySelectorAll("td:nth-child(4)");
         if (assetNameCells.length > 0) {
           assetNameCells.forEach((cell, index) => {
-            if (index < serviceRequests.length) {
-              const item = serviceRequests[index];
+            if (index < filteredServiceRequests.length) {
+              const item = filteredServiceRequests[index];
               (cell as HTMLElement).style.cursor = "pointer";
               (cell as HTMLElement).style.color = "#0d6efd";
               (cell as HTMLElement).style.textDecoration = "underline";
@@ -123,10 +143,10 @@ export default function ServiceRequestListingPage() {
       const timeoutId = setTimeout(addClickHandlers, 500);
       return () => clearTimeout(timeoutId);
     }
-  }, [loading, serviceRequests, router]);
+  }, [loading, filteredServiceRequests, router]);
 
 
-  const gridData = serviceRequests.map((sr) => [
+  const gridData = filteredServiceRequests.map((sr) => [
     sr.srNo || "",
     formatDate(sr.createdAt),
     timeSince(new Date(sr.createdAt)).replace(/ ago$/, ''),
@@ -172,11 +192,11 @@ export default function ServiceRequestListingPage() {
 
         {error && <Alert variant="danger">{error}</Alert>}
 
-        {!loading && !error && serviceRequests.length === 0 && (
+        {!loading && !error && filteredServiceRequests.length === 0 && (
           <div className="text-center text-muted my-4">No service requests found.</div>
         )}
 
-        {!loading && !error && serviceRequests.length > 0 && (
+        {!loading && !error && filteredServiceRequests.length > 0 && (
           <div className="table-responsive">
             <Grid
               data={gridData}

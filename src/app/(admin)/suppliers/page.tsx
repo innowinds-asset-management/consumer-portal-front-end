@@ -8,6 +8,7 @@ import { supplierService, ConsumerSupplierWithStats } from "@/services/api/suppl
 import { Grid } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
 import { useRouter } from "next/navigation";
+import { STORAGE_KEYS } from "@/utils/constants";
 
 interface SupplierListItem {
     id: string;
@@ -30,21 +31,8 @@ export default function SupplierListingPage() {
     const [consumerId, setConsumerId] = useState<string>("");
 
     useEffect(() => {
-        const storedConsumerId = localStorage.getItem('consumer_id');
-        if (storedConsumerId) {
-            try {
-                // Decode URL-encoded string and parse JSON if needed
-                const decodedConsumerId = decodeURIComponent(storedConsumerId);
-                // Remove quotes if it's a JSON string
-                const cleanConsumerId = decodedConsumerId.replace(/^"|"$/g, '');
-                setConsumerId(cleanConsumerId);
-            } catch (error) {
-                console.error('Error parsing consumer ID:', error);
-                setError("Invalid Consumer ID format. Please log in again.");
-            }
-        } else {
-            setError("Consumer ID not found. Please log in again.");
-        }
+        const consumerId = JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "";
+        setConsumerId(consumerId);
     }, []);
 
     useEffect(() => {
@@ -60,8 +48,8 @@ export default function SupplierListingPage() {
                         id: record.supplier.id,
                         code: record.supplier.code,
                         name: record.supplier.name,
-                        contactName: record.supplier.name, // Using name as contact name for demo
-                        contactPhone: record.supplier.phone || "N/A",
+                        contactName: record.supplier.primaryContactName || '', // Using name as contact name for demo
+                        contactPhone: record.supplier.primaryContactPhone || '',
                         assetCount: record.assetCount,
                         openServiceRequestCount: record.openServiceRequestCount,
                         registeredFrom: record.registeredFrom,
@@ -78,6 +66,68 @@ export default function SupplierListingPage() {
         fetchSuppliers();
     }, [consumerId]);
 
+    // Add click handlers to supplier number, asset count and service request count columns
+    useEffect(() => {
+        if (!loading && suppliers.length > 0) {
+            const addClickHandlers = () => {
+                // Add click handlers for Supplier Number column (1st column, index 0)
+                const supplierNumberCells = document.querySelectorAll('td:nth-child(1)');
+                if (supplierNumberCells.length > 0) {
+                    supplierNumberCells.forEach((cell, index) => {
+                        if (index < suppliers.length) {
+                            const supplier = suppliers[index];
+                            (cell as HTMLElement).style.cursor = 'pointer';
+                            (cell as HTMLElement).style.color = '#0d6efd';
+                            (cell as HTMLElement).style.textDecoration = 'underline';
+                            cell.addEventListener('click', () => {
+                                router.push(`/suppliers/detail?sid=${supplier.id}`);
+                            });
+                        }
+                    });
+                }
+
+                // Add click handlers for Number of Assets column (2nd column, index 1)
+                const assetCountCells = document.querySelectorAll('td:nth-child(2)');
+                if (assetCountCells.length > 0) {                    
+                    assetCountCells.forEach((cell, index) => {
+                        if (index < suppliers.length) {
+                            const supplier = suppliers[index];
+                            (cell as HTMLElement).style.cursor = 'pointer';
+                            (cell as HTMLElement).style.color = '#0d6efd';
+                            (cell as HTMLElement).style.textDecoration = 'underline';
+                            cell.addEventListener('click', () => {
+                                router.push(`/assets?cid=${consumerId}&sid=${supplier.id}`);
+                            });
+                        }
+                    });
+                }
+
+                // Add click handlers for Number of Open SRs column (3rd column, index 2)
+                const srCountCells = document.querySelectorAll('td:nth-child(3)');
+                if (srCountCells.length > 0) {
+                    srCountCells.forEach((cell, index) => {
+                        if (index < suppliers.length) {
+                            const supplier = suppliers[index];
+                            (cell as HTMLElement).style.cursor = 'pointer';
+                            (cell as HTMLElement).style.color = '#0d6efd';
+                            (cell as HTMLElement).style.textDecoration = 'underline';
+                            cell.addEventListener('click', () => {
+                                router.push(`/servicerequests?status=OP&sid=${supplier.id}`);
+                            });
+                        }
+                    });
+                }
+            };
+            // Try immediately
+            addClickHandlers();
+            // Also try after a delay to ensure GridJS has rendered
+            const timeoutId = setTimeout(addClickHandlers, 500);
+
+            // Cleanup timeout
+            return () => clearTimeout(timeoutId);
+        }
+    }, [loading, suppliers, router]);
+
     // Format date for display
     const formatDate = (dateString: string) => {
         if (!dateString) return "N/A";
@@ -89,8 +139,8 @@ export default function SupplierListingPage() {
         supplier.assetCount,
         supplier.openServiceRequestCount,
         formatDate(supplier.registeredFrom),
-        supplier.contactName || "N/A",
-        supplier.contactPhone || "N/A"
+        supplier.contactName || "",
+        supplier.contactPhone || ""
     ]);
 
     return (
@@ -130,7 +180,7 @@ export default function SupplierListingPage() {
                         <Grid
                             data={gridData}
                             columns={[
-                                { name: "Supplier No", sort: true, search: true },
+                                { name: "Supplier No", sort: true, search: true, },
                                 { name: "Number of Assets", sort: true, search: true },
                                 { name: "Number of Open SRs", sort: true, search: true },
                                 { name: "Registered From", sort: true, search: true },
