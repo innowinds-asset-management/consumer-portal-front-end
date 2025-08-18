@@ -33,14 +33,14 @@ export interface AssetData {
 // Warranty interface
 export interface WarrantyData {
   warrantyTypeId: number;
-  warrantyNumber: string;
+  warrantyNumber?: string;
   startDate: string;
   endDate: string;
   warrantyPeriod: number;
   coverageType: string;
   coverageDescription: string;
   termsConditions: string;
-  cost: string;
+  cost?: string;
   isActive: boolean;
   autoRenewal: boolean;
   consumerId: string;

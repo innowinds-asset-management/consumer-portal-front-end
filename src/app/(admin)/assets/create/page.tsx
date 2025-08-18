@@ -31,14 +31,12 @@ interface FormData {
   
   // Warranty Information
   warrantyType: string | number;
-  warrantyNumber: string;
   warrantyStartDate: string;
   warrantyEndDate: string;
   warrantyPeriod: number;
   coverageType: string;
   coverageDescription: string;
   termsConditions: string;
-  cost: string;
 }
 
 // Form errors interface
@@ -59,14 +57,12 @@ interface FormErrors {
   
   // Warranty Information
   warrantyType?: string;
-  warrantyNumber?: string;
   warrantyStartDate?: string;
   warrantyEndDate?: string;
   warrantyPeriod?: string;
   coverageType?: string;
   coverageDescription?: string;
   termsConditions?: string;
-  cost?: string;
 }
 
 export default function AssetPage() {
@@ -88,7 +84,7 @@ export default function AssetPage() {
   const [suppliersError, setSuppliersError] = useState("");
   const [warrantyTypesError, setWarrantyTypesError] = useState("");
 
-  // Form data state
+      // Form data state
   const [formData, setFormData] = useState<FormData>({
     // Asset Information
     name: "",
@@ -106,14 +102,12 @@ export default function AssetPage() {
     
     // Warranty Information
     warrantyType: "",
-    warrantyNumber: "",
     warrantyStartDate: new Date().toISOString().split('T')[0],
     warrantyEndDate: new Date().toISOString().split('T')[0],
     warrantyPeriod: 0,
     coverageType: "",
     coverageDescription: "",
     termsConditions: "",
-    cost: "",
   });
 
   // Form errors state
@@ -278,12 +272,10 @@ export default function AssetPage() {
 
     // Warranty Information validation
     if (!formData.warrantyType) newErrors.warrantyType = "Warranty type is required";
-    if (!formData.warrantyNumber.trim()) newErrors.warrantyNumber = "Warranty number is required";
     if (!formData.warrantyStartDate) newErrors.warrantyStartDate = "Warranty start date is required";
     if (!formData.warrantyEndDate) newErrors.warrantyEndDate = "Warranty end date is required";
     if (formData.warrantyPeriod < 0) newErrors.warrantyPeriod = "Warranty period must be 0 or greater";
     if (!formData.coverageType) newErrors.coverageType = "Coverage type is required";
-    if (!formData.cost.trim()) newErrors.cost = "Cost is required";
 
     console.log("Validation errors:", newErrors);
     setErrors(newErrors);
@@ -340,35 +332,33 @@ export default function AssetPage() {
           subModel: formData.subModel,
           isActive: true,
           partNo: formData.model, // Using model as part number
-          supplierCode: formData.brand.toUpperCase() + "-" + formData.model.replace(/\s+/g, "-"),
+          supplierCode:suppliers.find(s => s.id === formData.supplierId)?.code || "",
           consumerSerialNo: formData.name, // Using asset name as consumer serial
-          grnId: "cme89z4jw001evhhihy2qtkzl", // Default value
-          grnItemId: "cme89z4qa001hvhhiijcte26r", // Default value
-          poLineItemId: "cme89z4dw0018vhhinjbvbfyg", // Default value
-          supplierId: formData.supplierId || "SP123",
+          grnId: "", 
+          grnItemId: "", 
+          poLineItemId: "",
+          supplierId: formData.supplierId,
           isAmc: true,
           supplierSerialNo: formData.model, // Using model as serial number
-          departmentId: formData.departmentId || "cme89z3gk000svhhi8nvjx6ss",
+          departmentId: formData.departmentId,
           building: formData.buildingNumber || "",
           floorNumber: formData.floorNumber || "",
           roomNumber: formData.roomNumber || "",
           isCurrentLocation: true
         },
-        warranty: {
-          warrantyTypeId: parseInt(String(formData.warrantyType)) || 1,
-          warrantyNumber: formData.warrantyNumber,
-          startDate: formData.warrantyStartDate,
-          endDate: formData.warrantyEndDate,
-          warrantyPeriod: formData.warrantyPeriod,
-          coverageType: formData.coverageType,
-          coverageDescription: formData.coverageDescription,
-          termsConditions: formData.termsConditions,
-          cost: formData.cost,
-          isActive: true,
-          autoRenewal: false,
-          consumerId: consumerId || "",
-          supplierId: formData.supplierId || "SP123"
-        }
+                  warranty: {
+            warrantyTypeId: parseInt(String(formData.warrantyType)) || 1,
+            startDate: formData.warrantyStartDate,
+            endDate: formData.warrantyEndDate,
+            warrantyPeriod: formData.warrantyPeriod,
+            coverageType: formData.coverageType,
+            coverageDescription: formData.coverageDescription,
+            termsConditions: formData.termsConditions,
+            isActive: true,
+            autoRenewal: false,
+            consumerId: consumerId || "",
+            supplierId: formData.supplierId || "SP123"
+          }
       };
 
       // Log the request data for debugging
@@ -399,14 +389,12 @@ export default function AssetPage() {
         roomNumber: "",
         supplierId: "",
         warrantyType: "",
-        warrantyNumber: "",
         warrantyStartDate: new Date().toISOString().split('T')[0],
         warrantyEndDate: new Date().toISOString().split('T')[0],
         warrantyPeriod: 0,
         coverageType: "",
         coverageDescription: "",
         termsConditions: "",
-        cost: "",
       });
       setErrors({});
       
@@ -436,14 +424,12 @@ export default function AssetPage() {
       roomNumber: "",
       supplierId: "",
       warrantyType: "",
-      warrantyNumber: "",
       warrantyStartDate: new Date().toISOString().split('T')[0],
       warrantyEndDate: new Date().toISOString().split('T')[0],
       warrantyPeriod: 0,
       coverageType: "",
       coverageDescription: "",
       termsConditions: "",
-      cost: "",
     });
     setErrors({});
   };
@@ -496,7 +482,7 @@ export default function AssetPage() {
                       Asset Information
                     </h5>
                     <Row>
-                      <Col lg={6}>
+                      <Col lg={4}>
                         <div className="mb-3">
                           <Form.Label htmlFor="assetType">Asset Type *</Form.Label>
                                                 <Form.Select 
@@ -528,7 +514,7 @@ export default function AssetPage() {
                         </div>
                       </Col>
                       
-                      <Col lg={6}>
+                      <Col lg={4}>
                         <div className="mb-3">
                           <Form.Label htmlFor="subAssetType">Sub Asset Type *</Form.Label>
                           <Form.Select 
@@ -559,10 +545,8 @@ export default function AssetPage() {
                           )}
                         </div>
                       </Col>
-                    </Row>
 
-                    <Row>
-                      <Col lg={6}>
+                      <Col lg={4}>
                         <div className="mb-3">
                           <Form.Label htmlFor="name">Asset Name *</Form.Label>
                           <Form.Control
@@ -580,8 +564,10 @@ export default function AssetPage() {
                           )}
                         </div>
                       </Col>
-                      
-                      <Col lg={6}>
+                    </Row>
+
+                    <Row>
+                      <Col lg={4}>
                         <div className="mb-3">
                           <Form.Label htmlFor="brand">Brand *</Form.Label>
                           <Form.Control
@@ -599,10 +585,8 @@ export default function AssetPage() {
                           )}
                         </div>
                       </Col>
-                    </Row>
-
-                    <Row>
-                      <Col lg={6}>
+                      
+                      <Col lg={4}>
                         <div className="mb-3">
                           <Form.Label htmlFor="model">Model *</Form.Label>
                           <Form.Control
@@ -620,8 +604,8 @@ export default function AssetPage() {
                           )}
                         </div>
                       </Col>
-                      
-                      <Col lg={6}>
+
+                      <Col lg={4}>
                         <div className="mb-3">
                           <Form.Label htmlFor="subModel">Sub Model</Form.Label>
                           <Form.Control
@@ -642,7 +626,7 @@ export default function AssetPage() {
                     </Row>
 
                     <Row>
-                      <Col lg={6}>
+                      <Col lg={4}>
                         <div className="mb-3">
                           <Form.Label htmlFor="installationDate">Installation Date *</Form.Label>
                           <Form.Control
@@ -660,7 +644,7 @@ export default function AssetPage() {
                         </div>
                       </Col>
                       
-                      <Col lg={6}>
+                      <Col lg={4}>
                         <div className="mb-3">
                           <Form.Label htmlFor="supplierId">Supplier *</Form.Label>
                           <Form.Select
@@ -686,10 +670,8 @@ export default function AssetPage() {
                           )}
                         </div>
                       </Col>
-                    </Row>
 
-                    <Row>
-                      <Col lg={6}>
+                      <Col lg={4}>
                         <div className="mb-3">
                           <Form.Label htmlFor="buildingNumber">Building Number *</Form.Label>
                           <Form.Control
@@ -707,8 +689,10 @@ export default function AssetPage() {
                           )}
                         </div>
                       </Col>
-                      
-                      <Col lg={6}>
+                    </Row>
+
+                    <Row>
+                      <Col lg={4}>
                         <div className="mb-3">
                           <Form.Label htmlFor="departmentId">Department *</Form.Label>
                           <Form.Select
@@ -739,10 +723,8 @@ export default function AssetPage() {
                           )}
                         </div>
                       </Col>
-                    </Row>
-
-                    <Row>
-                      <Col lg={6}>
+                      
+                      <Col lg={4}>
                         <div className="mb-3">
                           <Form.Label htmlFor="floorNumber">Floor Number *</Form.Label>
                           <Form.Control
@@ -760,8 +742,8 @@ export default function AssetPage() {
                           )}
                         </div>
                       </Col>
-                      
-                      <Col lg={6}>
+
+                      <Col lg={4}>
                         <div className="mb-3">
                           <Form.Label htmlFor="roomNumber">Room Number *</Form.Label>
                           <Form.Control
@@ -790,9 +772,9 @@ export default function AssetPage() {
                     <IconifyIcon icon="tabler:shield-check" className="me-2" />
                     Warranty Information
                   </h5>
-                  {/* Row 1: Warranty Type and Warranty Number */}
+                  {/* Row 1: Warranty Type, Coverage Type, Warranty Start Date */}
                   <Row>
-                    <Col lg={6}>
+                    <Col lg={4}>
                       <div className="mb-3">
                         <Form.Label htmlFor="warrantyType">Warranty Type *</Form.Label>
                         <Form.Select
@@ -823,30 +805,8 @@ export default function AssetPage() {
                         )}
                       </div>
                     </Col>
-                    
-                    <Col lg={6}>
-                      <div className="mb-3">
-                        <Form.Label htmlFor="warrantyNumber">Warranty Number *</Form.Label>
-                        <Form.Control
-                          type="text"
-                          id="warrantyNumber"
-                          placeholder="Enter warranty number"
-                          value={formData.warrantyNumber}
-                          onChange={(e) => handleFieldChange("warrantyNumber", e.target.value)}
-                          isInvalid={!!errors.warrantyNumber}
-                        />
-                        {errors.warrantyNumber && (
-                          <Form.Control.Feedback type="invalid">
-                            {errors.warrantyNumber}
-                          </Form.Control.Feedback>
-                        )}
-                      </div>
-                    </Col>
-                  </Row>
 
-                  {/* Row 2: Coverage Type and Cost */}
-                  <Row>
-                    <Col lg={6}>
+                    <Col lg={4}>
                       <div className="mb-3">
                         <Form.Label htmlFor="coverageType">Coverage Type *</Form.Label>
                         <Form.Select
@@ -869,30 +829,8 @@ export default function AssetPage() {
                         )}
                       </div>
                     </Col>
-                    
-                    <Col lg={6}>
-                      <div className="mb-3">
-                        <Form.Label htmlFor="cost">Cost *</Form.Label>
-                        <Form.Control
-                          type="text"
-                          id="cost"
-                          placeholder="Enter warranty cost"
-                          value={formData.cost}
-                          onChange={(e) => handleFieldChange("cost", e.target.value)}
-                          isInvalid={!!errors.cost}
-                        />
-                        {errors.cost && (
-                          <Form.Control.Feedback type="invalid">
-                            {errors.cost}
-                          </Form.Control.Feedback>
-                        )}
-                      </div>
-                    </Col>
-                  </Row>
 
-                  {/* Row 3: Warranty Start Date and Warranty Period */}
-                  <Row>
-                    <Col lg={6}>
+                    <Col lg={4}>
                       <div className="mb-3">
                         <Form.Label htmlFor="warrantyStartDate">Warranty Start Date *</Form.Label>
                         <Form.Control
@@ -909,8 +847,11 @@ export default function AssetPage() {
                         )}
                       </div>
                     </Col>
-                    
-                    <Col lg={6}>
+                  </Row>
+
+                  {/* Row 2: Warranty Period, Warranty End Date */}
+                  <Row>
+                    <Col lg={4}>
                       <div className="mb-3">
                         <Form.Label htmlFor="warrantyPeriod">Warranty Period (months) *</Form.Label>
                         <Form.Control
@@ -929,11 +870,8 @@ export default function AssetPage() {
                         )}
                       </div>
                     </Col>
-                  </Row>
-
-                  {/* Row 4: Warranty End Date (Auto-calculated) */}
-                  <Row>
-                    <Col lg={6}>
+                    
+                    <Col lg={4}>
                       <div className="mb-3">
                         <Form.Label htmlFor="warrantyEndDate">Warranty End Date</Form.Label>
                         <Form.Control
