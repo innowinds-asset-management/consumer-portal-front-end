@@ -70,10 +70,21 @@ class AssetSubTypesService {
   }
 
   // Get asset sub-types by asset type ID
+  // async getAssetSubTypesByAssetTypeId(assetTypeId: string): Promise<AssetSubType[]> {
+  //   try {
+  //     const allAssetSubTypes = await this.getActiveAssetSubTypes()
+  //     return allAssetSubTypes.filter(assetSubType => assetSubType.assetTypeId === assetTypeId)
+  //   } catch (error) {
+  //     console.error('Error fetching asset sub-types by asset type ID:', error)
+  //     throw error
+  //   }
+  // }
+
+  // Get asset sub-types by asset type ID
   async getAssetSubTypesByAssetTypeId(assetTypeId: string): Promise<AssetSubType[]> {
     try {
-      const allAssetSubTypes = await this.getActiveAssetSubTypes()
-      return allAssetSubTypes.filter(assetSubType => assetSubType.assetTypeId === assetTypeId)
+      const response = await assetHttp.get<AssetSubType[]>(`/asset-sub-type/by-asset-type/${assetTypeId}`)
+      return response
     } catch (error) {
       console.error('Error fetching asset sub-types by asset type ID:', error)
       throw error

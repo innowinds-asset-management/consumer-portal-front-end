@@ -63,7 +63,7 @@ class SupplierService {
   }
 
   async getAllSuppliers(): Promise<Supplier[]> {
-    return supplierHttp.get<Supplier[]>(`/supplier`)
+    return supplierHttp.get<Supplier[]>(`/supplier/all`)
   }
 
   async getSuppliersOfConsumerWithStats(consumerId: string): Promise<ConsumerSupplierWithStats[]> {

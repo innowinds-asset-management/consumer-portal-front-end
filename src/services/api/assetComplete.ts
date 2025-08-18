@@ -1,35 +1,38 @@
 import { ASSET_API_URL } from '@/config/environment'
 
+// Warranty interface
+export interface WarrantyData {
+  warrantyTypeId: number;
+  warrantyNumber: string;
+  startDate: string;
+  endDate: string;
+  warrantyPeriod: number;
+  coverageType: string;
+  coverageDescription: string;
+  termsConditions: string;
+  cost: string;
+  isActive: boolean;
+  autoRenewal: boolean;
+  consumerId: number;
+  supplierId: number;
+}
+
 // Complete Asset Request interface
 export interface CreateAssetCompleteRequest {
   assetTypeId: string;
   assetSubTypeId: string;
   assetName: string;
-  warrantyPeriod?: number | null;
-  warrantyStartDate?: Date | null;
-  warrantyEndDate?: Date | null;
   installationDate?: Date | null;
   brand?: string | null;
   model?: string | null;
-  subModel?: string | null;
   isActive?: boolean;
   consumerId: string;
-  partNo?: string | null;
-  supplierCode?: string | null;
-  warrantyId?: string | null;
-  consumerSerialNo?: string | null;
-  grnId?: string | null;
-  grnItemId?: string | null;
-  poLineItemId?: string | null;
-  supplierId?: string | null;
-  supplierSerialNo?: string | null;
   departmentId?: string;
   building?: string;
   floorNumber?: string;
   roomNumber?: string;
   isCurrentLocation?: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
+  warranty?: WarrantyData;
 }
 
 // Complete Asset Request Array interface
@@ -91,9 +94,10 @@ const assetCompleteHttp = new AssetCompleteHttpClient()
 
 class AssetCompleteService {
   async createAssetComplete(assetData: CreateAssetCompleteRequest): Promise<CreateAssetCompleteResponse> {
-    // Wrap single asset in array for backend compatibility
-    const assetArray = [assetData];
-    return assetCompleteHttp.post<CreateAssetCompleteResponse>('/asset/complete', assetArray)
+    // Send single asset object directly
+    console.log("About to make API call to assetCompleteService.createAssetComplete");
+    console.log("Asset data:", assetData);
+    return assetCompleteHttp.post<CreateAssetCompleteResponse>('/asset/complete', assetData)
   }
 }
 
