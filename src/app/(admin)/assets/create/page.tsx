@@ -37,6 +37,8 @@ interface FormData {
   coverageType: string;
   coverageDescription: string;
   termsConditions: string;
+  included: string;
+  excluded: string;
 }
 
 // Form errors interface
@@ -63,6 +65,8 @@ interface FormErrors {
   coverageType?: string;
   coverageDescription?: string;
   termsConditions?: string;
+  included?: string;
+  excluded?: string;
 }
 
 export default function AssetPage() {
@@ -108,6 +112,8 @@ export default function AssetPage() {
     coverageType: "",
     coverageDescription: "",
     termsConditions: "",
+    included: "",
+    excluded: "",
   });
 
   // Form errors state
@@ -232,6 +238,33 @@ export default function AssetPage() {
     return end.toISOString().split('T')[0];
   };
 
+  // Calculate warranty period in months based on start and end dates
+  const calculateWarrantyPeriod = (startDate: string, endDate: string): number => {
+    if (!startDate || !endDate) return 0;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    // Calculate the difference in years and months
+    const startYear = start.getFullYear();
+    const startMonth = start.getMonth();
+    const endYear = end.getFullYear();
+    const endMonth = end.getMonth();
+    
+    // Calculate total months difference
+    const totalMonths = (endYear - startYear) * 12 + (endMonth - startMonth);
+    
+    // Adjust for day of month
+    const startDay = start.getDate();
+    const endDay = end.getDate();
+    
+    // If end day is before start day, subtract 1 month
+    if (endDay < startDay) {
+      return Math.max(0, totalMonths - 1);
+    }
+    
+    return Math.max(0, totalMonths);
+  };
+
   // Handle form field changes
   const handleFieldChange = (field: keyof FormData, value: string | number) => {
     setFormData(prev => {
@@ -242,6 +275,15 @@ export default function AssetPage() {
         const startDate = field === 'warrantyStartDate' ? value as string : prev.warrantyStartDate;
         const duration = field === 'warrantyPeriod' ? value as number : prev.warrantyPeriod;
         updatedData.warrantyEndDate = calculateWarrantyEndDate(startDate, duration);
+      }
+      
+      // Auto-calculate warranty period when warranty start date or end date changes
+      if (field === 'warrantyStartDate' || field === 'warrantyEndDate') {
+        const startDate = field === 'warrantyStartDate' ? value as string : prev.warrantyStartDate;
+        const endDate = field === 'warrantyEndDate' ? value as string : prev.warrantyEndDate;
+        if (startDate && endDate) {
+          updatedData.warrantyPeriod = calculateWarrantyPeriod(startDate, endDate);
+        }
       }
       
       return updatedData;
@@ -354,6 +396,8 @@ export default function AssetPage() {
             coverageType: formData.coverageType,
             coverageDescription: formData.coverageDescription,
             termsConditions: formData.termsConditions,
+            included: formData.included,
+            excluded: formData.excluded,
             isActive: true,
             autoRenewal: false,
             consumerId: consumerId || "",
@@ -395,6 +439,8 @@ export default function AssetPage() {
         coverageType: "",
         coverageDescription: "",
         termsConditions: "",
+        included: "",
+        excluded: "",
       });
       setErrors({});
       
@@ -430,6 +476,8 @@ export default function AssetPage() {
       coverageType: "",
       coverageDescription: "",
       termsConditions: "",
+      included: "",
+      excluded: "",
     });
     setErrors({});
   };
@@ -772,7 +820,7 @@ export default function AssetPage() {
                     <IconifyIcon icon="tabler:shield-check" className="me-2" />
                     Warranty Information
                   </h5>
-                  {/* Row 1: Warranty Type, Coverage Type, Warranty Start Date */}
+                  {/* Row 1: Warranty Type, Coverage Type, Warranty Period */}
                   <Row>
                     <Col lg={4}>
                       <div className="mb-3">
@@ -832,27 +880,6 @@ export default function AssetPage() {
 
                     <Col lg={4}>
                       <div className="mb-3">
-                        <Form.Label htmlFor="warrantyStartDate">Warranty Start Date *</Form.Label>
-                        <Form.Control
-                          type="date"
-                          id="warrantyStartDate"
-                          value={formData.warrantyStartDate}
-                          onChange={(e) => handleFieldChange("warrantyStartDate", e.target.value)}
-                          isInvalid={!!errors.warrantyStartDate}
-                        />
-                        {errors.warrantyStartDate && (
-                          <Form.Control.Feedback type="invalid">
-                            {errors.warrantyStartDate}
-                          </Form.Control.Feedback>
-                        )}
-                      </div>
-                    </Col>
-                  </Row>
-
-                  {/* Row 2: Warranty Period, Warranty End Date */}
-                  <Row>
-                    <Col lg={4}>
-                      <div className="mb-3">
                         <Form.Label htmlFor="warrantyPeriod">Warranty Period (months) *</Form.Label>
                         <Form.Control
                           type="number"
@@ -870,6 +897,27 @@ export default function AssetPage() {
                         )}
                       </div>
                     </Col>
+                  </Row>
+
+                  {/* Row 2: Warranty Start Date, Warranty End Date, Included */}
+                  <Row>
+                    <Col lg={4}>
+                      <div className="mb-3">
+                        <Form.Label htmlFor="warrantyStartDate">Warranty Start Date *</Form.Label>
+                        <Form.Control
+                          type="date"
+                          id="warrantyStartDate"
+                          value={formData.warrantyStartDate}
+                          onChange={(e) => handleFieldChange("warrantyStartDate", e.target.value)}
+                          isInvalid={!!errors.warrantyStartDate}
+                        />
+                        {errors.warrantyStartDate && (
+                          <Form.Control.Feedback type="invalid">
+                            {errors.warrantyStartDate}
+                          </Form.Control.Feedback>
+                        )}
+                      </div>
+                    </Col>
                     
                     <Col lg={4}>
                       <div className="mb-3">
@@ -878,10 +926,50 @@ export default function AssetPage() {
                           type="date"
                           id="warrantyEndDate"
                           value={formData.warrantyEndDate}
-                          readOnly
-                          className="bg-light"
+                          onChange={(e) => handleFieldChange("warrantyEndDate", e.target.value)}
+                          isInvalid={!!errors.warrantyEndDate}
                         />
-                        <small className="text-muted">Automatically calculated based on start date and period</small>
+                      </div>
+                    </Col>
+
+                    <Col lg={4}>
+                      <div className="mb-3">
+                        <Form.Label htmlFor="included">Included</Form.Label>
+                        <Form.Control
+                          type="text"
+                          id="included"
+                          placeholder="What's included in warranty"
+                          value={formData.included}
+                          onChange={(e) => handleFieldChange("included", e.target.value)}
+                          isInvalid={!!errors.included}
+                        />
+                        {errors.included && (
+                          <Form.Control.Feedback type="invalid">
+                            {errors.included}
+                          </Form.Control.Feedback>
+                        )}
+                      </div>
+                    </Col>
+                  </Row>
+
+                  {/* Row 3: Excluded */}
+                  <Row>
+                    <Col lg={4}>
+                      <div className="mb-3">
+                        <Form.Label htmlFor="excluded">Excluded</Form.Label>
+                        <Form.Control
+                          type="text"
+                          id="excluded"
+                          placeholder="What's excluded from warranty"
+                          value={formData.excluded}
+                          onChange={(e) => handleFieldChange("excluded", e.target.value)}
+                          isInvalid={!!errors.excluded}
+                        />
+                        {errors.excluded && (
+                          <Form.Control.Feedback type="invalid">
+                            {errors.excluded}
+                          </Form.Control.Feedback>
+                        )}
                       </div>
                     </Col>
                     
