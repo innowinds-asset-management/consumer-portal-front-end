@@ -61,7 +61,17 @@ const GrnDetailPage = () => {
     poLineItemId: '',
     supplierId: '',
     consumerId: '',
-    serialNumbers: ''
+    serialNumbers: '',
+    // Warranty fields
+    warrantyType: '',
+    warrantyStartDate: new Date().toISOString().split('T')[0],
+    warrantyEndDate: new Date().toISOString().split('T')[0],
+    warrantyPeriod: 0,
+    coverageType: '',
+    coverageDescription: '',
+    termsConditions: '',
+    included: '',
+    excluded: ''
   })
 
   useEffect(() => {
@@ -119,7 +129,17 @@ const GrnDetailPage = () => {
       poLineItemId: item.poLineItemId,
       supplierId: '',
       consumerId: '',
-      serialNumbers: ''
+      serialNumbers: '',
+      // Warranty fields
+      warrantyType: '',
+      warrantyStartDate: new Date().toISOString().split('T')[0],
+      warrantyEndDate: new Date().toISOString().split('T')[0],
+      warrantyPeriod: 0,
+      coverageType: '',
+      coverageDescription: '',
+      termsConditions: '',
+      included: '',
+      excluded: ''
     })
   }
 
@@ -138,7 +158,17 @@ const GrnDetailPage = () => {
       poLineItemId: '',
       supplierId: '',
       consumerId: '',
-      serialNumbers: ''
+      serialNumbers: '',
+      // Warranty fields
+      warrantyType: '',
+      warrantyStartDate: new Date().toISOString().split('T')[0],
+      warrantyEndDate: new Date().toISOString().split('T')[0],
+      warrantyPeriod: 0,
+      coverageType: '',
+      coverageDescription: '',
+      termsConditions: '',
+      included: '',
+      excluded: ''
     })
   }
 
@@ -213,7 +243,7 @@ const GrnDetailPage = () => {
         }
       }
       
-      // Generate single asset object
+      // Generate single asset object with nested warranty data
       const assetData = {
         assetSubType: assetForm.assetSubType,
         assetType: assetForm.assetType,
@@ -227,7 +257,20 @@ const GrnDetailPage = () => {
         qtyAccepted: selectedItem?.qtyAccepted || 0,
         supplierId: finalSupplierId,
         consumerSerialNo: serialNumbers.length > 0 ? serialNumbers[0] : "", // Use first serial number if provided, otherwise empty string
-        consumerSerialNoArray: serialNumbers // Array of all serial numbers from textarea
+        consumerSerialNoArray: serialNumbers, // Array of all serial numbers from textarea
+        warranty: {
+          warrantyTypeId: assetForm.warrantyType ? parseInt(String(assetForm.warrantyType)) : 1,
+          startDate: assetForm.warrantyStartDate || new Date().toISOString().split('T')[0],
+          endDate: assetForm.warrantyEndDate || new Date().toISOString().split('T')[0],
+          warrantyPeriod: assetForm.warrantyPeriod || 0,
+          coverageType: assetForm.coverageType || "parts",
+          included: assetForm.included || "",
+          excluded: assetForm.excluded || "",
+          isActive: true,
+          autoRenewal: false,
+          consumerId: storedConsumerId,
+          supplierId: finalSupplierId
+        }
       }
       
       console.log('Generated asset data:', assetData)

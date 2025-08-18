@@ -109,32 +109,7 @@ export interface ServiceRequest {
   assetConditionCode: string;
 }
 
-// Create Asset Request interface
-export interface CreateAssetRequest {
-  assetTypeId: string;
-  assetSubTypeId: string;
-  assetName: string;
-  consumerId: string;
-  partNo: string;
-  supplierId: string;
-  supplierSerialNo: string;
-  consumerSerialNo: string;
-  poLineItemId: string;
-  warrantyPeriod: number;
-  departmentId: string;
-  warrantyStartDate: string;
-  warrantyEndDate: string;
-  warrantyId: string;
-  installationDate: string;
-  brand: string;
-  grnId: string;
-  grnItemId: string;
-  model: string;
-  subModel: string;
-  supplierCode: string;
-  supplierName: string;
-  isActive: boolean;
-}
+
 
 // Create a separate HTTP client for asset API calls
 class AssetHttpClient {
@@ -143,75 +118,25 @@ class AssetHttpClient {
 
   constructor() {
     this.baseURL = ASSET_API_URL
-    this.defaultHeaders = {
-      'Content-Type': 'application/json',
-    }
+    this.defaultHeaders = { 'Content-Type': 'application/json' }
   }
 
-  private getHeaders(): Record<string, string> {
-    return { ...this.defaultHeaders }
-  }
-
-  async get<T>(endpoint: string): Promise<T> {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseURL}${endpoint}`
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: this.getHeaders(),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    return response.json()
+    const res = await fetch(url, { headers: this.defaultHeaders, ...options })
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`)
+    return res.json()
   }
 
-  async post<T>(endpoint: string, data: any): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`
-    
-    console.log('Making POST request to:', url)
-    console.log('Request data:', data)
-    
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify(data),
-      })
-
-      console.log('Response status:', response.status)
-      console.log('Response headers:', response.headers)
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Response error text:', errorText)
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`)
-      }
-
-      const result = await response.json()
-      console.log('Response data:', result)
-      return result
-    } catch (error) {
-      console.error('Fetch error details:', error)
-      throw error
-    }
-  }
+  get<T>(endpoint: string) { return this.request<T>(endpoint, { method: 'GET' }) }
+  post<T>(endpoint: string, body: any) { return this.request<T>(endpoint, { method: 'POST', body: JSON.stringify(body) }) }
 }
 
 const assetHttp = new AssetHttpClient()
 
 // Assets API service
 class AssetsService {
-  // Create a new asset
-  async createAsset(assetData: CreateAssetRequest): Promise<Asset> {
-    try {
-      const response = await assetHttp.post<Asset>('/asset', assetData)
-      return response
-    } catch (error) {
-      console.error('Error creating asset:', error)
-      throw error
-    }
-  }
+
 
   // Get all assets with optional query parameters
   async getAssets(params?: { consumerId?: string; supplierId?: string; departmentId?: string }): Promise<Asset[]> {
