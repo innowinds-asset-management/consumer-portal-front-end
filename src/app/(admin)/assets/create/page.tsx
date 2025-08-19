@@ -23,6 +23,7 @@ interface FormData {
   model: string;
   subModel: string;
   installationDate: string;
+  installStatus: string;
   buildingNumber: string;
   departmentId: string;
   floorNumber: string;
@@ -51,6 +52,7 @@ interface FormErrors {
   model?: string;
   subModel?: string;
   installationDate?: string;
+  installStatus?: string;
   buildingNumber?: string;
   departmentId?: string;
   floorNumber?: string;
@@ -98,6 +100,7 @@ export default function AssetPage() {
     model: "",
     subModel: "",
     installationDate: "",
+    installStatus: "",
     buildingNumber: "",
     departmentId: "",
     floorNumber: "",
@@ -306,6 +309,7 @@ export default function AssetPage() {
     if (!formData.brand.trim()) newErrors.brand = "Brand is required";
     if (!formData.model.trim()) newErrors.model = "Model is required";
     if (!formData.installationDate) newErrors.installationDate = "Installation date is required";
+    if (!formData.installStatus) newErrors.installStatus = "Installation status is required";
     if (!formData.buildingNumber.trim()) newErrors.buildingNumber = "Building number is required";
     if (!formData.departmentId) newErrors.departmentId = "Department is required";
     if (!formData.floorNumber.trim()) newErrors.floorNumber = "Floor number is required";
@@ -369,6 +373,7 @@ export default function AssetPage() {
           warrantyStartDate: new Date(formData.warrantyStartDate).toISOString(),
           warrantyEndDate: new Date(formData.warrantyEndDate).toISOString(),
           installationDate: new Date(formData.installationDate).toISOString(),
+          installStatus: formData.installStatus,
           brand: formData.brand,
           model: formData.model,
           subModel: formData.subModel,
@@ -388,7 +393,7 @@ export default function AssetPage() {
           roomNumber: formData.roomNumber || "",
           isCurrentLocation: true
         },
-                  warranty: {
+        warranty: {
             warrantyTypeId: parseInt(String(formData.warrantyType)) || 1,
             startDate: formData.warrantyStartDate,
             endDate: formData.warrantyEndDate,
@@ -427,6 +432,7 @@ export default function AssetPage() {
         model: "",
         subModel: "",
         installationDate: "",
+        installStatus: "",
         buildingNumber: "",
         departmentId: "",
         floorNumber: "",
@@ -464,6 +470,7 @@ export default function AssetPage() {
       model: "",
       subModel: "",
       installationDate: "",
+      installStatus: "",
       buildingNumber: "",
       departmentId: "",
       floorNumber: "",
@@ -529,26 +536,27 @@ export default function AssetPage() {
                       <IconifyIcon icon="tabler:cube" className="me-2" />
                       Asset Information
                     </h5>
+                    {/* Row 1: Asset Type, Sub Asset Type, Asset Name */}
                     <Row>
                       <Col lg={4}>
                         <div className="mb-3">
                           <Form.Label htmlFor="assetType">Asset Type *</Form.Label>
-                                                <Form.Select 
-                        id="assetType"
-                        value={formData.assetType}
-                        onChange={(e) => handleFieldChange("assetType", e.target.value)}
-                        isInvalid={!!errors.assetType}
-                        disabled={loadingAssetTypes}
-                      >
-                        <option value="">
-                          {loadingAssetTypes ? "Loading asset types..." : "Select asset type"}
-                        </option>
-                        {assetTypes.map((assetType) => (
-                          <option key={assetType.id} value={assetType.id}>
-                            {assetType.assetName} ({assetType.code})
-                          </option>
-                        ))}
-                      </Form.Select>
+                          <Form.Select 
+                            id="assetType"
+                            value={formData.assetType}
+                            onChange={(e) => handleFieldChange("assetType", e.target.value)}
+                            isInvalid={!!errors.assetType}
+                            disabled={loadingAssetTypes}
+                          >
+                            <option value="">
+                              {loadingAssetTypes ? "Loading asset types..." : "Select asset type"}
+                            </option>
+                            {assetTypes.map((assetType) => (
+                              <option key={assetType.id} value={assetType.id}>
+                                {assetType.assetName} ({assetType.code})
+                              </option>
+                            ))}
+                          </Form.Select>
                           {loadingAssetTypes && (
                             <div className="mt-2">
                               <small className="text-muted">Loading asset types...</small>
@@ -614,6 +622,7 @@ export default function AssetPage() {
                       </Col>
                     </Row>
 
+                    {/* Row 2: Brand, Model, Sub Model */}
                     <Row>
                       <Col lg={4}>
                         <div className="mb-3">
@@ -673,6 +682,7 @@ export default function AssetPage() {
                       </Col>
                     </Row>
 
+                    {/* Row 3: Installation Date, Installation Status, Supplier */}
                     <Row>
                       <Col lg={4}>
                         <div className="mb-3">
@@ -687,6 +697,28 @@ export default function AssetPage() {
                           {errors.installationDate && (
                             <Form.Control.Feedback type="invalid">
                               {errors.installationDate}
+                            </Form.Control.Feedback>
+                          )}
+                        </div>
+                      </Col>
+                      
+                      <Col lg={4}>
+                        <div className="mb-3">
+                          <Form.Label htmlFor="installStatus">Installation Status *</Form.Label>
+                          <Form.Select
+                            id="installStatus"
+                            value={formData.installStatus}
+                            onChange={(e) => handleFieldChange("installStatus", e.target.value)}
+                            isInvalid={!!errors.installStatus}
+                          >
+                            <option value="">Select installation status</option>
+                            <option value="Installable">Installable</option>
+                            <option value="Installed">Installed</option>
+                            <option value="ReadyToUse">Ready To Use</option>
+                          </Form.Select>
+                          {errors.installStatus && (
+                            <Form.Control.Feedback type="invalid">
+                              {errors.installStatus}
                             </Form.Control.Feedback>
                           )}
                         </div>
@@ -719,26 +751,9 @@ export default function AssetPage() {
                         </div>
                       </Col>
 
-                      <Col lg={4}>
-                        <div className="mb-3">
-                          <Form.Label htmlFor="buildingNumber">Building Number *</Form.Label>
-                          <Form.Control
-                            type="text"
-                            id="buildingNumber"
-                            placeholder="Enter building number"
-                            value={formData.buildingNumber}
-                            onChange={(e) => handleFieldChange("buildingNumber", e.target.value)}
-                            isInvalid={!!errors.buildingNumber}
-                          />
-                          {errors.buildingNumber && (
-                            <Form.Control.Feedback type="invalid">
-                              {errors.buildingNumber}
-                            </Form.Control.Feedback>
-                          )}
-                        </div>
-                      </Col>
                     </Row>
 
+                    {/* Row 4: Department, Building Number, Floor Number */}
                     <Row>
                       <Col lg={4}>
                         <div className="mb-3">
@@ -774,6 +789,25 @@ export default function AssetPage() {
                       
                       <Col lg={4}>
                         <div className="mb-3">
+                          <Form.Label htmlFor="buildingNumber">Building Number *</Form.Label>
+                          <Form.Control
+                            type="text"
+                            id="buildingNumber"
+                            placeholder="Enter building number"
+                            value={formData.buildingNumber}
+                            onChange={(e) => handleFieldChange("buildingNumber", e.target.value)}
+                            isInvalid={!!errors.buildingNumber}
+                          />
+                          {errors.buildingNumber && (
+                            <Form.Control.Feedback type="invalid">
+                              {errors.buildingNumber}
+                            </Form.Control.Feedback>
+                          )}
+                        </div>
+                      </Col>
+
+                      <Col lg={4}>
+                        <div className="mb-3">
                           <Form.Label htmlFor="floorNumber">Floor Number *</Form.Label>
                           <Form.Control
                             type="text"
@@ -790,7 +824,10 @@ export default function AssetPage() {
                           )}
                         </div>
                       </Col>
+                    </Row>
 
+                    {/* Row 5: Room Number */}
+                    <Row>
                       <Col lg={4}>
                         <div className="mb-3">
                           <Form.Label htmlFor="roomNumber">Room Number *</Form.Label>
@@ -808,6 +845,9 @@ export default function AssetPage() {
                             </Form.Control.Feedback>
                           )}
                         </div>
+                      </Col>
+                      <Col lg={8}>
+                        {/* Empty space for balance */}
                       </Col>
                     </Row>
                   </CardBody>

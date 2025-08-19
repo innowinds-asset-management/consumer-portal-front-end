@@ -28,6 +28,7 @@ export interface AssetData {
   floorNumber: string;
   roomNumber: string;
   isCurrentLocation: boolean;
+  installStatus: string;
 }
 
 // Warranty interface

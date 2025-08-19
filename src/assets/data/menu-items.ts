@@ -23,6 +23,7 @@ export const MENU_ITEMS: MenuItemType[] = [
   //   label: 'Apps',
   //   isTitle: true,
   // },
+  
    {
         key: 'purchaseorders',
         label: 'Purchase Orders',
@@ -31,19 +32,50 @@ export const MENU_ITEMS: MenuItemType[] = [
        
       }, 
       {
+        key: 'assets',
+        label: 'Assets',
+        icon: FileText,
+        children: [
+          {
+            key: 'assets',
+            label: 'Assets',
+            url: '/assets',
+            parentKey: 'assets',
+          },
+          {
+            key: 'received-assets',
+            label: 'Received Assets',
+            url: '/assets?type=received',
+            parentKey: 'assets',
+          },
+          {
+            key: 'active-assets',
+            label: 'Active Assets',
+            url: '/assets?type=active',
+            parentKey: 'assets',
+          },
+          {
+            key: 'retire-assets',
+            label: 'Retire Assets',
+            url: '/assets?type=retire',
+            parentKey: 'assets',
+          },
+        ],
+      },
+      {
         key: 'grn',
         label: 'GRN',
          icon: HandCoins,
         url: '/grn ',
        
       }, 
-      {
-        key: 'assets',
-        label: 'Assets',
-        icon: Shapes,
-        url: '/assets ',
+      // {
+      //   key: 'assets',
+      //   label: 'Assets',
+      //   icon: Shapes,
+      //   url: '/assets ',
         
-      },
+      // },
       {
         key: 'departments',
         label: 'Departments',
@@ -57,6 +89,8 @@ export const MENU_ITEMS: MenuItemType[] = [
         url: '/warranty ',
         parentKey: 'warranty',
       },
+      
+
   // {
   //   key: 'receive',
   //   label: 'Receive',
