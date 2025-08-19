@@ -37,26 +37,26 @@ export const MENU_ITEMS: MenuItemType[] = [
         icon: FileText,
         children: [
           {
-            key: 'assets',
-            label: 'Assets',
+            key: 'all-assets',
+            label: 'All Assets',
             url: '/assets',
             parentKey: 'assets',
           },
           {
             key: 'received-assets',
-            label: 'Received Assets',
+            label: 'Received',
             url: '/assets?type=received',
             parentKey: 'assets',
           },
           {
             key: 'active-assets',
-            label: 'Active Assets',
+            label: 'Active',
             url: '/assets?type=active',
             parentKey: 'assets',
           },
           {
             key: 'retire-assets',
-            label: 'Retire Assets',
+            label: 'Retired',
             url: '/assets?type=retire',
             parentKey: 'assets',
           },
