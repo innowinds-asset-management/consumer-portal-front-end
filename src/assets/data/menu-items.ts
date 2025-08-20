@@ -149,6 +149,12 @@ export const MENU_ITEMS: MenuItemType[] = [
     url: '/suppliers',
   },
   {
+    key: 'inventory',
+    label: 'Inventory',
+    icon: Box,
+    url: '/inventory',
+  },
+  {
     key: 'servicecontracts',
     label: 'Serive Contracts',
     icon: FileText,
