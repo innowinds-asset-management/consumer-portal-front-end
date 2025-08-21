@@ -19,11 +19,11 @@ const TopNavigationBar = () => {
           <SearchBox />
         </div>
         <div className="d-flex align-items-center gap-2">
-          <Flags />
-          <Notifications />
-          <Apps />
-          <ThemeCustomizeToggle />
-          <ThemeModeToggle />
+          {/* <Flags /> */}
+          {/* <Notifications /> */}
+          {/* <Apps /> */}
+          {/* <ThemeCustomizeToggle /> */}
+          {/* <ThemeModeToggle /> */}
           <ProfileDropdown />
         </div>
       </div>
