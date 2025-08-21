@@ -12,6 +12,7 @@ import { STORAGE_KEYS } from "@/utils/constants";
 import { supplierService, Supplier } from '@/services/api/suppliers'
 import { warrantyTypeService, WarrantyType } from '@/services/api/warrantyTypes'
 import { assetWarrantyService, CreateAssetWarrantyRequest } from '@/services/api/assetWarranty'
+import { assetStatusService, AssetStatus } from '@/services/api/assetStatus'
 
 // Form data interface
 interface FormData {
@@ -24,6 +25,7 @@ interface FormData {
   subModel: string;
   installationDate: string;
   installStatus: string;
+  status: string;
   buildingNumber: string;
   departmentId: string;
   floorNumber: string;
@@ -53,6 +55,7 @@ interface FormErrors {
   subModel?: string;
   installationDate?: string;
   installStatus?: string;
+  status?: string;
   buildingNumber?: string;
   departmentId?: string;
   floorNumber?: string;
@@ -80,10 +83,12 @@ export default function AssetPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [warrantyTypes, setWarrantyTypes] = useState<WarrantyType[]>([]);
+  const [assetStatuses, setAssetStatuses] = useState<AssetStatus[]>([]);
   const [loadingAssetTypes, setLoadingAssetTypes] = useState(true);
   const [loadingDepartments, setLoadingDepartments] = useState(true);
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
   const [loadingWarrantyTypes, setLoadingWarrantyTypes] = useState(true);
+  const [loadingAssetStatuses, setLoadingAssetStatuses] = useState(true);
   const [assetTypesError, setAssetTypesError] = useState("");
   const [assetSubTypesError, setAssetSubTypesError] = useState("");
   const [departmentsError, setDepartmentsError] = useState("");
@@ -101,6 +106,7 @@ export default function AssetPage() {
     subModel: "",
     installationDate: "",
     installStatus: "",
+    status: "",
     buildingNumber: "",
     departmentId: "",
     floorNumber: "",
@@ -205,10 +211,28 @@ export default function AssetPage() {
       }
     };
 
+    const fetchAssetStatuses = async () => {
+      try {
+        setLoadingAssetStatuses(true);
+        const response = await assetStatusService.getAssetStatuses();
+        
+        if (response.success) {
+          setAssetStatuses(response.data);
+        } else {
+          console.error('Failed to fetch asset statuses:', response.error);
+        }
+      } catch (error) {
+        console.error('Error fetching asset statuses:', error);
+      } finally {
+        setLoadingAssetStatuses(false);
+      }
+    };
+
     fetchAssetTypes();
     fetchDepartments();
     fetchSuppliers();
     fetchWarrantyTypes();
+    fetchAssetStatuses();
   }, []);
 
   // Fetch asset sub-types when asset type changes
@@ -310,6 +334,7 @@ export default function AssetPage() {
     if (!formData.model.trim()) newErrors.model = "Model is required";
     if (!formData.installationDate) newErrors.installationDate = "Installation date is required";
     if (!formData.installStatus) newErrors.installStatus = "Installation status is required";
+
     if (!formData.buildingNumber.trim()) newErrors.buildingNumber = "Building number is required";
     if (!formData.departmentId) newErrors.departmentId = "Department is required";
     if (!formData.floorNumber.trim()) newErrors.floorNumber = "Floor number is required";
@@ -374,6 +399,7 @@ export default function AssetPage() {
           warrantyEndDate: new Date(formData.warrantyEndDate).toISOString(),
           installationDate: new Date(formData.installationDate).toISOString(),
           installStatus: formData.installStatus,
+          status: formData.status,
           brand: formData.brand,
           model: formData.model,
           subModel: formData.subModel,
@@ -433,6 +459,7 @@ export default function AssetPage() {
         subModel: "",
         installationDate: "",
         installStatus: "",
+        status: "",
         buildingNumber: "",
         departmentId: "",
         floorNumber: "",
@@ -471,6 +498,7 @@ export default function AssetPage() {
       subModel: "",
       installationDate: "",
       installStatus: "",
+      status: "",
       buildingNumber: "",
       departmentId: "",
       floorNumber: "",

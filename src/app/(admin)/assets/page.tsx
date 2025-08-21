@@ -26,6 +26,7 @@ interface Asset {
   floorNumber?: string;
   roomNumber?: string;
   isActive: boolean;
+  status?: string;
   // Nested data as per API payload
   supplier?: { name?: string };
   assetType?: { assetName?: string };
@@ -66,6 +67,8 @@ export default function AssetListingPage() {
         
         const data = await assetsService.getAssets(queryParams);
         const allAssets = Array.isArray(data) ? data : [];
+        console.log('Assets data:', allAssets); // Debug: Check if assets have status
+        console.log('First asset status:', allAssets[0]?.status); // Debug: Check first asset status
         setAssets(allAssets);
         setFilteredAssets(allAssets); // API already returns filtered results
       } catch (err) {
@@ -124,16 +127,57 @@ export default function AssetListingPage() {
     return "Active";
   };
 
+  // Get asset status display name based on status code
+  const getAssetStatusDisplay = (statusCode: string): string => {
+    if (!statusCode) return "N/A";    
+    switch (statusCode) {
+      case 'active':
+        return 'Active';
+      case 'installation_pending':
+        return 'Installation Pending';
+      case 'installed':
+        return 'Installed';
+      case 'received':        
+        return 'Received';
+      case 'retired':
+        return 'Retired';
+      default:
+        return statusCode.charAt(0).toUpperCase() + statusCode.slice(1).replace('_', ' ');
+    }
+  };
+
+  // Get asset status badge class
+  const getAssetStatusBadgeClass = (statusCode: string): string => {
+    if (!statusCode || statusCode === 'null') return 'bg-warning';
+    
+    switch (statusCode) {
+      case 'active':
+        return 'bg-success';
+      case 'installation_pending':
+      case 'installed':
+      case 'received':
+        return 'bg-primary';
+      case 'retired':
+        return 'bg-secondary';
+      default:
+        return 'bg-warning';
+    }
+  };
+
   // Prepare data for GridJS (in requested column order)
-  const gridData = filteredAssets.map((asset) => [
-    asset.assetName || "",
-    asset.assetType?.assetName || "",
-    asset.assetSubType?.name || "",
-    asset.department?.deptName || asset.departmentName || "",
-    [asset.brand, asset.model].filter(Boolean).join(" - ") || "",
-    asset.supplier?.name || "",
-    getWarrantyStatus(asset.warrantyStartDate, asset.warrantyEndDate)
-  ]);
+  const gridData = filteredAssets.map((asset) => {
+    console.log('Asset status for grid:', asset.assetName, '->', asset.status); // Debug: Check each asset status
+    return [
+      asset.assetName || "",
+      asset.assetType?.assetName || "",
+      asset.assetSubType?.name || "",
+      asset.department?.deptName || asset.departmentName || "",
+      [asset.brand, asset.model].filter(Boolean).join(" - ") || "",
+      asset.supplier?.name || "",
+      asset.status || "", // Asset Status
+      getWarrantyStatus(asset.warrantyStartDate, asset.warrantyEndDate)
+    ];
+  });
 
   return (
     <>
@@ -178,6 +222,21 @@ export default function AssetListingPage() {
                 { name: "Department", sort: false, search: true },
                 { name: "Model", sort: false, search: true },
                 { name: "Supplier", sort: false, search: true },
+                { 
+                  name: "Status", 
+                  sort: false, 
+                  search: true,
+                  formatter: (cell: any) => {                   
+                    const statusCode = cell;                   
+                    
+                    if (!statusCode || statusCode === 'null' || statusCode === '') {
+                      return 'N/A';
+                    }
+                    
+                    const displayName = getAssetStatusDisplay(statusCode);
+                    return displayName;
+                  }
+                },
                 { 
                   name: "Warranty Status", 
                   sort: false, 

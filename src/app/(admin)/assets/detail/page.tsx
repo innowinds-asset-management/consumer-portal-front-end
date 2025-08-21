@@ -5,12 +5,13 @@ import PageTitle from '@/components/PageTitle'
 import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import ServiceRequestTab from '@/components/ServiceRequestTab'
-import { Card, CardBody, Col, Nav, NavItem, NavLink, Row, TabContainer, TabContent, TabPane, Badge, Table, Alert, Button } from 'react-bootstrap'
+import { Card, CardBody, Col, Nav, NavItem, NavLink, Row, TabContainer, TabContent, TabPane, Badge, Table, Alert, Button, Modal, Form } from 'react-bootstrap'
 import { assetsService, Asset } from '@/services/api/assets'
 import { assetTypesService, AssetType } from '@/services/api/assetTypes'
 import { assetSubTypesService, AssetSubType } from '@/services/api/assetSubTypes'
 import { departmentService, Department } from '@/services/api/departments'
 import { warrantyService, Warranty } from '@/services/api/warranty'
+import { assetStatusService, AssetStatus } from '@/services/api/assetStatus'
 import { Location } from '@/services/api/assets'
 import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation';
@@ -32,6 +33,15 @@ export default function AssetDetailPage() {
   const [loadingWarranties, setLoadingWarranties] = useState(false);
   const [warrantiesLoaded, setWarrantiesLoaded] = useState(false);
   const [error, setError] = useState("");
+  
+  // Modal and Asset Status states
+  const [showUpdateStatusModal, setShowUpdateStatusModal] = useState(false);
+  const [assetStatuses, setAssetStatuses] = useState<any[]>([]);
+  const [loadingAssetStatuses, setLoadingAssetStatuses] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState("");
+  
+  // Message states
+  const [message, setMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({ type: null, text: '' });
 
   useEffect(() => {
     const fetchAssetDetails = async () => {
@@ -99,6 +109,60 @@ export default function AssetDetailPage() {
     }
   };
 
+  const fetchAssetStatuses = async () => {
+    try {
+      setLoadingAssetStatuses(true);
+      const response = await assetStatusService.getAssetStatuses();
+      
+      if (response.success) {
+        setAssetStatuses(response.data);
+      } else {
+        console.error('Failed to fetch asset statuses:', response.error);
+      }
+    } catch (error) {
+      console.error('Error fetching asset statuses:', error);
+    } finally {
+      setLoadingAssetStatuses(false);
+    }
+  };
+
+  const handleUpdateStatusClick = () => {
+    setShowUpdateStatusModal(true);
+    fetchAssetStatuses();
+  };
+
+  const handleCloseModal = () => {
+    setShowUpdateStatusModal(false);
+    setSelectedStatus("");
+  };
+
+  const handleStatusUpdate = async () => {
+    if (!selectedStatus) {
+      setMessage({ type: 'error', text: 'Please select a status' });
+      return;
+    }
+    
+    try {
+      const response = await assetsService.updateAsset(assetId!, { status: selectedStatus });
+      
+      if (response.success) {
+        setMessage({ type: 'success', text: 'Asset status updated successfully!' });
+        
+        // Refetch asset data to get the updated information
+        const updatedAssetData = await assetsService.getAssetById(assetId!);
+        setAsset(updatedAssetData);
+        
+        // Close modal after successful update
+        handleCloseModal();
+      } else {
+        setMessage({ type: 'error', text: response.error || 'Failed to update asset status' });
+      }
+    } catch (error) {
+      console.error('Error updating asset status:', error);
+      setMessage({ type: 'error', text: 'Error updating asset status' });
+    }
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -145,7 +209,20 @@ export default function AssetDetailPage() {
       <PageTitle title="" />
 
       <ComponentContainerCard
-        title={`${asset.assetName}(${asset.consumerSerialNo})`}
+        title={
+          <div className="d-flex justify-content-between align-items-center">
+            <span>{`${asset.assetName}(${asset.consumerSerialNo})`}</span>
+            {(
+              <Button 
+                variant="primary" 
+                size="sm"
+                onClick={handleUpdateStatusClick}
+              >
+                Edit Status
+              </Button>
+            )}
+          </div>
+        }
       // description="Detailed information about the selected asset"
       >
         {/* Overview Section - Above Tabs */}
@@ -180,9 +257,17 @@ export default function AssetDetailPage() {
                       <strong>Part Number:</strong> {asset.partNo}
                     </div>
                     <div className="mb-3">
-                      <strong>Status:</strong>
-                      <Badge bg={asset.isActive ? 'success' : 'danger'} className="ms-2">
-                        {asset.isActive ? 'Active' : 'Inactive'}
+                      <strong>Asset Status:</strong>
+                      <Badge bg={
+                        asset.status === 'active' ? 'success' :
+                        ['installation_pending', 'installed', 'received'].includes(asset.status || '') ? 'primary' :
+                        asset.status === 'retired' ? 'secondary' : 'warning'
+                      } className="ms-2">
+                        {asset.status ? 
+                          ['installation_pending', 'installed', 'received'].includes(asset.status) ? 'Received' :
+                          asset.status.charAt(0).toUpperCase() + asset.status.slice(1).replace('_', ' ') : 
+                          'N/A'
+                        }
                       </Badge>
                     </div>
                   </Col>
@@ -474,6 +559,61 @@ export default function AssetDetailPage() {
           </TabContent>
         </TabContainer>
       </ComponentContainerCard>
+
+      {/* Message Display */}
+      {message.type && (
+        <div className={`alert alert-${message.type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`} 
+             style={{ top: '20px', right: '20px', zIndex: 9999, minWidth: '300px' }}>
+          {message.text}
+          <button type="button" className="btn-close" onClick={() => setMessage({ type: null, text: '' })}></button>
+        </div>
+      )}
+
+      {/* Update Status Modal */}
+      <Modal show={showUpdateStatusModal} onHide={handleCloseModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Update Asset Status</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {loadingAssetStatuses ? (
+            <div className="text-center py-4">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+              <p className="mt-2">Loading asset statuses...</p>
+            </div>
+          ) : (
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label>Select Asset Status</Form.Label>
+                <Form.Select 
+                  value={selectedStatus} 
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                >
+                  <option value="">Choose a status...</option>
+                  {assetStatuses.map((status) => (
+                    <option key={status.statusCode} value={status.statusCode}>
+                      {status.displayName}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+            </Form>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            Cancel
+          </Button>
+          <Button 
+            variant="primary" 
+            onClick={handleStatusUpdate}
+            disabled={!selectedStatus || loadingAssetStatuses}
+          >
+            Update Status
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 }

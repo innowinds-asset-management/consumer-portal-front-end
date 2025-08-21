@@ -34,6 +34,7 @@ export interface Asset {
     name: string;
     displayName: string;
   };
+  status?: string;
   createdAt?: string;
   updatedAt?: string;
   departmentId?: string | null;
@@ -130,6 +131,7 @@ class AssetHttpClient {
 
   get<T>(endpoint: string) { return this.request<T>(endpoint, { method: 'GET' }) }
   post<T>(endpoint: string, body: any) { return this.request<T>(endpoint, { method: 'POST', body: JSON.stringify(body) }) }
+  put<T>(endpoint: string, body: any) { return this.request<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) }) }
 }
 
 const assetHttp = new AssetHttpClient()
@@ -184,6 +186,17 @@ class AssetsService {
       return response
     } catch (error) {
       console.error('Error creating asset from GRN PO line item:', error)
+      throw error
+    }
+  }
+
+  // Update asset
+  async updateAsset(id: string, assetData: any): Promise<any> {
+    try {
+      const response = await assetHttp.put<any>(`/asset/${id}`, assetData)
+      return response
+    } catch (error) {
+      console.error('Error updating asset:', error)
       throw error
     }
   }
