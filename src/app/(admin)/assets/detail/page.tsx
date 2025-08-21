@@ -80,7 +80,12 @@ export default function AssetDetailPage() {
       }
     };
 
-    fetchAssetDetails();
+    const initializePage = async () => {
+      await fetchAssetDetails();
+      await fetchAssetStatuses(); // Fetch asset statuses on page load
+    };
+
+    initializePage();
   }, [assetId]);
 
 
@@ -258,17 +263,33 @@ export default function AssetDetailPage() {
                     </div>
                     <div className="mb-3">
                       <strong>Asset Status:</strong>
-                      <Badge bg={                        
-                        asset.status === 'active' ? 'success' :
-                        ['installation_pending', 'installed', 'received'].includes(asset.status || '') ? 'primary' :
-                        asset.status === 'retired' ? 'secondary' : 'warning'
-                      } className="ms-2">
-                        {asset.status ? 
-                          ['installation_pending', 'installed', 'received'].includes(asset.status) ? 'Received' :
-                          asset.status.charAt(0).toUpperCase() + asset.status.slice(1).replace('_', ' ') : 
-                          'N/A'
-                        }
+                        <Badge bg={
+                          (() => {
+                            if (!asset.status) return 'warning';
+                            const statusData = assetStatuses.find(s => s.statusCode === asset.status);
+                            if (!statusData) return 'warning';                            
+                            // Use group from assetStatuses to determine badge color
+                            switch (statusData.group) {
+                              case 'ACTIVE':
+                                return 'success';
+                              case 'PRE_ACTIVE':
+                                return 'primary';
+                              case 'RETIRED':
+                                return 'secondary';
+                              default:
+                                return 'warning';
+                            }
+                          })()
+                        } className="ms-2">
+                          {asset.status ? 
+                            (() => {
+                              const statusData = assetStatuses.find(s => s.statusCode === asset.status);
+                              return statusData ? statusData.displayName : 'N/A';
+                            })() : 
+                            'N/A'
+                          }
                       </Badge>
+
                     </div>
                   </Col>
                   <Col lg={6}>
