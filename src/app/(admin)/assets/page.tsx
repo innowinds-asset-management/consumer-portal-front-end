@@ -47,14 +47,14 @@ export default function AssetListingPage() {
   const consumerId = searchParams.get('cid');
   const supplierId = searchParams.get('sid');
   const departmentId = searchParams.get('did');
-
+  const groupstatus = searchParams.get('groupstatus');
   useEffect(() => {
     const fetchAssets = async () => {
       setLoading(true);
       setError("");
       try {
         // Build query parameters object
-        const queryParams: { consumerId?: string; supplierId?: string; departmentId?: string } = {};
+        const queryParams: { consumerId?: string; supplierId?: string; departmentId?: string ;groupstatus?: string} = {};
         if (consumerId) {
           queryParams.consumerId = consumerId;
         }
@@ -64,11 +64,11 @@ export default function AssetListingPage() {
         if (departmentId) {
           queryParams.departmentId = departmentId;
         }
-        
+        if (groupstatus) {
+          queryParams.groupstatus = groupstatus;
+        }
         const data = await assetsService.getAssets(queryParams);
-        const allAssets = Array.isArray(data) ? data : [];
-        console.log('Assets data:', allAssets); // Debug: Check if assets have status
-        console.log('First asset status:', allAssets[0]?.status); // Debug: Check first asset status
+        const allAssets = Array.isArray(data) ? data : [];       
         setAssets(allAssets);
         setFilteredAssets(allAssets); // API already returns filtered results
       } catch (err) {
@@ -79,7 +79,7 @@ export default function AssetListingPage() {
     };
 
     fetchAssets();
-  }, [consumerId, supplierId, departmentId]);
+  }, [consumerId, supplierId, departmentId, groupstatus]);
 
   // Add click handlers to asset names after grid is rendered
   useEffect(() => {
@@ -227,12 +227,10 @@ export default function AssetListingPage() {
                   sort: false, 
                   search: true,
                   formatter: (cell: any) => {                   
-                    const statusCode = cell;                   
-                    
+                    const statusCode = cell;   
                     if (!statusCode || statusCode === 'null' || statusCode === '') {
                       return 'N/A';
                     }
-                    
                     const displayName = getAssetStatusDisplay(statusCode);
                     return displayName;
                   }

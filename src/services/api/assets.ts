@@ -141,7 +141,7 @@ class AssetsService {
 
 
   // Get all assets with optional query parameters
-  async getAssets(params?: { consumerId?: string; supplierId?: string; departmentId?: string }): Promise<Asset[]> {
+  async getAssets(params?: { consumerId?: string; supplierId?: string; departmentId?: string; groupstatus?: string }): Promise<Asset[]> {
     try {
       let endpoint = '/asset'
       const queryParams = new URLSearchParams()
@@ -155,7 +155,9 @@ class AssetsService {
       if (params?.departmentId) {
         queryParams.append('departmentId', params.departmentId)
       }
-      
+      if (params?.groupstatus) {
+        queryParams.append('groupstatus', params.groupstatus)
+      }
       if (queryParams.toString()) {
         endpoint += `?${queryParams.toString()}`
       }

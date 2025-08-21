@@ -258,7 +258,7 @@ export default function AssetDetailPage() {
                     </div>
                     <div className="mb-3">
                       <strong>Asset Status:</strong>
-                      <Badge bg={
+                      <Badge bg={                        
                         asset.status === 'active' ? 'success' :
                         ['installation_pending', 'installed', 'received'].includes(asset.status || '') ? 'primary' :
                         asset.status === 'retired' ? 'secondary' : 'warning'
