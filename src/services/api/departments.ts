@@ -3,9 +3,7 @@ import { ASSET_API_URL } from '@/config/environment'
 export interface Department {
   deptId: string
   deptName: string
-  description?: string
   consumerId: string
-  isActive: boolean
   createdAt: string
   updatedAt: string
   assetCount?: number
