@@ -5,12 +5,31 @@ import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { Card, CardBody, Col, Row, Badge, Table, Button } from 'react-bootstrap'
 import { useRouter } from 'next/navigation';
 import { departmentInventoryService, DepartmentInventory } from '@/services/api/departmentInventory';
+import { ImExit } from "react-icons/im";
+import TransferInventoryModal from '@/components/TransferInventoryModal';
 
 interface DepartmentInventoryTabsProps {
   departmentId?: string;
   showCreateButton?: boolean;
   title?: string;
   className?: string;
+}
+
+interface InventoryListItem {
+  id: string;
+  itemName: string;
+  quantity: number;
+  unitMeasure?: string;
+  minStock?: number;
+  consumerId: string;
+  createdAt: string;
+  updatedAt: string;
+  itemNo?: string;
+  consumer?: {
+    id: string;
+    email: string;
+    company?: string;
+  };
 }
 
 export default function DepartmentInventoryTabs({ 
@@ -24,6 +43,10 @@ export default function DepartmentInventoryTabs({
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState("");
+
+  // Transfer modal state
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [selectedInventory, setSelectedInventory] = useState<InventoryListItem | null>(null);
 
   const loadDepartmentInventory = async () => {
     if (loaded || !departmentId) return;
@@ -56,6 +79,29 @@ export default function DepartmentInventoryTabs({
 
   const handleInventoryClick = (inventoryId: string) => {
     router.push(`/inventory/detail?invId=${inventoryId}`);
+  };
+
+  const handleTransferClick = (item: DepartmentInventory) => {
+    const inventoryItem: InventoryListItem = {
+      id: item.inventory.id,
+      itemName: item.inventory.itemName,
+      quantity: item.quantity, // Use department inventory quantity
+      unitMeasure: item.inventory.unitMeasure,
+      consumerId: "", // Not available in DepartmentInventory interface
+      createdAt: item.createdAt, // Use department inventory created date
+      updatedAt: item.updatedAt, // Use department inventory updated date
+      itemNo: item.inventory.itemNo
+    };
+    setSelectedInventory(inventoryItem);
+    setShowTransferModal(true);
+  };
+
+  const handleTransferSuccess = () => {
+    setShowTransferModal(false);
+    setSelectedInventory(null);
+    // Refresh the department inventory data
+    setLoaded(false);
+    loadDepartmentInventory();
   };
 
   const formatDate = (dateString: string) => {
@@ -121,12 +167,13 @@ export default function DepartmentInventoryTabs({
                         <th>Quantity</th>
                         <th>Last Updated</th>
                         <th>Created</th>
+                        <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {departmentInventory.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="text-center text-muted">
+                          <td colSpan={7} className="text-center text-muted">
                             No inventory items found for this department
                           </td>
                         </tr>
@@ -154,6 +201,21 @@ export default function DepartmentInventoryTabs({
                             </td>
                             <td>{item.updatedAt ? formatDate(item.updatedAt) : 'N/A'}</td>
                             <td>{item.createdAt ? formatDate(item.createdAt) : 'N/A'}</td>
+                            <td>
+                              <Button
+                                variant="link"
+                                size="sm"
+                                onClick={() => handleTransferClick(item)}
+                                style={{ 
+                                  padding: '4px 8px',
+                                  color: '#0d6efd',
+                                  textDecoration: 'none'
+                                }}
+                                title="Return Inventory"
+                              >
+                                <ImExit size={20} />
+                              </Button>
+                            </td>
                           </tr>
                         ))
                       )}
@@ -170,6 +232,16 @@ export default function DepartmentInventoryTabs({
           </Card>
         </Col>
       </Row>
+
+      {/* Transfer Inventory Modal */}
+      <TransferInventoryModal
+        show={showTransferModal}
+        onHide={() => setShowTransferModal(false)}
+        selectedInventory={selectedInventory}
+        onSuccess={handleTransferSuccess}
+        isDepartmentInventory={true}
+        fixedDepartmentId={departmentId}
+      />
     </div>
   );
 }

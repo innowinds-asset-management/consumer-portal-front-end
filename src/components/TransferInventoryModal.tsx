@@ -29,13 +29,17 @@ interface TransferInventoryModalProps {
   onHide: () => void;
   selectedInventory: InventoryListItem | null;
   onSuccess: () => void;
+  isDepartmentInventory?: boolean;
+  fixedDepartmentId?: string;
 }
 
 export default function TransferInventoryModal({ 
   show, 
   onHide, 
   selectedInventory, 
-  onSuccess 
+  onSuccess,
+  isDepartmentInventory = false,
+  fixedDepartmentId
 }: TransferInventoryModalProps) {
   const [transactionTypes, setTransactionTypes] = useState<InventoryTransactionType[]>([]);
   const [loadingTransactionTypes, setLoadingTransactionTypes] = useState(false);
@@ -46,6 +50,7 @@ export default function TransferInventoryModal({
   const [transferSuccess, setTransferSuccess] = useState<string>("");
   const [departmentInventory, setDepartmentInventory] = useState<DepartmentInventory | null>(null);
   const [loadingDepartmentInventory, setLoadingDepartmentInventory] = useState(false);
+  const [currentDepartmentName, setCurrentDepartmentName] = useState<string>("");
 
   // Transfer form state
   const [transferForm, setTransferForm] = useState<InventoryTransferRequest>({
@@ -64,7 +69,7 @@ export default function TransferInventoryModal({
         inventoryId: selectedInventory.id,
         quantity: 0,
         transactionTypeCode: "",
-        departmentId: "",
+        departmentId: isDepartmentInventory && fixedDepartmentId ? fixedDepartmentId : "",
         supplierId: "",
         grnItemId: "",
         poLineItemId: "",
@@ -80,12 +85,12 @@ export default function TransferInventoryModal({
         fetchTransactionTypes();
       }
 
-      // Fetch departments if not already loaded
+      // Fetch departments if not already loaded (needed for both modes to display department names)
       if (departments.length === 0) {
         fetchDepartments();
       }
     }
-  }, [show, selectedInventory]);
+  }, [show, selectedInventory, isDepartmentInventory, fixedDepartmentId]);
 
   // Fetch department inventory when department or transaction type changes
   useEffect(() => {
@@ -97,11 +102,31 @@ export default function TransferInventoryModal({
     }
   }, [transferForm.departmentId, transferForm.transactionTypeCode]);
 
+  // Update current department name when departments are loaded or department ID changes
+  useEffect(() => {
+    if (transferForm.departmentId && departments.length > 0) {
+      const department = departments.find(dept => dept.deptId === transferForm.departmentId);
+      setCurrentDepartmentName(department?.deptName || "");
+    } else {
+      setCurrentDepartmentName("");
+    }
+  }, [transferForm.departmentId, departments]);
+
   const fetchTransactionTypes = async () => {
     setLoadingTransactionTypes(true);
     try {
       const types = await inventoryTransactionTypeService.getAllTransactionTypes();
-      setTransactionTypes(types);
+      
+      // Filter transaction types for department inventory mode
+      if (isDepartmentInventory) {
+        const filteredTypes = types.filter(type => 
+          type.code === INVENTORY_TRANSACTION_TYPES.DEPT_EXPIRED_RETURN || 
+          type.code === INVENTORY_TRANSACTION_TYPES.DEPT_GENERAL_RETURN
+        );
+        setTransactionTypes(filteredTypes);
+      } else {
+        setTransactionTypes(types);
+      }
     } catch (err: any) {
       console.error("Error fetching transaction types:", err);
       setTransferError("Failed to load transaction types. Please refresh the page and try again.");
@@ -383,7 +408,7 @@ export default function TransferInventoryModal({
                 <Form.Select
                   value={transferForm.departmentId}
                   onChange={(e) => handleTransferFormChange('departmentId', e.target.value)}
-                  disabled={loadingDepartments || transferLoading || transferForm.transactionTypeCode === INVENTORY_TRANSACTION_TYPES.IN}
+                  disabled={loadingDepartments || transferLoading || transferForm.transactionTypeCode === INVENTORY_TRANSACTION_TYPES.IN || isDepartmentInventory}
                   className={DEPARTMENT_REQUIRED_TRANSACTION_TYPES.includes(transferForm.transactionTypeCode as any) && !transferForm.departmentId && transferForm.transactionTypeCode !== INVENTORY_TRANSACTION_TYPES.IN ? 'border-danger' : ''}
                 >
                   <option value="">Select Department</option>
@@ -398,7 +423,12 @@ export default function TransferInventoryModal({
                     <small className="text-muted">Loading departments...</small>
                   </div>
                 )}
-                {DEPARTMENT_REQUIRED_TRANSACTION_TYPES.includes(transferForm.transactionTypeCode as any) && !transferForm.departmentId && transferForm.transactionTypeCode !== INVENTORY_TRANSACTION_TYPES.IN && (
+                {isDepartmentInventory && currentDepartmentName && (
+                  <div className="mt-1">
+                    <small className="text-muted">Current Department: {currentDepartmentName}</small>
+                  </div>
+                )}
+                {DEPARTMENT_REQUIRED_TRANSACTION_TYPES.includes(transferForm.transactionTypeCode as any) && !transferForm.departmentId && transferForm.transactionTypeCode !== INVENTORY_TRANSACTION_TYPES.IN && !isDepartmentInventory && (
                   <div className="mt-1">
                     <small className="text-danger">Department is required for this transaction type</small>
                   </div>
