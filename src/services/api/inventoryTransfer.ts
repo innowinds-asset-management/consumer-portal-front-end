@@ -55,6 +55,11 @@ class InventoryTransferService {
   async transferInventory(data: InventoryTransferRequest): Promise<InventoryTransferResponse> {
     try {
       const response = await inventoryTransferHttp.post<InventoryTransferResponse>('/inventory/transfer', data)
+      
+      if (!response.success) {
+        throw new Error(response.message || 'Transfer failed')
+      }
+      
       return response
     } catch (error) {
       console.error('Error transferring inventory:', error)

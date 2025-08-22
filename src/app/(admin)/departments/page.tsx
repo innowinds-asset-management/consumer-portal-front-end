@@ -9,12 +9,14 @@ import { Grid } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
 import { useRouter } from "next/navigation";
 import { STORAGE_KEYS } from "@/utils/constants";
+import CreateDepartmentModal from "@/components/CreateDepartmentModal";
 
 export default function DepartmentListingPage() {
   const router = useRouter();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     const fetchDepartments = async () => {
@@ -112,6 +114,33 @@ export default function DepartmentListingPage() {
     return dateString.split("T")[0];
   };
 
+  // Function to refresh departments list
+  const refreshDepartments = () => {
+    const fetchDepartments = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const consumerId = JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "";
+        
+        if (!consumerId) {
+          setError("Consumer ID not found. Please login again.");
+          setLoading(false);
+          return;
+        }
+
+        const data = await departmentService.getDepartmentsByConsumerId(consumerId);
+        const allDepartments = Array.isArray(data) ? data : [];
+        setDepartments(allDepartments);
+      } catch (err) {
+        setError("Failed to load departments. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDepartments();
+  };
+
   // Prepare data for GridJS
   const gridData = departments.map((department) => [
     department.deptId || "",
@@ -130,7 +159,7 @@ export default function DepartmentListingPage() {
           <span>Departments</span>
           <Button 
             variant="primary" 
-            onClick={() => router.push('/departments/create')}
+            onClick={() => setShowCreateModal(true)}
             className="d-flex align-items-center gap-2"
             size="sm"
           >
@@ -186,6 +215,14 @@ export default function DepartmentListingPage() {
           </div>
         )}
       </ComponentContainerCard>
+
+      {/* Create Department Modal */}
+      <CreateDepartmentModal
+        show={showCreateModal}
+        onHide={() => setShowCreateModal(false)}
+        onSuccess={refreshDepartments}
+        existingDepartments={departments}
+      />
     </>
   );
 }

@@ -12,7 +12,7 @@ import IconifyIcon from "@/components/wrappers/IconifyIcon";
 export default function InventoryDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const inventoryId = searchParams.get("id");
+  const inventoryId = searchParams.get("invId");
 
   const [inventory, setInventory] = useState<Inventory | null>(null);
   const [loading, setLoading] = useState(true);
