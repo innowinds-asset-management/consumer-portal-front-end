@@ -95,7 +95,12 @@ const SupplierStats = () => {
           <Card 
             className="cursor-pointer hover-shadow" 
             onClick={handleCardClick}
-            style={{ cursor: 'pointer', transition: 'all 0.3s ease' }}
+            style={{ 
+              cursor: 'pointer', 
+              transition: 'all 0.3s ease',
+              background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+              border: 'none'
+            }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-2px)'
               e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
@@ -108,12 +113,12 @@ const SupplierStats = () => {
             <CardBody>
               <div className="d-flex align-items-start gap-2 justify-content-between">
                 <div>
-                  <h2 className="text-dark fs-13 fw-bold text-uppercase" title="Total Suppliers">
+                  <h2 className="text-white fs-13 fw-bold text-uppercase" title="Total Suppliers">
                     Total Suppliers
                   </h2>
-                  <h2 className="mt-2 mb-1 fw-bold fs-1 text-warning">{supplierCount || 0}</h2>
-                  <p className="mb-0 fw-bold">
-                    <span className="text-warning me-1">
+                  <h2 className="mt-2 mb-1 fw-bold fs-1 text-white">{supplierCount || 0}</h2>
+                  <p className="mb-0 fw-bold text-white">
+                    <span className="text-white me-1">
                       <IconifyIcon icon="ri:user-star-line" style={{ marginBottom: '5px', marginRight: '5px' }} />
                       Active
                     </span>
@@ -121,7 +126,7 @@ const SupplierStats = () => {
                   </p>
                 </div>
                 <div className="avatar-lg flex-shrink-0">
-                  <span className="avatar-title bg-warning-subtle text-warning rounded fs-28">
+                  <span className="avatar-title bg-white text-warning rounded fs-28">
                     <IconifyIcon icon="solar:users-group-rounded-bold-duotone" />
                   </span>
                 </div>
