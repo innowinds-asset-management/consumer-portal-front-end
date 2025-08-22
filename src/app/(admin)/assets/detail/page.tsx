@@ -70,7 +70,11 @@ export default function AssetDetailPage() {
         const departmentData = { department: assetData.department || null };
         setDepartmnet(departmentData);
 
-        // Warranty data will be loaded on-demand when user clicks Warranty tab
+        // Set warranties from asset response data for immediate warranty status calculation
+        setWarranties((assetData as any).warranties || []);
+        setWarrantiesLoaded(true);
+
+        // Warranty data will be loaded on-demand when user clicks Warranty tab (for detailed view)
 
       } catch (err) {
         console.error('Error fetching asset details:', err);
@@ -309,11 +313,41 @@ export default function AssetDetailPage() {
                     <div className="mb-3">
                       <strong>Warranty Status:</strong>
                       <Badge bg={
-                        new Date() < new Date(asset.warrantyStartDate) ? 'warning' :
-                        new Date() > new Date(asset.warrantyEndDate) ? 'danger' : 'success'
+                        (() => {
+                          // Check if warranties array exists and has items
+                          if (warranties && warranties.length > 0) {
+                            // Get the most recent active warranty
+                            const activeWarranties = warranties.filter((w: Warranty) => w.isActive);
+                            if (activeWarranties.length > 0) {
+                              const currentDate = new Date();
+                              const startDate = new Date(activeWarranties[0].startDate);
+                              const endDate = new Date(activeWarranties[0].endDate);
+                              
+                              if (currentDate < startDate) return 'warning';
+                              if (currentDate > endDate) return 'danger';
+                              return 'success';
+                            }
+                          }
+                          return 'secondary';
+                        })()
                       } className="ms-2">
-                        {new Date() < new Date(asset.warrantyStartDate) ? 'Not Started' :
-                         new Date() > new Date(asset.warrantyEndDate) ? 'Expired' : 'Active'}
+                        {(() => {
+                          // Check if warranties array exists and has items
+                          if (warranties && warranties.length > 0) {
+                            // Get the most recent active warranty
+                            const activeWarranties = warranties.filter((w: Warranty) => w.isActive);
+                            if (activeWarranties.length > 0) {
+                              const currentDate = new Date();
+                              const startDate = new Date(activeWarranties[0].startDate);
+                              const endDate = new Date(activeWarranties[0].endDate);
+                              
+                              if (currentDate < startDate) return 'Not Started';
+                              if (currentDate > endDate) return 'Expired';
+                              return 'Active';
+                            }
+                          }
+                          return 'No Warranty';
+                        })()}
                       </Badge>
                     </div>
                     <div className="mb-3">
@@ -408,7 +442,7 @@ export default function AssetDetailPage() {
                               <tbody>
                                 <tr>
                                   <td><strong>Warranty Type</strong></td>
-                                  <td>{warranty.warrantyType.typeName}</td>
+                                  <td>{warranty.warrantyType?.typeName || 'N/A'}</td>
                                   <td>
                                     <Badge bg={warranty.isActive ? 'success' : 'danger'}>
                                       {warranty.isActive ? 'Active' : 'Inactive'}
@@ -427,7 +461,7 @@ export default function AssetDetailPage() {
                                 </tr>
                                 <tr>
                                   <td><strong>Coverage Description</strong></td>
-                                  <td>{warranty.coverageDescription}</td>
+                                  <td>{warranty.coverageDescription || 'N/A'}</td>
                                   <td>-</td>
                                 </tr>
                                 <tr>
@@ -461,7 +495,7 @@ export default function AssetDetailPage() {
                                 </tr>
                                 <tr>
                                   <td><strong>Supplier ID</strong></td>
-                                  <td>{warranty.warrantySupplierId}</td>
+                                  <td>{warranty.warrantySupplierId || 'N/A'}</td>
                                   <td>-</td>
                                 </tr>
                                 <tr>
@@ -471,7 +505,7 @@ export default function AssetDetailPage() {
                                 </tr>
                                 <tr>
                                   <td><strong>Terms & Conditions</strong></td>
-                                  <td>{warranty.termsConditions}</td>
+                                  <td>{warranty.termsConditions || 'N/A'}</td>
                                   <td>-</td>
                                 </tr>
                               </tbody>
