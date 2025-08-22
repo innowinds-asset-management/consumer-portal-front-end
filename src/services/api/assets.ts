@@ -120,13 +120,43 @@ class AssetHttpClient {
   constructor() {
     this.baseURL = ASSET_API_URL
     this.defaultHeaders = { 'Content-Type': 'application/json' }
+    console.log('AssetHttpClient initialized with baseURL:', this.baseURL)
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseURL}${endpoint}`
-    const res = await fetch(url, { headers: this.defaultHeaders, ...options })
-    if (!res.ok) throw new Error(`HTTP error ${res.status}`)
-    return res.json()
+    
+    try {
+      console.log(`Making request to: ${url}`)
+      
+      // Add timeout to fetch request
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+      
+      const res = await fetch(url, { 
+        headers: this.defaultHeaders, 
+        ...options,
+        signal: controller.signal
+      })
+      
+      clearTimeout(timeoutId)
+      
+      if (!res.ok) {
+        const errorText = await res.text()
+        console.error(`HTTP error ${res.status} for ${url}:`, errorText)
+        throw new Error(`HTTP error ${res.status}: ${errorText}`)
+      }
+      
+      const data = await res.json()
+      console.log(`Response from ${url}:`, data)
+      return data
+    } catch (error) {
+      console.error(`Request failed for ${url}:`, error)
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Request timeout - server not responding')
+      }
+      throw error
+    }
   }
 
   get<T>(endpoint: string) { return this.request<T>(endpoint, { method: 'GET' }) }
@@ -199,6 +229,34 @@ class AssetsService {
       return response
     } catch (error) {
       console.error('Error updating asset:', error)
+      throw error
+    }
+  }
+
+  // Get asset counts by status
+  async getAssetCountByStatus(): Promise<{
+    active: number;
+    retired: number;
+    preActive: number;
+    totalWithStatus: number;
+    totalWithoutStatus: number;
+    grandTotal: number;
+  }> {
+    try {
+      const response = await assetHttp.get<{
+        success: boolean;
+        data: {
+          active: number;
+          retired: number;
+          preActive: number;
+          totalWithStatus: number;
+          totalWithoutStatus: number;
+          grandTotal: number;
+        };
+      }>('/asset/count/status')
+      return response.data
+    } catch (error) {
+      console.error('Error fetching asset counts by status:', error)
       throw error
     }
   }

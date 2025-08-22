@@ -68,6 +68,22 @@ class ConsumerSupplierService {
       throw error
     }
   }
+
+  // Get supplier count by consumer ID
+  async getSupplierCountByConsumerId(consumerId: string): Promise<number> {
+    try {
+      const response = await consumerSupplierHttp.get<{
+        success: boolean;
+        data: {
+          supplierCount: number;
+        };
+      }>(`/consumer-supplier/count/supplier/${consumerId}`)
+      return response.data.supplierCount
+    } catch (error) {
+      console.error('Error fetching supplier count:', error)
+      throw error
+    }
+  }
 }
 
 export const consumerSupplierService = new ConsumerSupplierService()

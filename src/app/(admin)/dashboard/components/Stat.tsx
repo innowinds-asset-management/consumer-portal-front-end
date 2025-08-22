@@ -7,7 +7,7 @@ import { customerschart, porfitChart, productChart, salesChart } from '../data'
 const Stat = () => {
   return (
     <>
-      <Row className="row-cols-xxl-4 row-cols-md-2 row-cols-1">
+      <Row className="row-cols-xxl-3 row-cols-lg-3 row-cols-md-2 row-cols-1">
         <Col>
           <Card>
             <CardBody>
@@ -37,7 +37,7 @@ const Stat = () => {
             </div>
           </Card>
         </Col>
-        <Col>
+        {/* <Col>
           <Card>
             <CardBody>
               <div className="d-flex align-items-start gap-2 justify-content-between">
@@ -123,7 +123,7 @@ const Stat = () => {
               <ReactApexChart options={porfitChart} series={porfitChart.series} height={45} type="area" />
             </div>
           </Card>
-        </Col>
+        </Col> */}
       </Row>
     </>
   )

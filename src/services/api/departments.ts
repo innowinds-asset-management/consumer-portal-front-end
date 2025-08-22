@@ -198,6 +198,22 @@ class DepartmentService {
       throw error
     }
   }
+
+  // Get department count by consumer ID
+  async getDepartmentCountByConsumerId(consumerId: string): Promise<number> {
+    try {
+      const response = await departmentHttp.get<{
+        success: boolean;
+        data: {
+          departmentCount: number;
+        };
+      }>(`/department/count/${consumerId}`)
+      return response.data.departmentCount
+    } catch (error) {
+      console.error('Error fetching department count:', error)
+      throw error
+    }
+  }
 }
 
 export const departmentService = new DepartmentService() 

@@ -221,6 +221,34 @@ class ServiceRequestService {
     return serviceRequestHttp.delete<void>(`/servicerequest/item/${id}`)
   }
 
+  // Get service request counts by status
+  async getServiceRequestCountByStatus(): Promise<{
+    cancelled: number;
+    closed: number;
+    completed: number;
+    open: number;
+    inProgress: number;
+    pending: number;
+  }> {
+    try {
+      const response = await serviceRequestHttp.get<{
+        success: boolean;
+        data: {
+          cancelled: number;
+          closed: number;
+          completed: number;
+          open: number;
+          inProgress: number;
+          pending: number;
+        };
+      }>('/servicerequest/count/status')
+      return response.data
+    } catch (error) {
+      console.error('Error fetching service request counts by status:', error)
+      throw error
+    }
+  }
+
 }
 
 export const serviceRequestService = new ServiceRequestService() 
