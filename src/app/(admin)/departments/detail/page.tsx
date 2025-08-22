@@ -6,6 +6,7 @@ import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import ServiceRequestTab from '@/components/ServiceRequestTab'
 import AssetListTab from '@/components/AssetListTab'
+import DepartmentInventoryTabs from '@/components/DepartmentInventoryTabs'
 import { Card, CardBody, Col, Nav, NavItem, NavLink, Row, TabContainer, TabContent, TabPane, Badge, Alert } from 'react-bootstrap'
 import { departmentService, Department } from '@/services/api/departments'
 import { useSearchParams } from 'next/navigation'
@@ -95,11 +96,6 @@ export default function DepartmentDetailPage() {
                      <div className="mb-3">
                        <strong>Department Name:</strong> {department.deptName}
                      </div>
-                     {department.description && (
-                       <div className="mb-3">
-                         <strong>Description:</strong> {department.description}
-                       </div>
-                     )}
                      <div className="mb-3">
                        <strong>Created Date:</strong> {formatDate(department.createdAt)}
                      </div>
@@ -132,6 +128,12 @@ export default function DepartmentDetailPage() {
                 Service Request
               </NavLink>
             </NavItem>
+            <NavItem as="li" role="presentation">
+              <NavLink eventKey="inventory">
+                <IconifyIcon icon="tabler:box" className="fs-18 me-1" />
+                Inventory
+              </NavLink>
+            </NavItem>
           </Nav>
 
           <TabContent>
@@ -157,6 +159,15 @@ export default function DepartmentDetailPage() {
                 asset={undefined}
                 showCreateButton={true}
                 title="Department Service Requests"
+              />
+            </TabPane>
+
+            {/* Inventory Tab */}
+            <TabPane eventKey="inventory" id="inventory">
+              <DepartmentInventoryTabs 
+                departmentId={departmentId!}
+                showCreateButton={true}
+                title="Department Inventory"
               />
             </TabPane>
           </TabContent>
