@@ -93,13 +93,11 @@ const DepartmentStats = () => {
         {/* Total Departments Card */}
         <Col>
           <Card 
-            className="cursor-pointer hover-shadow" 
+            className="cursor-pointer hover-shadow text-bg-primary bg-gradient" 
             onClick={handleCardClick}
             style={{ 
               cursor: 'pointer', 
-              transition: 'all 0.3s ease',
-              background: 'linear-gradient(135deg, #20c997 0%, #198754 100%)',
-              border: 'none'
+              transition: 'all 0.3s ease'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-2px)'

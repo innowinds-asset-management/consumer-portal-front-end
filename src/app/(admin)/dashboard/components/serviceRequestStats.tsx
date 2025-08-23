@@ -111,7 +111,7 @@ const ServiceRequestStats = () => {
             style={{ 
               cursor: 'pointer', 
               transition: 'all 0.3s ease',
-              background: 'linear-gradient(135deg, #9F72ED 0%, #8B5CF6 100%)',
+              background: 'linear-gradient(135deg, #20c997 0%, #198754 100%)',
               border: 'none'
             }}
             onMouseEnter={(e) => {
@@ -156,7 +156,7 @@ const ServiceRequestStats = () => {
             style={{ 
               cursor: 'pointer', 
               transition: 'all 0.3s ease',
-              background: 'linear-gradient(135deg, #9F72ED 0%, #8B5CF6 100%)',
+              background: 'linear-gradient(135deg, #20c997 0%, #198754 100%)',
               border: 'none'
             }}
             onMouseEnter={(e) => {
@@ -201,7 +201,7 @@ const ServiceRequestStats = () => {
             style={{ 
               cursor: 'pointer', 
               transition: 'all 0.3s ease',
-              background: 'linear-gradient(135deg, #9F72ED 0%, #8B5CF6 100%)',
+              background: 'linear-gradient(135deg, #20c997 0%, #198754 100%)',
               border: 'none'
             }}
             onMouseEnter={(e) => {
@@ -246,7 +246,7 @@ const ServiceRequestStats = () => {
             style={{ 
               cursor: 'pointer', 
               transition: 'all 0.3s ease',
-              background: 'linear-gradient(135deg, #9F72ED 0%, #8B5CF6 100%)',
+              background: 'linear-gradient(135deg, #20c997 0%, #198754 100%)',
               border: 'none'
             }}
             onMouseEnter={(e) => {
@@ -291,7 +291,7 @@ const ServiceRequestStats = () => {
             style={{ 
               cursor: 'pointer', 
               transition: 'all 0.3s ease',
-              background: 'linear-gradient(135deg, #9F72ED 0%, #8B5CF6 100%)',
+              background: 'linear-gradient(135deg, #20c997 0%, #198754 100%)',
               border: 'none'
             }}
             onMouseEnter={(e) => {
@@ -336,7 +336,7 @@ const ServiceRequestStats = () => {
             style={{ 
               cursor: 'pointer', 
               transition: 'all 0.3s ease',
-              background: 'linear-gradient(135deg, #9F72ED 0%, #8B5CF6 100%)',
+              background: 'linear-gradient(135deg, #20c997 0%, #198754 100%)',
               border: 'none'
             }}
             onMouseEnter={(e) => {
