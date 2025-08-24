@@ -285,7 +285,13 @@ export default function TransferInventoryModal({
 
   return (
     <Modal show={show} onHide={handleClose} size="lg" backdrop="static" keyboard={false}>
-      <Modal.Header closeButton={!transferLoading}>
+      <Modal.Header 
+        closeButton={!transferLoading}
+        style={{ 
+          background: 'linear-gradient(135deg, #0932c1, #1286ae, #082a71)',
+          color: 'white'
+        }}
+      >
         <Modal.Title>
           <i className="ri-exchange-line me-2"></i>
           Transfer Inventory
