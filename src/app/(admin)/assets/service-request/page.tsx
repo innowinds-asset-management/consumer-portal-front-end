@@ -189,7 +189,7 @@ export default function ServiceRequestPage() {
         warrantyStatus: formData.warrantyStatus,
         serviceStatus: formData.serviceStatus,
         approverName: null, // Will be set by backend or admin
-        serviceDate: formData.serviceDate,
+        // serviceDate: formData.serviceDate,
         serviceType: formData.serviceType,
         serviceDescription: formData.serviceDescription,
       };
