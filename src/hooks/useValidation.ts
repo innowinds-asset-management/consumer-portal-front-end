@@ -42,7 +42,7 @@ export function useValidation(options: UseValidationOptions = {}): ValidationSta
   // State
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
-  const [isDirty, setIsDirty] = useState(false)
+  const [isDirty, setIsDirty] = useState<boolean>(false)
 
   // Refs
   const currentDataRef = useRef(initialData)
@@ -162,7 +162,7 @@ export function useFieldValidation(
 ) {
   const { validateOnChange = false, validateOnBlur = true } = options
   const [error, setError] = useState<string>('')
-  const [touched, setTouched] = useState(false)
+  const [touched, setTouched] = useState<boolean>(false)
 
   // Validate field
   const validateField = useCallback(async (fieldValue?: any) => {
@@ -224,8 +224,8 @@ export function useAsyncValidation<T = any>(
 ) {
   const { debounceMs = 300, validateOnChange = true } = options
   const [error, setError] = useState<string>('')
-  const [isValidating, setIsValidating] = useState(false)
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const [isValidating, setIsValidating] = useState<boolean>(false)
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   // Validate with debounce
   const validate = useCallback(async (value: T) => {

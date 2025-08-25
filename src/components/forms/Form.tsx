@@ -57,7 +57,7 @@ export function Form<T extends Record<string, any>>({
   })
 
   return (
-    <form onSubmit={handleSubmit()} className={className}>
+    <form onSubmit={handleSubmit(onSubmit)} className={className}>
       {fields.map((field) => (
         <Input
           key={field.name}

@@ -37,7 +37,7 @@ export function StoreUsageExample() {
   const handleLogin = async () => {
     try {
       await login({
-        email: 'admin@example.com',
+        userId: 'admin@example.com',
         password: 'password123'
       })
     } catch (error) {
@@ -117,8 +117,8 @@ export function StoreUsageExample() {
       <div className="mb-6 p-4 border rounded">
         <h3 className="text-lg font-semibold mb-2">Dashboard Store</h3>
         <div className="space-y-2">
-          <p>Stats Count: {stats.length}</p>
-          <p>Loading: {dashboardLoading.stats ? 'Yes' : 'No'}</p>
+          <p>Stats Count: {stats?.length || 0}</p>
+          <p>Loading: {dashboardLoading?.stats ? 'Yes' : 'No'}</p>
           <div className="space-x-2">
             <button 
               onClick={fetchStats}
@@ -143,13 +143,13 @@ export function StoreUsageExample() {
 export function LoginFormExample() {
   const { login, loading, error, clearError } = useAuth()
   const [formData, setFormData] = React.useState({
-    email: '',
+    userId: '',
     password: ''
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    clearError()
+    clearError?.()
     
     try {
       await login(formData)
@@ -162,11 +162,11 @@ export function LoginFormExample() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium mb-1">Email</label>
+        <label className="block text-sm font-medium mb-1">User ID</label>
         <input
-          type="email"
-          value={formData.email}
-          onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+          type="text"
+          value={formData.userId}
+          onChange={(e) => setFormData(prev => ({ ...prev, userId: e.target.value }))}
           className="w-full px-3 py-2 border rounded"
           required
         />
@@ -205,7 +205,7 @@ export function DashboardExample() {
   const { user } = useAuth()
 
   React.useEffect(() => {
-    fetchStats()
+    fetchStats?.()
   }, [fetchStats])
 
   return (
@@ -224,11 +224,11 @@ export function DashboardExample() {
         <p className="mb-4">Welcome back, {user.name}!</p>
       )}
       
-      {loading.stats ? (
+      {loading?.stats ? (
         <div>Loading stats...</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {stats.map((stat, index) => (
+          {stats?.map((stat, index) => (
             <div key={index} className="p-4 border rounded">
               <h3 className="font-semibold">{stat.title}</h3>
               <p className="text-2xl font-bold">{stat.value}</p>

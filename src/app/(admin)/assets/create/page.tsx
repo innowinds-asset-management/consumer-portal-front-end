@@ -399,7 +399,7 @@ export default function AssetPage() {
           warrantyEndDate: new Date(formData.warrantyEndDate).toISOString(),
           installationDate: new Date(formData.installationDate).toISOString(),
           installStatus: formData.installStatus,
-          status: formData.status,
+          // status: formData.status,
           brand: formData.brand,
           model: formData.model,
           subModel: formData.subModel,
