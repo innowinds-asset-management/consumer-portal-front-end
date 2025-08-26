@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import PageTitle from '@/components/PageTitle'
 import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { Card, CardBody, Col, Nav, NavItem, NavLink, Row, TabContainer, TabContent, TabPane, Badge, Table, Alert, Button, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
@@ -159,7 +158,6 @@ export default function ServiceRequestCreatePage() {
   if (!assetId) {
     return (
       <>
-        <PageTitle title="Select Asset for Service Request" />
         <Row>
           <Col md={12}>
             <ComponentContainerCard title="Select Asset" description="Choose an asset to create a service request for">
@@ -220,10 +218,6 @@ export default function ServiceRequestCreatePage() {
 
   return (
     <>
-      <PageTitle title="Create Service Request" />
-      
-      
-      
       {/* Asset Information - Show when asset is selected or provided via URL */}
       {asset && (
         <Row>

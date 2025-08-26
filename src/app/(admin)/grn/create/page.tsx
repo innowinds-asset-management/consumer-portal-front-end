@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import PageTitle from '@/components/PageTitle'
+
 import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { Alert, Button, Col, Form, Row, Table } from 'react-bootstrap'
@@ -225,7 +225,7 @@ export default function GrnCreatePage() {
 
   return (
     <>
-      <PageTitle title="Create GRN" subTitle={supplierName ? `Supplier: ${supplierName}` : ''} />
+
       <ComponentContainerCard 
         title={
           <div className="d-flex justify-content-between align-items-center">

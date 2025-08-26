@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
-import PageTitle from '@/components/PageTitle'
+
 import { Button, Card, CardBody, Col, Row, Table, Alert } from 'react-bootstrap'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { grnService, Grn } from '@/services/api/grn'
@@ -294,7 +294,6 @@ const GrnDetailPage = () => {
   if (loading) {
     return (
       <>
-        <PageTitle title="GRN Details" subTitle="" />
         <div className="text-center my-4">
           <div className="spinner-border" role="status">
             <span className="visually-hidden">Loading...</span>
@@ -307,7 +306,6 @@ const GrnDetailPage = () => {
   if (error) {
     return (
       <>
-        <PageTitle title="GRN Details" subTitle="" />
         <Alert variant="danger">{error}</Alert>
       </>
     )
@@ -315,7 +313,6 @@ const GrnDetailPage = () => {
 
   return (
     <>
-      <PageTitle title="GRN Details" subTitle="" />
       {successMessage && (
         <Alert variant="success" className="mb-3">
           {successMessage}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import PageTitle from "@/components/PageTitle";
+
 import ComponentContainerCard from "@/components/ComponentContainerCard";
 import { Alert, Button } from "react-bootstrap";
 import { supplierService, ConsumerSupplierWithStats } from "@/services/api/suppliers";
@@ -32,6 +32,7 @@ export default function SupplierListingPage() {
 
     useEffect(() => {
         const consumerId = JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "";
+        console.log("consumerId", JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId)!));
         setConsumerId(consumerId);
     }, []);
 
@@ -145,7 +146,7 @@ export default function SupplierListingPage() {
 
     return (
         <>
-            <PageTitle title="" />
+      
 
             <ComponentContainerCard title={
                 <div className="d-flex justify-content-between align-items-center">

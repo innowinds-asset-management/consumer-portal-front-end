@@ -5,7 +5,6 @@ import logoDark from '@/assets/images/logo-dark.png'
 import PreviewButton from './Preview'
 import { Card, CardBody, Col, Form, Row, Table } from 'react-bootstrap'
 import { Metadata } from 'next'
-import PageTitle from '@/components/PageTitle'
 
 
 export const metadata: Metadata = { title: 'Create Invoice' }
@@ -13,7 +12,6 @@ export const metadata: Metadata = { title: 'Create Invoice' }
 const CreateInvoicePage = () => {
   return (
     <>
-      <PageTitle title='Create Invoice' subTitle='Invoices' />
       <Row>
         <Col xs={12}>
           <Card className="position-relative">

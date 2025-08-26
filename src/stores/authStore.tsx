@@ -1,7 +1,7 @@
 'use client'
 import React, { createContext, useContext, useReducer, useEffect, useRef, ReactNode } from 'react'
-import { User, LoginCredentials, AuthState } from '@/types/admin'
-import { authService } from '@/services/api/auth'
+import { User, AuthState } from '@/types/admin'
+import { authService, LoginCredentials } from '@/services/api/auth'
 import { STORAGE_KEYS } from '@/utils/constants'
 
 // Action types
@@ -103,7 +103,7 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
 
 // Context interface
 interface AuthContextType extends AuthState {
-  login: (credentials: LoginCredentials) => Promise<void>
+  login: (credentials: { userId: string; password: string }) => Promise<void>
   logout: () => Promise<void>
   loadUser: () => Promise<void>
   updateUser: (userData: Partial<User>) => Promise<void>
@@ -201,7 +201,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   // Login function
-  const login = async (credentials: LoginCredentials) => {
+  const login = async (credentials: { userId: string; password: string }) => {
     if (isRateLimited()) {
       throw new Error('Please wait a moment before trying again')
     }
@@ -212,13 +212,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await authService.login(credentials)
       
       // Store token in localStorage
-      localStorage.setItem(STORAGE_KEYS.authToken, response.token)
-      localStorage.setItem(STORAGE_KEYS.refreshToken, response.refreshToken)
-      localStorage.setItem(STORAGE_KEYS.consumerId, JSON.stringify((response.user as any).consumerId || 'cons_it_dept'))
+      localStorage.setItem(STORAGE_KEYS.authToken, response.data.token)
+      localStorage.setItem(STORAGE_KEYS.refreshToken, response.data.refreshToken)
+      localStorage.setItem(STORAGE_KEYS.consumerId, JSON.stringify((response.data.user as any).consumerId || 'cons_it_dept'))
       
       dispatch({ 
         type: 'LOGIN_SUCCESS', 
-        payload: { user: response.user, token: response.token } 
+        payload: { user: response.data.user, token: response.data.token } 
       })
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Login failed'

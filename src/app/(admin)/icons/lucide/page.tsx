@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Card, OverlayTrigger, Tooltip } from 'react-bootstrap'
 import { lucideData, LucideType } from './data'
-import PageTitle from '@/components/PageTitle'
+
 
 
 const LucideCard = ({ icon: Icon, name }: LucideType) => {
@@ -22,7 +22,7 @@ const LucideCard = ({ icon: Icon, name }: LucideType) => {
 const LucideIconPage = () => {
   return (
     <>
-    <PageTitle title="Lucide Icons" subTitle="Icons" />
+
       <div className="d-flex flex-wrap gap-3 justify-content-center icon-box">
         {
           lucideData.map((item, idx) => (

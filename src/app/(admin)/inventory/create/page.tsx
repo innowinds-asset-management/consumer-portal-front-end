@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import PageTitle from "@/components/PageTitle";
 import ComponentContainerCard from "@/components/ComponentContainerCard";
 import { Button, Col, Form, Row, Alert, ListGroup } from "react-bootstrap";
 import { useRouter } from "next/navigation";
@@ -295,8 +294,6 @@ export default function CreateInventoryPage() {
 
   return (
     <>
-      <PageTitle title="Create Inventory Item" />
-
       <ComponentContainerCard 
         title={
           <div className="d-flex align-items-center gap-2">

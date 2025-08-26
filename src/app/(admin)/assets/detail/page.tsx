@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import PageTitle from '@/components/PageTitle'
+
 import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import ServiceRequestTab from '@/components/ServiceRequestTab'
@@ -185,7 +185,6 @@ export default function AssetDetailPage() {
   if (loading) {
     return (
       <>
-        <PageTitle title="Asset Details" />
         <ComponentContainerCard title="Loading Asset Details">
           <div className="text-center py-4">
             <div className="spinner-border" role="status">
@@ -201,7 +200,6 @@ export default function AssetDetailPage() {
   if (error || !asset) {
     return (
       <>
-        <PageTitle title="Asset Details" />
         <ComponentContainerCard title="Error">
           <Alert variant="danger">
             {error || "Asset not found"}
@@ -215,8 +213,6 @@ export default function AssetDetailPage() {
 
   return (
     <>
-      <PageTitle title="" />
-
       <ComponentContainerCard
         title={
           <div className="d-flex justify-content-between align-items-center">

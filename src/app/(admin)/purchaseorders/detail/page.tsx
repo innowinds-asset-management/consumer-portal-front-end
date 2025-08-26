@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
-import PageTitle from '@/components/PageTitle'
 import PrintButton from '@/components/PrintButton'  
 import { Button, Card, CardBody, Col, Row, Table, Alert } from 'react-bootstrap'
 import { purchaseOrdersService, PurchaseOrder, PoLineItem } from '@/services/api/purchaseOrders'
@@ -123,7 +122,6 @@ const PurchaseOrderDetail = () => {
   if (loading) {
     return (
       <>
-        <PageTitle title="Purchase Order Details" subTitle="" />
         <div className="text-center my-4">
           <div className="spinner-border" role="status">
             <span className="visually-hidden">Loading...</span>
@@ -136,7 +134,6 @@ const PurchaseOrderDetail = () => {
   if (error) {
     return (
       <>
-        <PageTitle title="Purchase Order Details" subTitle="" />
         <Alert variant="danger">{error}</Alert>
       </>
     )
@@ -144,7 +141,6 @@ const PurchaseOrderDetail = () => {
 
   return (
     <>
-      <PageTitle title="Purchase Order Details" subTitle="" />
       <Row>
         <Col xs={12}>
           <Card>

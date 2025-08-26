@@ -1,5 +1,5 @@
 import ComponentContainerCard from '@/components/ComponentContainerCard'
-import PageTitle from '@/components/PageTitle'
+
 import SimplebarReactClient from '@/components/wrappers/SimplebarReactClient'
 import { Metadata } from 'next'
 import { Col, Row } from 'react-bootstrap'
@@ -151,7 +151,7 @@ const ScrollColor = () => {
 const Scrollbar = () => {
   return (
     <>
-      <PageTitle title="Scrollbar" subTitle="Extended UI" />
+  
       <Row>
         <Col xl={6}>
           <DefaultScrollBar />

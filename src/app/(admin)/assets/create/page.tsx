@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import PageTitle from '@/components/PageTitle'
+
 import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { Button, Col, Form, Row, Alert, Card, CardBody, CardHeader } from 'react-bootstrap'
@@ -519,7 +519,7 @@ export default function AssetPage() {
 
   return (
     <>
-      <PageTitle title="Asset Management" subTitle="Create New Asset" />
+
       
       <Row>
         <Col xs={12}>

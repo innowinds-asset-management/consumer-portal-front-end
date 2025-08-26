@@ -2,7 +2,7 @@
 // // import logoSm from '@/assets/images/logo-sm.png'
 // // import logo from '@/assets/images/logo.png'
 
-import assetnixLogo from '@/assets/images/assetnix-logo.svg'
+import assetnixLogo from '@/assets/images/assetnix-logo.png'
 import Image from 'next/image'
 import Link from 'next/link'
 

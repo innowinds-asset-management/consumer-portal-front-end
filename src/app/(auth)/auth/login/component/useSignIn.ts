@@ -14,6 +14,7 @@ import { authService } from '@/services/api/auth'
 
 const useSignIn = () => {
   const [loading, setLoading] = useState(false)  
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter();
   const searchParams = useSearchParams()
   const { showNotification } = useNotificationContext()
@@ -23,7 +24,7 @@ const useSignIn = () => {
   const queryParams = useQueryParams()
 
   const loginFormSchema = yup.object({
-    userId: yup.string().required('Please enter your user Id'),
+    userId: yup.string().required('Please enter your user ID'),
     password: yup.string().required('Please enter your password'),
   })
 
@@ -39,10 +40,7 @@ const useSignIn = () => {
 
   const performLogin = async (values: LoginFormFields) => {
     setLoading(true)
-    
-    // Debug: Check auth state before login
-    debugUtils.checkAuthState()
-    debugUtils.logApiRequest('/auth/login', values)
+    setError(null) // Clear any previous errors
     
     try {
       // Use authService instead of NextAuth
@@ -51,10 +49,8 @@ const useSignIn = () => {
         password: values.password,
       })
       
-      // LoginResponse contains: user, token, refreshToken, expiresAt
-      if (response.user && response.token) {
-        debugUtils.logApiResponse(response)
-        
+      // LoginResponse contains: success, message, data: { token, refreshToken, user }
+      if (response.success && response.data?.user && response.data?.token) {
         // Use auth context to update global state (this also stores in localStorage)
         await authLogin({
           userId: values.userId,
@@ -69,27 +65,22 @@ const useSignIn = () => {
         })
       }
     } catch (error: any) {
-      debugUtils.logApiResponse(null, error) // Debug logging
-      
       // Handle specific error types
-      let errorMessage = 'Login failed. Please try again.'
+      let errorMessage = 'Invalid credentials. Please check your user ID and password.'
       
-      if (error?.message) {
+      // Check for specific error types
+      if (error?.statusCode === 429 || error?.message?.includes('Too many requests')) {
+        errorMessage = 'Too many requests. Please wait a moment and try again.'
+      } else if (error?.statusCode === 401 || error?.statusCode === 403) {
+        errorMessage = 'Invalid credentials. Please check your user ID and password.'
+      } else if (error?.statusCode === 500 || error?.statusCode === 502 || error?.statusCode === 503) {
+        errorMessage = 'Server error. Please try again later.'
+      } else if (error?.message && !error.message.includes('Invalid credentials')) {
+        // Use server error message if it's not already "Invalid credentials"
         errorMessage = error.message
-      } else if (error?.error) {
-        errorMessage = error.error
       }
       
-      // Handle rate limiting - show message but don't auto-retry
-      if (error?.statusCode === 429 || errorMessage.includes('Too many requests')) {
-        errorMessage = 'Too many requests. Please wait a moment and try again manually.'
-        console.log('Rate limited. Please try again manually.') // Debug logging
-      }
-      
-      showNotification({ 
-        message: errorMessage, 
-        variant: 'danger' 
-      })
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -107,7 +98,7 @@ const useSignIn = () => {
     })
   }
 
-  return { loading, login, control, resetLoginState }
+  return { loading, login, control, error, resetLoginState }
 }
 
 export default useSignIn

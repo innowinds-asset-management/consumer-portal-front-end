@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import PageTitle from '@/components/PageTitle'
 import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import ServiceRequestTab from '@/components/ServiceRequestTab'
@@ -55,7 +54,6 @@ export default function SupplierDetailPage() {
   if (loading) {
     return (
       <>
-        <PageTitle title="Supplier Details" />
         <ComponentContainerCard title="Loading Supplier Details">
           <div className="text-center py-4">
             <div className="spinner-border" role="status">
@@ -71,7 +69,6 @@ export default function SupplierDetailPage() {
   if (error || !supplier) {
     return (
       <>
-        <PageTitle title="Supplier Details" />
         <ComponentContainerCard title="Error">
           <Alert variant="danger">
             {error || "Supplier not found"}
@@ -83,8 +80,6 @@ export default function SupplierDetailPage() {
 
   return (
     <>
-      <PageTitle title="" />
-
       <ComponentContainerCard
         title={`${supplier.name} (${supplier.code})`}
       >
