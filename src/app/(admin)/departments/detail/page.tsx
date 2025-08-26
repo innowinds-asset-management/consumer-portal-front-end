@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import PageTitle from '@/components/PageTitle'
+
 import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import ServiceRequestTab from '@/components/ServiceRequestTab'
@@ -53,7 +53,6 @@ export default function DepartmentDetailPage() {
   if (loading) {
     return (
       <>
-        <PageTitle title="Department Details" />
         <ComponentContainerCard title="Loading Department Details">
           <div className="text-center py-4">
             <div className="spinner-border" role="status">
@@ -69,7 +68,6 @@ export default function DepartmentDetailPage() {
   if (error || !department) {
     return (
       <>
-        <PageTitle title="Department Details" />
         <ComponentContainerCard title="Error">
           <Alert variant="danger">
             {error || "Department not found"}
@@ -81,8 +79,6 @@ export default function DepartmentDetailPage() {
 
   return (
     <>
-      <PageTitle title="" />
-
       <ComponentContainerCard
         title={`${department.deptName} (${department.deptId})`}
       >

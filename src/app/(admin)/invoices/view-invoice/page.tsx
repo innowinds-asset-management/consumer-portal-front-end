@@ -5,7 +5,6 @@ import signature from '@/assets/images/png/signature.png'
 import qrCode from '@/assets/images/png/qr-code.png'
 import { invoiceProductData } from './data'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
-import PageTitle from '@/components/PageTitle'
 import PrintButton from './PrintButton'
 import { Button, Card, CardBody, Col, Row, Table } from 'react-bootstrap'
 import { Metadata } from 'next'
@@ -15,7 +14,6 @@ export const metadata: Metadata = { title: 'View Invoice' }
 const ViewInvoice = () => {
   return (
     <>
-      <PageTitle title="View Invoice" subTitle="" />
       <Row>
         <Col xs={12}>
           <Card>

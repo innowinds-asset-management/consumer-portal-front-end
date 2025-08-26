@@ -1,4 +1,4 @@
-import PageTitle from '@/components/PageTitle'
+
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import Link from 'next/link'
 import { Card, CardBody, OverlayTrigger, Tooltip } from 'react-bootstrap'
@@ -7,7 +7,7 @@ import { solarIconData } from './data'
 const SolarIconPage = () => {
   return (
     <>
-      <PageTitle title="Solar Icons" subTitle="Icons" />
+  
       <div className="d-flex flex-wrap gap-3 justify-content-center icon-box">
         {solarIconData.map((item, idx) => (
           <OverlayTrigger trigger={['hover', 'focus']} key={idx} placement="top" overlay={<Tooltip>{item.title}</Tooltip>}>

@@ -1,5 +1,5 @@
 import CustomFlatpickr from '@/components/CustomFlatpickr'
-import PageTitle from '@/components/PageTitle'
+
 import { Metadata } from 'next'
 import { Card, CardBody, CardHeader, CardTitle, Col, Row } from 'react-bootstrap'
 
@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: 'Form Picker' }
 const Flatpickr = () => {
   return (
     <>
-      <PageTitle title="Form Picker" subTitle="Forms" />
+  
       <Row>
         <Col lg={12}>
           <Card>

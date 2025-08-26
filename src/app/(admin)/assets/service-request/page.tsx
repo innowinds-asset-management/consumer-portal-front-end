@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from 'next/navigation';
-import PageTitle from '@/components/PageTitle'
+
 import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { Button, Col, Form, Row, Alert } from 'react-bootstrap'
@@ -231,7 +231,6 @@ export default function ServiceRequestPage() {
   if (loadingAssets) {
     return (
       <>
-        <PageTitle title="Create Service Request" />
         <ComponentContainerCard title="Loading">
           <div className="text-center py-4">
             <div className="spinner-border" role="status">
@@ -247,7 +246,6 @@ export default function ServiceRequestPage() {
   if (assetsError) {
     return (
       <>
-        <PageTitle title="Create Service Request" />
         <ComponentContainerCard title="Error">
           <Alert variant="danger">{assetsError}</Alert>
         </ComponentContainerCard>
@@ -259,7 +257,6 @@ export default function ServiceRequestPage() {
 
   return (
     <>
-      <PageTitle title="Create Service Request" />
       <ComponentContainerCard 
         title={
           <div className="d-flex justify-content-between align-items-center">

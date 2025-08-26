@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import PageTitle from "@/components/PageTitle";
+
 import ComponentContainerCard from "@/components/ComponentContainerCard";
 import { Alert, Button } from "react-bootstrap";
 import { assetsService } from "@/services/api/assets";
@@ -181,7 +181,7 @@ export default function AssetListingPage() {
 
   return (
     <>
-      <PageTitle title="" />
+
       
              <ComponentContainerCard title={
          <div className="d-flex justify-content-between align-items-center">

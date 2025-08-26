@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import PageTitle from "@/components/PageTitle";
+
 import ComponentContainerCard from "@/components/ComponentContainerCard";
 import { Alert, Button } from "react-bootstrap";
 import { Grid } from "gridjs-react";
@@ -78,7 +78,7 @@ export default function GrnListingPage() {
 
   return (
     <>
-      <PageTitle title="GRN Listing" />
+
       
       <ComponentContainerCard title={
         <div className="d-flex justify-content-between align-items-center">

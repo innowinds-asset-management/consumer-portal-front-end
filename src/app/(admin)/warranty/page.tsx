@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button, Alert, Card, CardBody, Col, Row } from "react-bootstrap";
 import { Grid } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
-import PageTitle from "@/components/PageTitle";
+
 import ComponentContainerCard from "@/components/ComponentContainerCard";
 import IconifyIcon from "@/components/wrappers/IconifyIcon";
 
@@ -106,7 +106,7 @@ const WarrantyListingPage = () => {
 
   return (
     <>
-      <PageTitle title="Warranty Listing" />
+
       
       {/* Six Stat Boxes - Two Rows */}
       <Row className="row-cols-3 row-cols-md-3 row-cols-sm-2 row-cols-1 mb-4">

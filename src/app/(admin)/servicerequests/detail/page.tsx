@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import PageTitle from '@/components/PageTitle'
 import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { Card, CardBody, Col, Row, Table, Alert, Button, Form, FormControl, FormGroup, FormLabel, Modal, ModalHeader, ModalBody, ModalFooter, ModalTitle } from 'react-bootstrap'
@@ -542,8 +541,6 @@ export default function ServiceRequestDetailPage() {
 
   return (
     <>
-      <PageTitle title={`Service Request - ${serviceRequest.srNo}`} />
-
       {/* Header Information */}
       <Row>
         <Col md={12}>

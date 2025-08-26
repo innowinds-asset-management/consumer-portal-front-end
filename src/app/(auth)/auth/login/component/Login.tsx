@@ -6,7 +6,7 @@ import useSignIn from './useSignIn'
 import TextFormInput from '@/components/form/TextFormInput'
 
 const Login = () => {
-  const { loading, login, control } = useSignIn()
+  const { loading, login, control, error } = useSignIn()
   return (
     <div className="auth-bg d-flex min-vh-100 justify-content-center align-items-center">
       <Row className="g-0 justify-content-center w-100 m-xxl-5 px-xxl-4 m-3">
@@ -79,6 +79,7 @@ const Login = () => {
                   placeholder="Enter your password"
                   className="bg-light bg-opacity-50 border-light py-2"
                   label="Password"
+                  type="password"
                 />
               </div>
               <div className="d-flex justify-content-between mb-3">
@@ -92,9 +93,25 @@ const Login = () => {
                   Forget Password ?
                 </Link>
               </div>
+              
+              {/* Error Message Display */}
+              {error && (
+                <div className="alert alert-danger mb-3" role="alert">
+                  <i className="fas fa-exclamation-triangle me-2"></i>
+                  {error}
+                </div>
+              )}
+              
               <div className="d-grid">
                 <button disabled={loading} className="btn btn-primary fw-semibold" type="submit">
-                  Login
+                  {loading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      Logging in...
+                    </>
+                  ) : (
+                    'Login'
+                  )}
                 </button>
               </div>
             </form>

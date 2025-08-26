@@ -2,7 +2,7 @@ import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import Link from 'next/link'
 import { Card, CardBody, OverlayTrigger, Tooltip } from 'react-bootstrap'
 import { RemixIcons, remixIconsData } from './data'
-import PageTitle from '@/components/PageTitle'
+
 
 const RemixCard = ({title, iconName }: RemixIcons) => {
   return (
@@ -17,7 +17,7 @@ const RemixCard = ({title, iconName }: RemixIcons) => {
 const RemixPage = () => {
   return (
     <>
-     <PageTitle title="Remixicon" subTitle="Icons" />
+ 
       <div className="d-flex flex-wrap gap-3 justify-content-center icon-box">
         {
           remixIconsData.map((item, idx) => (

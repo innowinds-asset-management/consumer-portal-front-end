@@ -1,4 +1,4 @@
-import PageTitle from '@/components/PageTitle'
+
 import AssetStats from './components/assetStats'
 import ServiceRequestStats from './components/serviceRequestStats'
 import DepartmentStats from './components/departmentStats'
@@ -8,7 +8,7 @@ import { Card, CardBody, Col, Row } from 'react-bootstrap'
 const DashboardPage = () => {
   return (
     <>
-      <PageTitle title="Dashboard" subTitle="" />
+  
       
       {/* Asset Management Section */}
       <Row className="mb-4">

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import PageTitle from "@/components/PageTitle";
 import ComponentContainerCard from "@/components/ComponentContainerCard";
 import { Card, CardBody, Col, Row, Table, Alert, Button, Badge } from "react-bootstrap";
 import { inventoryService, Inventory } from "@/services/api/inventory";
@@ -49,7 +48,6 @@ export default function InventoryDetailPage() {
   if (loading) {
     return (
       <>
-        <PageTitle title="Loading..." />
         <div className="text-center my-4">
           <div className="spinner-border" role="status">
             <span className="visually-hidden">Loading...</span>
@@ -62,7 +60,6 @@ export default function InventoryDetailPage() {
   if (error || !inventory) {
     return (
       <>
-        <PageTitle title="Error" />
         <Alert variant="danger">{error || "Inventory not found"}</Alert>
         <Button variant="outline-secondary" onClick={handleBackNavigation}>
           <IconifyIcon icon="tabler:arrow-left" className="me-1" />
@@ -74,8 +71,6 @@ export default function InventoryDetailPage() {
 
   return (
     <>
-      <PageTitle title={`Inventory - ${inventory.itemName}`} />
-
       {/* Header Information */}
       <Row>
         <Col md={12}>
