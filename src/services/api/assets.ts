@@ -260,6 +260,33 @@ class AssetsService {
       throw error
     }
   }
+
+  // Update asset and warranty
+  async updateAssetWarranty(assetId: string, data: {
+    consumerId: string;
+    asset: {
+      assetId: string;
+      status?: string;
+      departmentId?: string;
+      consumerId: string;
+    };
+    warranty: {
+      warrantyTypeId: number;
+      startDate: string;
+      endDate: string;
+      warrantyPeriod: number;
+      coverageType: string;
+      consumerId: string;
+    };
+  }): Promise<any> {
+    try {
+      const response = await assetHttp.put<any>(`/asset/${assetId}/warranty`, data)
+      return response
+    } catch (error) {
+      console.error('Error updating asset and warranty:', error)
+      throw error
+    }
+  }
 }
 
 export const assetsService = new AssetsService() 
