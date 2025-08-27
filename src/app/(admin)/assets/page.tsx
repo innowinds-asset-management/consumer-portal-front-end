@@ -57,6 +57,8 @@ export default function AssetListingPage() {
         const queryParams: { consumerId?: string; supplierId?: string; departmentId?: string ;groupstatus?: string} = {};
         if (consumerId) {
           queryParams.consumerId = consumerId;
+        }else{
+          queryParams.consumerId = localStorage.getItem('consumer_id') || '';
         }
         if (supplierId) {
           queryParams.supplierId = supplierId;
