@@ -47,6 +47,7 @@ export default function AssetDetailPage() {
   const [loadingDepartments, setLoadingDepartments] = useState(false);
   const [selectedAssetStatus, setSelectedAssetStatus] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [assignedTo, setAssignedTo] = useState("");
   
   // Warranty states
   const [warrantyTypes, setWarrantyTypes] = useState<WarrantyType[]>([]);
@@ -305,13 +306,14 @@ export default function AssetDetailPage() {
     setShowInitiateActivateModal(true);
     fetchAssetStatuses();
     fetchDepartments();
-    // Remove fetchWarrantyTypes() from here - will load on dropdown click
+    fetchWarrantyTypes(); // Load warranty types automatically when modal opens
     
     // Pre-populate fields if asset has existing data
     if (assetId && asset) {
       // Pre-populate asset status and department
       setSelectedAssetStatus(asset.status || "");
       setSelectedDepartment(asset.departmentId || "");
+      setAssignedTo(asset.assetAssignTo || "");
       
       // Fetch and populate warranty data based on asset ID
       try {
@@ -384,6 +386,7 @@ export default function AssetDetailPage() {
     setShowInitiateActivateModal(false);
     setSelectedAssetStatus("");
     setSelectedDepartment("");
+    setAssignedTo("");
     setSelectedWarrantyType("");
     setSelectedCoverageType("");
     setWarrantyPeriod(0);
@@ -458,6 +461,7 @@ export default function AssetDetailPage() {
           assetId: assetId!,
           status: selectedAssetStatus,
           departmentId: selectedDepartment,
+          assetAssignTo: assignedTo || null,
           consumerId: consumerId
         },
         warranty: {
@@ -627,6 +631,9 @@ export default function AssetDetailPage() {
                           }
                       </Badge>
 
+                    </div>
+                    <div className="mb-3">
+                      <strong>Assigned To:</strong> {asset.assetAssignTo || 'N/A'}
                     </div>
                   </Col>
                   <Col lg={6}>
@@ -1054,6 +1061,20 @@ export default function AssetDetailPage() {
                 </Col>
               </Row>
 
+              <Row>
+                <Col lg={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Assigned To</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Enter the person assigned to this asset"
+                      value={assignedTo}
+                      onChange={(e) => setAssignedTo(e.target.value)}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
               <hr className="my-4" />
               <h6 className="mb-3">
                 <IconifyIcon icon="tabler:shield-check" className="me-2" />
@@ -1115,13 +1136,12 @@ export default function AssetDetailPage() {
                     <Form.Select 
                       value={selectedWarrantyType} 
                       onChange={(e) => setSelectedWarrantyType(e.target.value)}
-                      onClick={handleWarrantyTypeDropdownClick}
                       disabled={loadingWarrantyTypes}
                     >
                       <option value="">
                         {loadingWarrantyTypes ? "Loading warranty types..." : 
                          warrantyTypesLoaded ? `Select warranty type (${warrantyTypes.length} available)` : 
-                         "Click to load warranty types"}
+                         "Select warranty type"}
                       </option>
                       {warrantyTypes.map((warrantyType) => (
                         <option key={warrantyType.warrantyTypeId} value={warrantyType.warrantyTypeId}>

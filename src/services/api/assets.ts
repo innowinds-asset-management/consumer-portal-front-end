@@ -35,6 +35,7 @@ export interface Asset {
     displayName: string;
   };
   status?: string;
+  assetAssignTo?: string | null;
   createdAt?: string;
   updatedAt?: string;
   departmentId?: string | null;
@@ -269,6 +270,7 @@ class AssetsService {
       status?: string;
       departmentId?: string;
       consumerId: string;
+      assetAssignTo?: string | null;
     };
     warranty: {
       warrantyTypeId: number;
