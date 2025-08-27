@@ -1,12 +1,14 @@
 'use client'
-import { currentYear } from '@/context/constants'
-import Link from 'next/link'
-import { Card, Col, Row } from 'react-bootstrap'
-import useSignIn from './useSignIn'
-import TextFormInput from '@/components/form/TextFormInput'
 
-const Login = () => {
-  const { loading, login, control, error } = useSignIn()
+import { useForgotPassword } from '@/app/(auth)/auth/forgot-password/component/useForgotPassword'
+import TextFormInput from '@/components/form/TextFormInput'
+import { Card, Col, Row } from 'react-bootstrap'
+import Link from 'next/link'
+import { currentYear } from '@/context/constants'
+
+export default function ForgotPassword() {
+  const { control, handleSubmit, onSubmit, isLoading, error } = useForgotPassword()
+
   return (
     <div className="auth-bg d-flex min-vh-100 justify-content-center align-items-center">
       <Row className="g-0 justify-content-center w-100 m-xxl-5 px-xxl-4 m-3">
@@ -60,65 +62,45 @@ const Login = () => {
                 </span>
               </div>
             </Link>
-            <h4 className="fw-semibold mb-2 fs-18">Log in to your account</h4>
-            <p className="text-muted mb-4">Enter your user Id and password to access admin panel.</p>
-            <form onSubmit={login} action="/" className="text-start mb-3">
+            <h4 className="fw-semibold mb-2 fs-18">Forgot Password</h4>
+            <p className="text-muted mb-4">Enter your email address and we'll send you a link to reset your password.</p>
+            <form onSubmit={handleSubmit(onSubmit)} action="/" className="text-start mb-3">
               <div className="mb-3">
                 <TextFormInput
                   control={control}
-                  name="userId"
-                  placeholder="Enter your userId"
+                  name="email"
+                  placeholder="Enter your email address"
                   className="bg-light bg-opacity-50 border-light py-2"
-                  label="User Id"
+                  label="Email Address"
+                  type="email"
                 />
-              </div>
-              <div className="mb-3">
-                <TextFormInput
-                  control={control}
-                  name="password"
-                  placeholder="Enter your password"
-                  className="bg-light bg-opacity-50 border-light py-2"
-                  label="Password"
-                  type="password"
-                />
-              </div>
-              <div className="d-flex justify-content-between mb-3">
-                <div className="form-check">
-                  <input type="checkbox" className="form-check-input" id="checkbox-signin" />
-                  <label className="form-check-label" htmlFor="checkbox-signin">
-                    Remember me
-                  </label>
-                </div>
-                <Link href="/auth/forgot-password" className="text-muted border-bottom border-dashed">
-                  Forgot Password ?
-                </Link>
               </div>
               
-              {/* Error Message Display */}
               {error && (
-                <div className="alert alert-danger mb-3" role="alert">
-                  <i className="fas fa-exclamation-triangle me-2"></i>
-                  {error}
+                <div className="mb-3">
+                  <div className="alert alert-danger" role="alert">
+                    {error}
+                  </div>
                 </div>
               )}
               
               <div className="d-grid">
-                <button disabled={loading} className="btn btn-primary fw-semibold" type="submit">
-                  {loading ? (
+                <button disabled={isLoading} className="btn btn-primary fw-semibold" type="submit">
+                  {isLoading ? (
                     <>
                       <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                      Logging in...
+                      Sending...
                     </>
                   ) : (
-                    'Login'
+                    'Send Reset Link'
                   )}
                 </button>
               </div>
             </form>
             <p className="text-muted fs-14 mb-4">
-              Don't have an account?
-              <Link href="/auth/register" className="fw-semibold text-danger ms-1">
-                Sign Up !
+              Remember your password?
+              <Link href="/auth/login" className="fw-semibold text-danger ms-1">
+                Back to Login
               </Link>
             </p>
           </Card>
@@ -130,5 +112,3 @@ const Login = () => {
     </div>
   )
 }
-
-export default Login
