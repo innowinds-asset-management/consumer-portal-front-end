@@ -139,9 +139,16 @@ class AuthService {
     email: string
     password: string
     confirmPassword: string
+    company: string
   }): Promise<LoginResponse> {
     try {
-      const response = await authHttp.post<LoginResponse>('/auth/register', userData)
+      const response = await authHttp.post<LoginResponse>('/auth/signup', {
+        email: userData.email,
+        company: userData.company,
+        name: userData.name,
+        password: userData.password,
+        confirmPassword: userData.confirmPassword
+      })
       return response
     } catch (error) {
       console.error('Error during registration:', error)
@@ -152,7 +159,7 @@ class AuthService {
   // Forgot password
   async forgotPassword(email: string): Promise<{ message: string }> {
     try {
-      const response = await authHttp.post<{ message: string }>('/auth/forgot-password', { email })
+      const response = await authHttp.post<{ message: string }>('/users/forgot-password', { email })
       return response
     } catch (error) {
       console.error('Error requesting password reset:', error)
@@ -161,9 +168,9 @@ class AuthService {
   }
 
   // Reset password
-  async resetPassword(token: string, password: string): Promise<{ message: string }> {
+  async resetPassword(token: string, password: string, confirmPassword: string): Promise<{ message: string }> {
     try {
-      const response = await authHttp.post<{ message: string }>('/auth/reset-password', { token, password })
+      const response = await authHttp.post<{ message: string }>('/users/reset-password', { token, password, confirmPassword })
       return response
     } catch (error) {
       console.error('Error resetting password:', error)
