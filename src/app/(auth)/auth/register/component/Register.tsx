@@ -2,15 +2,15 @@
 import { currentYear } from '@/context/constants'
 import Link from 'next/link'
 import { Card, Col, Row } from 'react-bootstrap'
-import useSignIn from './useSignIn'
+import useSignUp from './useSignUp'
 import TextFormInput from '@/components/form/TextFormInput'
 
-const Login = () => {
-  const { loading, login, control, error } = useSignIn()
+const Register = () => {
+  const { loading, register, control, error } = useSignUp()
   return (
     <div className="auth-bg d-flex min-vh-100 justify-content-center align-items-center">
       <Row className="g-0 justify-content-center w-100 m-xxl-5 px-xxl-4 m-3">
-        <Col xl={3} lg={4} md={6}>
+        <Col xl={4} lg={5} md={7}>
           <Card className="overflow-hidden text-center rounded-4 p-xxl-4 p-3 mb-0">
             <Link href="/" className="auth-brand mb-4">
               <div 
@@ -60,18 +60,38 @@ const Login = () => {
                 </span>
               </div>
             </Link>
-            <h4 className="fw-semibold mb-2 fs-18">Log in to your account</h4>
-            <p className="text-muted mb-4">Enter your user Id and password to access admin panel.</p>
-            <form onSubmit={login} action="/" className="text-start mb-3">
+            <h4 className="fw-semibold mb-2 fs-18">Create your account</h4>
+            <p className="text-muted mb-4">Enter your details to create a new account.</p>
+            <form onSubmit={register} action="/" className="text-start mb-3">
               <div className="mb-3">
                 <TextFormInput
                   control={control}
-                  name="userId"
-                  placeholder="Enter your userId"
+                  name="name"
+                  placeholder="Enter your full name"
                   className="bg-light bg-opacity-50 border-light py-2"
-                  label="User Id"
+                  label="Full Name"
                 />
               </div>
+              <div className="mb-3">
+                <TextFormInput
+                  control={control}
+                  name="email"
+                  placeholder="Enter your email"
+                  className="bg-light bg-opacity-50 border-light py-2"
+                  label="Email"
+                  type="email"
+                />
+              </div>
+              <div className="mb-3">
+                <TextFormInput
+                  control={control}
+                  name="company"
+                  placeholder="Enter your company name"
+                  className="bg-light bg-opacity-50 border-light py-2"
+                  label="Company Name"
+                />
+              </div>
+
               <div className="mb-3">
                 <TextFormInput
                   control={control}
@@ -82,16 +102,15 @@ const Login = () => {
                   type="password"
                 />
               </div>
-              <div className="d-flex justify-content-between mb-3">
-                <div className="form-check">
-                  <input type="checkbox" className="form-check-input" id="checkbox-signin" />
-                  <label className="form-check-label" htmlFor="checkbox-signin">
-                    Remember me
-                  </label>
-                </div>
-                <Link href="/auth/forgot-password" className="text-muted border-bottom border-dashed">
-                  Forgot Password ?
-                </Link>
+              <div className="mb-3">
+                <TextFormInput
+                  control={control}
+                  name="confirmPassword"
+                  placeholder="Confirm your password"
+                  className="bg-light bg-opacity-50 border-light py-2"
+                  label="Confirm Password"
+                  type="password"
+                />
               </div>
               
               {/* Error Message Display */}
@@ -107,18 +126,18 @@ const Login = () => {
                   {loading ? (
                     <>
                       <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                      Logging in...
+                      Creating account...
                     </>
                   ) : (
-                    'Login'
+                    'Create Account'
                   )}
                 </button>
               </div>
             </form>
             <p className="text-muted fs-14 mb-4">
-              Don't have an account?
-              <Link href="/auth/register" className="fw-semibold text-danger ms-1">
-                Sign Up !
+              Already have an account?
+              <Link href="/auth/login" className="fw-semibold text-danger ms-1">
+                Sign In !
               </Link>
             </p>
           </Card>
@@ -131,4 +150,4 @@ const Login = () => {
   )
 }
 
-export default Login
+export default Register
