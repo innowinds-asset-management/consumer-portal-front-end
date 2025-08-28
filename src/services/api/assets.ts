@@ -192,7 +192,6 @@ class AssetsService {
       if (queryParams.toString()) {
         endpoint += `?${queryParams.toString()}`
       }
-      
       const response = await assetHttp.get<Asset[]>(endpoint)
       return response
     } catch (error) {
