@@ -12,6 +12,7 @@ import { grnService, Grn } from '@/services/api/grn'
 type PurchaseOrderLineItemType = {
   icon: string
   title: string
+  itemName: string
   description: string
   quantity: number
   price: number
@@ -24,6 +25,7 @@ type PurchaseOrderLineItemType = {
 const convertPoLineItemToDisplay = (lineItem: PoLineItem): PurchaseOrderLineItemType => {
   return {
     title: lineItem.partNo,
+    itemName: lineItem.itemName || '',
     description: `Part Number: ${lineItem.partNo}`,
     icon: 'tabler:package',
     quantity: parseInt(lineItem.quantity) || 0,
@@ -225,7 +227,7 @@ const PurchaseOrderDetail = () => {
                           <div className="d-flex align-items-center gap-2">
                             <IconifyIcon icon={item.icon} className="fs-22" />
                             <div>
-                              <span className="fw-medium">{item.title}</span>
+                              <span className="fw-medium">{item.itemName}</span>
                               <p className="text-muted mb-0">({item.description})</p>
                             </div>
                           </div>
