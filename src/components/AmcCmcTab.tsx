@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
-import { Card, CardBody, Col, Row, Badge, Table, Button } from 'react-bootstrap'
-import { useRouter } from 'next/navigation';
+import { Card, CardBody, Col, Row, Badge, Table, Button, Alert, Spinner } from 'react-bootstrap'
+import { useRouter, useSearchParams } from 'next/navigation';
 import { formatDate } from "@/utils/date";
+import { serviceContractService, ServiceContract } from "@/services/api/serviceContract";
 
 interface AmcCmcTabProps {
   supplierId?: string;
@@ -14,18 +15,7 @@ interface AmcCmcTabProps {
   className?: string;
 }
 
-interface AmcCmcEntry {
-  id: string;
-  contractNumber: string;
-  contractType: 'AMC' | 'CMC';
-  startDate: string;
-  endDate: string;
-  totalValue: number;
-  status: 'Active' | 'Expired' | 'Pending' | 'Cancelled';
-  coverageDetails: string;
-  renewalDate?: string;
-  autoRenewal: boolean;
-}
+
 
 export default function AmcCmcTab({ 
   supplierId, 
@@ -35,22 +25,35 @@ export default function AmcCmcTab({
   className = ""
 }: AmcCmcTabProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  const [contracts, setContracts] = useState<ServiceContract[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  // Hardcoded AMC/CMC data
-  const amcCmcData: AmcCmcEntry[] = [
-    {
-      id: "AMC001",
-      contractNumber: "AMC-2024-001",
-      contractType: "AMC",
-      startDate: "2024-01-01",
-      endDate: "2024-12-31",
-      totalValue: 50000,
-      status: "Active",
-      coverageDetails: "Annual Maintenance Contract covering preventive maintenance, emergency repairs, and spare parts",
-      renewalDate: "2024-11-30",
-      autoRenewal: true
-    }
-  ];
+  // Get supplier ID from URL params or props
+  const currentSupplierId = supplierId || searchParams.get('sid') || supplier?.id;
+
+  useEffect(() => {
+    const fetchContracts = async () => {
+      if (!currentSupplierId) return;
+      
+      setLoading(true);
+      setError(''); 
+      
+      try {
+        const data = await serviceContractService.getServiceContractsBySupplierId(currentSupplierId);
+        setContracts(data);
+      } catch (err) {
+        setError('Failed to load contracts');
+        console.error('Error fetching contracts:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContracts();
+  }, [currentSupplierId]);
 
   const handleCreateContract = () => {
     if (supplier) {
@@ -59,8 +62,6 @@ export default function AmcCmcTab({
       router.push('/amc-cmc/create');
     }
   };
-
- 
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
@@ -76,7 +77,7 @@ export default function AmcCmcTab({
         return 'secondary';
     }
   };
-
+  
   const getContractTypeBadgeColor = (type: string) => {
     switch (type) {
       case 'AMC':
@@ -109,56 +110,72 @@ export default function AmcCmcTab({
                 )}
               </div>
 
-              {amcCmcData.length === 0 ? (
+              {loading ? (
+                <div className="text-center py-4">
+                  <Spinner animation="border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </Spinner>
+                  <p className="mt-2 text-muted">Loading contracts...</p>
+                </div>
+              ) : error ? (
+                <Alert variant="danger">{error}</Alert>
+              ) : contracts.length === 0 ? (
                 <div className="text-center py-4">
                   <p className="text-muted">No AMC/CMC contracts found</p>
                 </div>
               ) : (
                 <div className="table-responsive">
                   <Table striped hover>
-                                         <thead>
-                       <tr>
-                         <th>Contract Number</th>
-                         <th>Type</th>
-                         <th>Start Date</th>
-                         <th>End Date</th>
-                         <th>Total Value</th>
-                         <th>Status</th>
-                       </tr>
-                     </thead>
+                    <thead>
+                      <tr>
+                        <th>Contract Number</th>
+                        <th>Contract Name</th>
+                        <th>Type</th>
+                        <th>Asset</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
                     <tbody>
-                      {amcCmcData.map((contract) => (
-                                                 <tr key={contract.id}>
-                           <td>{contract.contractNumber}</td>
-                           <td>
-                             <Badge bg={getContractTypeBadgeColor(contract.contractType)}>
-                               {contract.contractType}
-                             </Badge>
-                           </td>
-                           <td>{formatDate(contract.startDate)}</td>
-                           <td>{formatDate(contract.endDate)}</td>
-                           <td>{contract.totalValue}</td>
-                           <td>
-                             <Badge bg={getStatusBadgeColor(contract.status)}>
-                               {contract.status}
-                             </Badge>
-                           </td>
-                         </tr>
+                      {contracts.map((contract: ServiceContract) => (
+                        <tr key={contract.contractId}>
+                          <td>{contract.contractNumber}</td>
+                          <td>{contract.contractName}</td>
+                          <td>
+                            <Badge bg={getContractTypeBadgeColor(contract.contractType.typeName)}>
+                              {contract.contractType.typeName}
+                            </Badge>
+                          </td>
+                          <td>
+                            <span 
+                              className="text-primary cursor-pointer text-decoration-underline"
+                              onClick={() => router.push(`/assets/detail?aid=${contract.asset.id}`)}
+                              style={{ cursor: 'pointer' }}
+                            >
+                              {contract.asset.assetName}
+                            </span>
+                          </td>
+                          <td>{formatDate(contract.startDate)}</td>
+                          <td>{formatDate(contract.endDate)}</td>
+                          <td>
+                            <Badge bg={getStatusBadgeColor(contract.status.name)}>
+                              {contract.status.name}
+                            </Badge>
+                          </td>
+                        </tr>
                       ))}
                     </tbody>
                   </Table>
                 </div>
               )}
-
-              {amcCmcData.length > 0 && (
+              {contracts.length > 0 && (
                 <div className="text-center mt-3">
                   <small className="text-muted">
-                    Showing {amcCmcData.length} contract{amcCmcData.length !== 1 ? 's' : ''}
+                    Showing {contracts.length} contract{contracts.length !== 1 ? 's' : ''}
                   </small>
                 </div>
-              )}
-
-              
+              )}              
             </CardBody>
           </Card>
         </Col>
