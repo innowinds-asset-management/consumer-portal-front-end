@@ -120,15 +120,45 @@ export default function AssetListingPage() {
     return dateString.split("T")[0];
   };
 
-  // Compute warranty status from dates
-  const getWarrantyStatus = (startDate: string, endDate: string): string => {
-    if (!startDate || !endDate) return "";
+  // Compute warranty status from warranties array
+  const getWarrantyStatus = (warranties: any[]): string => {
+    if (!warranties || warranties.length === 0) return "N/A";
+    
     const now = new Date();
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    if (now < start) return "Not Started";
-    if (now > end) return "Expired";
-    return "Active";
+    
+    // Check each warranty in the array
+    for (const warranty of warranties) {
+      if (warranty.startDate && warranty.endDate) {
+        const start = new Date(warranty.startDate);
+        const end = new Date(warranty.endDate);
+        
+        if (now >= start && now <= end) {
+          return "Active";
+        }
+      }
+    }
+    
+    // If no active warranty found, check if any warranty has expired
+    for (const warranty of warranties) {
+      if (warranty.startDate && warranty.endDate) {
+        const end = new Date(warranty.endDate);
+        if (now > end) {
+          return "Expired";
+        }
+      }
+    }
+    
+    // If no warranty has started yet
+    for (const warranty of warranties) {
+      if (warranty.startDate) {
+        const start = new Date(warranty.startDate);
+        if (now < start) {
+          return "Not Started";
+        }
+      }
+    }
+    
+    return "N/A";
   };
 
   // Get asset status display name based on status code
@@ -170,7 +200,8 @@ export default function AssetListingPage() {
 
   // Prepare data for GridJS (in requested column order)
   const gridData = filteredAssets.map((asset) => {
-    console.log('Asset status for grid:', asset.assetName, '->', asset.status); // Debug: Check each asset status
+    const warrantyStatus = getWarrantyStatus(asset.warranties || []);
+    console.log('Asset warranty status:', asset.assetName, '->', warrantyStatus, 'warranties:', asset.warranties); // Debug: Check warranty status
     return [
       asset.assetName || "",
       asset.assetType?.assetName || "",
@@ -179,7 +210,7 @@ export default function AssetListingPage() {
       [asset.brand, asset.model].filter(Boolean).join(" - ") || "",
       asset.supplier?.name || "",
       asset.status || "", // Asset Status
-      getWarrantyStatus(asset.warrantyStartDate, asset.warrantyEndDate)
+      warrantyStatus
     ];
   });
 
@@ -245,11 +276,7 @@ export default function AssetListingPage() {
                   search: true,
                   formatter: (cell: any) => {
                     const status = cell as string;
-                    let badgeClass = 'bg-secondary';
-                    if (status === 'Active') badgeClass = 'bg-success';
-                    else if (status === 'Expired') badgeClass = 'bg-danger';
-                    else if (status === 'Not Started') badgeClass = 'bg-warning';
-                    return { html: `<span class="badge ${badgeClass}">${status || ''}</span>` };
+                    return status || 'N/A';
                   }
                 }
               ]}
