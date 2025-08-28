@@ -17,7 +17,7 @@ type PurchaseOrderLineItemType = {
   quantity: number
   price: number
   amount: number
-  receivedQty: number
+  receivedQty: number 
   remainingQty: number
 }
 

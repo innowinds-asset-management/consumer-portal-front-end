@@ -61,6 +61,8 @@ export default function GrnCreatePage() {
   // Line items state
   const [items, setItems] = useState<LineItemForm[]>([])
 
+
+
   useEffect(() => {
     const fetchPos = async () => {
       try {
@@ -189,7 +191,7 @@ export default function GrnCreatePage() {
         receivedBy: receivedBy || null,
         vehicleNumber: vehicleNumber || null,
         grnItem: items
-          .filter(item => (item.quantityRemaining || 0) > 0) // Only include items with pending quantity
+          .filter(item => (item.quantityAccepted || 0) > 0 || (item.quantityRejected || 0) > 0) // Include items with any quantity entered
           .map(item => {
             // Calculate the correct received quantity for submission
             const previouslyReceived = parseInt(item.poLineItem?.receivedQty || '0') || 0
@@ -348,10 +350,10 @@ export default function GrnCreatePage() {
                   <tr className="bg-light bg-opacity-50">
                     <th>Part No</th>
                     <th>Item Name</th>
+                    <th className="text-end">Qty Received</th>
                     <th className="text-end">Qty Ordered</th>
                     <th className="text-end">Qty Accepted</th>
                     <th className="text-end">Qty Rejected</th>
-                    <th className="text-end">Qty Received</th>
                     <th className="text-end">Pending Qty</th>
                   </tr>
                 </thead>
@@ -363,6 +365,7 @@ export default function GrnCreatePage() {
                     <tr key={it.poLineItemId}>
                       <td>{it.poLineItem?.partNo || '-'}</td>
                       <td>{it.poLineItem?.itemName || '-'}</td>
+                      <td className="text-end">{it.quantityReceived}</td>
                       <td className="text-end">{it.quantityOrdered}</td>
                       <td className="text-end" style={{ width: 140 }}>
                         <Form.Control 
@@ -370,8 +373,7 @@ export default function GrnCreatePage() {
                           min={0} 
                           max={Math.max(it.quantityOrdered - parseInt(it.poLineItem?.receivedQty || '0') - (it.quantityRejected || 0), 0)}
                           value={it.quantityAccepted}
-                          onChange={e => handleQtyChange(idx, 'quantityAccepted', parseInt(e.target.value) || 0)} 
-                          disabled={it.quantityRemaining === 0}
+                          onChange={e => handleQtyChange(idx, 'quantityAccepted', parseInt(e.target.value) || 0)}                           
                           className={it.quantityRemaining === 0 ? 'bg-light' : ''}
                         />
                       </td>
@@ -381,12 +383,10 @@ export default function GrnCreatePage() {
                           min={0} 
                           max={Math.max(it.quantityOrdered - parseInt(it.poLineItem?.receivedQty || '0') - (it.quantityAccepted || 0), 0)}
                           value={it.quantityRejected}
-                          onChange={e => handleQtyChange(idx, 'quantityRejected', parseInt(e.target.value) || 0)} 
-                          disabled={it.quantityRemaining === 0}
+                          onChange={e => handleQtyChange(idx, 'quantityRejected', parseInt(e.target.value) || 0)}                           
                           className={it.quantityRemaining === 0 ? 'bg-light' : ''}
                         />
                       </td>
-                      <td className="text-end">{it.quantityReceived}</td>
                       <td className="text-end">{it.quantityRemaining}</td>
                     </tr>
                   ))}
