@@ -49,7 +49,7 @@ export default function AssetListingPage() {
   const departmentId = searchParams.get('did');
   const groupstatus = searchParams.get('groupstatus');
   useEffect(() => {
-    const fetchAssets = async () => {
+    const fetchAssets = async (retryCount = 0) => {
       setLoading(true);
       setError("");
       try {
@@ -69,6 +69,8 @@ export default function AssetListingPage() {
         if (groupstatus) {
           queryParams.groupstatus = groupstatus;
         }
+        
+        console.log('Fetching assets with params:', queryParams);
         const data = await assetsService.getAssets(queryParams);
         const allAssets = Array.isArray(data) ? data : [];       
         setAssets(allAssets);
