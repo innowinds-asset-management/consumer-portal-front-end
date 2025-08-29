@@ -149,6 +149,12 @@ export const MENU_ITEMS: MenuItemType[] = [
     url: '/suppliers',
   },
   {
+    key: 'amc-cmc',
+    label: 'AMC/CMC',
+    icon: Disc,
+    url: '/amc-cmc/create',
+  },
+  {
     key: 'inventory',
     label: 'Inventory',
     icon: Box,

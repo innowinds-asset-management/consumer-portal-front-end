@@ -6,6 +6,25 @@ export interface ConsumerSupplier {
   supplierId: string
   createdAt: string
   updatedAt: string
+  areaOfSupply?: string | null
+  registeredAt?: string | null
+  supplierCode?: string
+  supplier: {
+    id: string
+    name: string
+    code: string
+    gstNumber?: string
+    email?: string
+    phone?: string
+    address?: string
+    isActive: boolean
+    createdAt?: string
+    updatedAt?: string
+    primaryContactEmail?: string | null
+    primaryContactName?: string | null
+    primaryContactPhone?: string | null
+    supplierCode?: string
+  }
 }
 
 // Create a separate HTTP client for consumer supplier API calls
@@ -61,7 +80,8 @@ const consumerSupplierHttp = new ConsumerSupplierHttpClient()
 class ConsumerSupplierService {
   async getSupplierByConsumerId(consumerId: string): Promise<ConsumerSupplier[]> {
     try {
-      const response = await consumerSupplierHttp.get<ConsumerSupplier[]>(`/consumer-supplier/supplier/${consumerId}`)
+      const url = `/consumer-supplier/supplier/${encodeURIComponent(consumerId)}`;
+      const response = await consumerSupplierHttp.get<ConsumerSupplier[]>(url);
       return response
     } catch (error) {
       console.error('Error fetching supplier by consumer ID:', error)

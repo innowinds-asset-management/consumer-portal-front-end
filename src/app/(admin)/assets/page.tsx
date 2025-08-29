@@ -8,6 +8,7 @@ import { assetsService } from "@/services/api/assets";
 import { Grid } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
 import { useRouter, useSearchParams } from "next/navigation";
+import { STORAGE_KEYS } from "@/utils/constants";
 
 interface Asset {
   id: string;
@@ -58,7 +59,8 @@ export default function AssetListingPage() {
         if (consumerId && consumerId !== 'null' && consumerId !== 'undefined' && consumerId !== ''  && consumerId !== '0') {
           queryParams.consumerId = consumerId;
         }else{
-          queryParams.consumerId = localStorage.getItem('consumer_id') || '';
+          //queryParams.consumerId = localStorage.getItem('consumer_id') || '';
+          queryParams.consumerId = JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "";
         }
         if (supplierId) {
           queryParams.supplierId = supplierId;
