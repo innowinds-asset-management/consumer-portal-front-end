@@ -68,7 +68,7 @@ export interface CreateAssetWarrantyResponse {
 class AssetWarrantyService {
   async createAssetWarranty(assetWarrantyData: CreateAssetWarrantyRequest): Promise<CreateAssetWarrantyResponse> {
     try {
-      const response = await httpClient.post<CreateAssetWarrantyResponse>('/asset-warranty', assetWarrantyData)
+      const response = await httpClient.post<CreateAssetWarrantyResponse>('/asset/warranty', assetWarrantyData)
       return response.data
     } catch (error) {
       console.error('Error creating asset warranty:', error)

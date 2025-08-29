@@ -92,6 +92,16 @@ class DepartmentService {
       throw error
     }
   }
+
+  async getDepartmentsByConsumerId(): Promise<Department[]> {
+    try {
+      const response = await httpClient.get<Department[]>('/department/consumer')
+      return response.data
+    } catch (error) {
+      console.error('Error fetching departments by consumer ID:', error)
+      throw error
+    }
+  }
 }
 
 export const departmentService = new DepartmentService() 
