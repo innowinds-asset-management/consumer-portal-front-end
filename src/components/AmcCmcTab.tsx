@@ -132,6 +132,7 @@ export default function AmcCmcTab({
                         <th>Contract Name</th>
                         <th>Type</th>
                         <th>Asset</th>
+                        <th>Amount</th>
                         <th>Start Date</th>
                         <th>End Date</th>
                         <th>Status</th>
@@ -155,6 +156,9 @@ export default function AmcCmcTab({
                             >
                               {contract.asset.assetName}
                             </span>
+                          </td>
+                          <td>
+                            {contract.amount ? `$${contract.amount.toLocaleString()}` : '-'}
                           </td>
                           <td>{formatDate(contract.startDate)}</td>
                           <td>{formatDate(contract.endDate)}</td>

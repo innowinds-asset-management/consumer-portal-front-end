@@ -7,6 +7,7 @@ export interface ServiceContract {
   serviceSupplierId: string;
   assetId: string;
   contractName: string;
+  amount?: number;
   startDate: string;
   endDate: string;
   paymentTerms: string;
