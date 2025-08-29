@@ -7,10 +7,14 @@ export interface Inventory {
   quantity: number;
   unitMeasure?: 'PIECE' | 'BOX' | 'PACK' | 'LITER' | 'MILLILITER' | 'GRAM' | 'KILOGRAM' | 'TABLET' | 'STRIP' | 'VIAL' | 'AMPULLE';
   minStock?: number;
-  consumerId: string;
   createdAt: string;
   updatedAt: string;
   itemNo?: string;
+  grnItemId?: string;
+  poLineItemId?: string;
+  expiredAt?: string;
+  supplierId?: string;
+  itemId?: string;
   consumer?: {
     id: string;
     email: string;
