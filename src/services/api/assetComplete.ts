@@ -1,4 +1,5 @@
-import { ASSET_API_URL } from '@/config/environment'
+import { API_URL } from '@/config/environment'
+import httpClient from '@/services/http'
 
 // Warranty interface
 export interface WarrantyData {
@@ -58,46 +59,25 @@ export interface CreateAssetCompleteResponse {
   };
 }
 
-// Create a separate HTTP client for complete asset API calls
-class AssetCompleteHttpClient {
-  private baseURL: string
-  private defaultHeaders: Record<string, string>
-
-  constructor() {
-    this.baseURL = ASSET_API_URL
-    this.defaultHeaders = {
-      'Content-Type': 'application/json',
-    }
-  }
-
-  private getHeaders(): Record<string, string> {
-    return { ...this.defaultHeaders }
-  }
-
-  async post<T>(endpoint: string, data: any): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(data),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    return response.json()
-  }
-}
-
-const assetCompleteHttp = new AssetCompleteHttpClient()
-
 class AssetCompleteService {
   async createAssetComplete(assetData: CreateAssetCompleteRequest): Promise<CreateAssetCompleteResponse> {
-    // Send single asset object directly
-    console.log("About to make API call to assetCompleteService.createAssetComplete");
-    console.log("Asset data:", assetData);
-    return assetCompleteHttp.post<CreateAssetCompleteResponse>('/asset/complete', assetData)
+    try {
+      const response = await httpClient.post<CreateAssetCompleteResponse>('/asset/complete', assetData)
+      return response.data
+    } catch (error) {
+      console.error('Error creating complete asset:', error)
+      throw error
+    }
+  }
+
+  async createAssetCompleteArray(assetDataArray: CreateAssetCompleteRequestArray): Promise<CreateAssetCompleteResponse[]> {
+    try {
+      const response = await httpClient.post<CreateAssetCompleteResponse[]>('/asset/complete/array', assetDataArray)
+      return response.data
+    } catch (error) {
+      console.error('Error creating complete asset array:', error)
+      throw error
+    }
   }
 }
 

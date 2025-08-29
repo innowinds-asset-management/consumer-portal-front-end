@@ -45,16 +45,8 @@ export default function CreateDepartmentModal({ show, onHide, onSuccess, existin
     setSuccess('');
 
     try {
-      const consumerId = JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "";
-      
-      if (!consumerId) {
-        setError('Consumer ID not found. Please login again.');
-        return;
-      }
-
       const departmentData = {
-        deptName: departmentName.trim(),
-        consumerId: consumerId
+        deptName: departmentName.trim()
       };
 
       await departmentService.createDepartment(departmentData);

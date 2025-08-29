@@ -1,4 +1,5 @@
-import { ASSET_API_URL } from '@/config/environment'
+import { API_URL } from '@/config/environment'
+import httpClient from '@/services/http'
 
 export interface GrnItem {
   id?: string
@@ -41,33 +42,46 @@ export interface Grn {
   }
 }
 
-class GrnHttpClient {
-  private baseURL: string
-  private defaultHeaders: Record<string, string>
-
-  constructor() {
-    this.baseURL = ASSET_API_URL
-    this.defaultHeaders = { 'Content-Type': 'application/json' }
-  }
-
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`
-    const res = await fetch(url, { headers: this.defaultHeaders, ...options })
-    if (!res.ok) throw new Error(`HTTP error ${res.status}`)
-    return res.json()
-  }
-
-  get<T>(endpoint: string) { return this.request<T>(endpoint, { method: 'GET' }) }
-  post<T>(endpoint: string, body: any) { return this.request<T>(endpoint, { method: 'POST', body: JSON.stringify(body) }) }
-}
-
 class GrnService {
-  private http = new GrnHttpClient()
+  async createGrn(payload: Grn): Promise<Grn> {
+    try {
+      const response = await httpClient.post<Grn>('/grn', payload)
+      return response.data
+    } catch (error) {
+      console.error('Error creating GRN:', error)
+      throw error
+    }
+  }
 
-  createGrn(payload: Grn) { return this.http.post<Grn>('/grn', payload) }
-  getGrnsByPoId(poId: string) { return this.http.get<Grn[]>(`/grn/po/${poId}`) }
-  getGrns() { return this.http.get<Grn[]>('/grn') }
-  getGrnById(id: string) { return this.http.get<Grn>(`/grn/${id}`) }
+  async getGrnsByPoId(poId: string): Promise<Grn[]> {
+    try {
+      const response = await httpClient.get<Grn[]>(`/grn/po/${poId}`)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching GRNs by PO ID:', error)
+      throw error
+    }
+  }
+
+  async getGrns(): Promise<Grn[]> {
+    try {
+      const response = await httpClient.get<Grn[]>('/grn')
+      return response.data
+    } catch (error) {
+      console.error('Error fetching GRNs:', error)
+      throw error
+    }
+  }
+
+  async getGrnById(id: string): Promise<Grn> {
+    try {
+      const response = await httpClient.get<Grn>(`/grn/${id}`)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching GRN by ID:', error)
+      throw error
+    }
+  }
 }
 
 export const grnService = new GrnService()

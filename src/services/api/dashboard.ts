@@ -1,5 +1,5 @@
-import { http, apiUtils } from '../http'
-import { API_CONFIG } from '@/utils/constants'
+import { API_URL } from '@/config/environment'
+import httpClient from '@/services/http'
 import { 
   DashboardStats, 
   ChartData, 
@@ -13,38 +13,46 @@ import {
 export const dashboardService = {
   // Get dashboard statistics
   async getStats(): Promise<DashboardStats[]> {
-    const response = await http.get<ApiResponse<DashboardStats[]>>(
-      API_CONFIG.endpoints.dashboard.stats
-    )
-    return apiUtils.handleApiResponse<DashboardStats[]>(response)
+    try {
+      const response = await httpClient.get<ApiResponse<DashboardStats[]>>('/dashboard/stats')
+      return response.data.data
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error)
+      throw error
+    }
   },
 
   // Get recent users
   async getRecentUsers(limit: number = 10): Promise<User[]> {
-    const endpoint = apiUtils.addQueryParams(
-      API_CONFIG.endpoints.dashboard.users,
-      { limit }
-    )
-    const response = await http.get<ApiResponse<User[]>>(endpoint)
-    return apiUtils.handleApiResponse<User[]>(response)
+    try {
+      const response = await httpClient.get<ApiResponse<User[]>>(`/dashboard/users?limit=${limit}`)
+      return response.data.data
+    } catch (error) {
+      console.error('Error fetching recent users:', error)
+      throw error
+    }
   },
 
   // Get chart data
   async getCharts(period: string = 'month'): Promise<ChartData> {
-    const endpoint = apiUtils.addQueryParams(
-      API_CONFIG.endpoints.dashboard.charts,
-      { period }
-    )
-    const response = await http.get<ApiResponse<ChartData>>(endpoint)
-    return apiUtils.handleApiResponse<ChartData>(response)
+    try {
+      const response = await httpClient.get<ApiResponse<ChartData>>(`/dashboard/charts?period=${period}`)
+      return response.data.data
+    } catch (error) {
+      console.error('Error fetching chart data:', error)
+      throw error
+    }
   },
 
   // Get notifications
   async getNotifications(): Promise<Notification[]> {
-    const response = await http.get<ApiResponse<Notification[]>>(
-      API_CONFIG.endpoints.dashboard.notifications
-    )
-    return apiUtils.handleApiResponse<Notification[]>(response)
+    try {
+      const response = await httpClient.get<ApiResponse<Notification[]>>('/dashboard/notifications')
+      return response.data.data
+    } catch (error) {
+      console.error('Error fetching notifications:', error)
+      throw error
+    }
   },
 
   // Get paginated users
@@ -57,12 +65,23 @@ export const dashboardService = {
     sortBy?: string
     sortOrder?: 'asc' | 'desc'
   } = {}): Promise<PaginatedResponse<User>> {
-    const endpoint = apiUtils.addQueryParams(
-      API_CONFIG.endpoints.users.list,
-      params
-    )
-    const response = await http.get<PaginatedResponse<User>>(endpoint)
-    return response
+    try {
+      const queryParams = new URLSearchParams()
+      if (params.page) queryParams.append('page', params.page.toString())
+      if (params.limit) queryParams.append('limit', params.limit.toString())
+      if (params.search) queryParams.append('search', params.search)
+      if (params.status) queryParams.append('status', params.status)
+      if (params.role) queryParams.append('role', params.role)
+      if (params.sortBy) queryParams.append('sortBy', params.sortBy)
+      if (params.sortOrder) queryParams.append('sortOrder', params.sortOrder)
+      
+      const endpoint = `/users?${queryParams.toString()}`
+      const response = await httpClient.get<PaginatedResponse<User>>(endpoint)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching users:', error)
+      throw error
+    }
   },
 
   // Get user analytics
@@ -73,18 +92,19 @@ export const dashboardService = {
     userGrowth: number
     topUsers: User[]
   }> {
-    const endpoint = apiUtils.addQueryParams(
-      '/dashboard/user-analytics',
-      { period }
-    )
-    const response = await http.get<ApiResponse<{
-      totalUsers: number
-      activeUsers: number
-      newUsers: number
-      userGrowth: number
-      topUsers: User[]
-    }>>(endpoint)
-    return apiUtils.handleApiResponse(response)
+    try {
+      const response = await httpClient.get<ApiResponse<{
+        totalUsers: number
+        activeUsers: number
+        newUsers: number
+        userGrowth: number
+        topUsers: User[]
+      }>>(`/dashboard/user-analytics?period=${period}`)
+      return response.data.data
+    } catch (error) {
+      console.error('Error fetching user analytics:', error)
+      throw error
+    }
   },
 
   // Get revenue analytics
@@ -98,21 +118,22 @@ export const dashboardService = {
       sales: number
     }>
   }> {
-    const endpoint = apiUtils.addQueryParams(
-      '/dashboard/revenue-analytics',
-      { period }
-    )
-    const response = await http.get<ApiResponse<{
-      totalRevenue: number
-      revenueGrowth: number
-      monthlyRevenue: number[]
-      topProducts: Array<{
-        name: string
-        revenue: number
-        sales: number
-      }>
-    }>>(endpoint)
-    return apiUtils.handleApiResponse(response)
+    try {
+      const response = await httpClient.get<ApiResponse<{
+        totalRevenue: number
+        revenueGrowth: number
+        monthlyRevenue: number[]
+        topProducts: Array<{
+          name: string
+          revenue: number
+          sales: number
+        }>
+      }>>(`/dashboard/revenue-analytics?period=${period}`)
+      return response.data.data
+    } catch (error) {
+      console.error('Error fetching revenue analytics:', error)
+      throw error
+    }
   },
 
   // Get sales analytics
@@ -127,22 +148,23 @@ export const dashboardService = {
       percentage: number
     }>
   }> {
-    const endpoint = apiUtils.addQueryParams(
-      '/dashboard/sales-analytics',
-      { period }
-    )
-    const response = await http.get<ApiResponse<{
-      totalSales: number
-      salesGrowth: number
-      conversionRate: number
-      averageOrderValue: number
-      salesByCategory: Array<{
-        category: string
-        sales: number
-        percentage: number
-      }>
-    }>>(endpoint)
-    return apiUtils.handleApiResponse(response)
+    try {
+      const response = await httpClient.get<ApiResponse<{
+        totalSales: number
+        salesGrowth: number
+        conversionRate: number
+        averageOrderValue: number
+        salesByCategory: Array<{
+          category: string
+          sales: number
+          percentage: number
+        }>
+      }>>(`/dashboard/sales-analytics?period=${period}`)
+      return response.data.data
+    } catch (error) {
+      console.error('Error fetching sales analytics:', error)
+      throw error
+    }
   },
 
   // Get activity feed
@@ -154,19 +176,20 @@ export const dashboardService = {
     user?: User
     metadata?: Record<string, any>
   }>> {
-    const endpoint = apiUtils.addQueryParams(
-      '/dashboard/activity-feed',
-      { limit }
-    )
-    const response = await http.get<ApiResponse<Array<{
-      id: string
-      type: 'user_login' | 'user_register' | 'order_created' | 'payment_received'
-      message: string
-      timestamp: string
-      user?: User
-      metadata?: Record<string, any>
-    }>>>(endpoint)
-    return apiUtils.handleApiResponse(response)
+    try {
+      const response = await httpClient.get<ApiResponse<Array<{
+        id: string
+        type: 'user_login' | 'user_register' | 'order_created' | 'payment_received'
+        message: string
+        timestamp: string
+        user?: User
+        metadata?: Record<string, any>
+      }>>>(`/dashboard/activity-feed?limit=${limit}`)
+      return response.data.data
+    } catch (error) {
+      console.error('Error fetching activity feed:', error)
+      throw error
+    }
   },
 
   // Get system health
@@ -179,28 +202,35 @@ export const dashboardService = {
     activeConnections: number
     lastBackup: string
   }> {
-    const response = await http.get<ApiResponse<{
-      status: 'healthy' | 'warning' | 'error'
-      uptime: number
-      memoryUsage: number
-      cpuUsage: number
-      diskUsage: number
-      activeConnections: number
-      lastBackup: string
-    }>>('/dashboard/system-health')
-    return apiUtils.handleApiResponse(response)
+    try {
+      const response = await httpClient.get<ApiResponse<{
+        status: 'healthy' | 'warning' | 'error'
+        uptime: number
+        memoryUsage: number
+        cpuUsage: number
+        diskUsage: number
+        activeConnections: number
+        lastBackup: string
+      }>>('/dashboard/system-health')
+      return response.data.data
+    } catch (error) {
+      console.error('Error fetching system health:', error)
+      throw error
+    }
   },
 
   // Export dashboard data
   async exportData(type: 'users' | 'revenue' | 'sales', format: 'csv' | 'excel' = 'csv'): Promise<Blob> {
-    const endpoint = apiUtils.addQueryParams(
-      '/dashboard/export',
-      { type, format }
-    )
-    return http.get<Blob>(endpoint, {
-      headers: {
-        'Accept': format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      }
-    })
+    try {
+      const response = await httpClient.get<Blob>(`/dashboard/export?type=${type}&format=${format}`, {
+        headers: {
+          'Accept': format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        }
+      })
+      return response.data
+    } catch (error) {
+      console.error('Error exporting data:', error)
+      throw error
+    }
   },
 } 

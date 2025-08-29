@@ -123,7 +123,7 @@ export default function SupplierDetailPage() {
                        </Badge>
                      </div>
                      <div className="mb-3">
-                       <strong>Registered Date:</strong> {supplier.consumerSuppliers?.length > 0 ?  formatDate(supplier.consumerSuppliers.find((sup:any)=> sup.consumerId === JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "").registeredAt) : ''}
+                       <strong>Registered Date:</strong> {supplier.consumerSuppliers?.length > 0 ?  formatDate(supplier.consumerSuppliers[0]?.registeredAt) : ''}
                      </div>
                    </Col>
                 </Row>

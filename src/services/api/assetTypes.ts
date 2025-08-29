@@ -1,5 +1,5 @@
-import { http } from '../http'
-import { ASSET_API_URL } from '@/config/environment'
+import { API_URL } from '@/config/environment'
+import httpClient from '@/services/http'
 
 // Asset Type interface
 export interface AssetType {
@@ -13,46 +13,13 @@ export interface AssetType {
   industryId: string
 }
 
-// Create a separate HTTP client for asset API calls
-class AssetHttpClient {
-  private baseURL: string
-  private defaultHeaders: Record<string, string>
-
-  constructor() {
-    this.baseURL = ASSET_API_URL
-    this.defaultHeaders = {
-      'Content-Type': 'application/json',
-    }
-  }
-
-  private getHeaders(): Record<string, string> {
-    return { ...this.defaultHeaders }
-  }
-
-  async get<T>(endpoint: string): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: this.getHeaders(),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    return response.json()
-  }
-}
-
-const assetHttp = new AssetHttpClient()
-
 // Asset Types API service
 class AssetTypesService {
   // Get all asset types
   async getAssetTypes(): Promise<AssetType[]> {
     try {
-      const response = await assetHttp.get<AssetType[]>('/asset-type')
-      return response
+      const response = await httpClient.get<AssetType[]>('/asset-type')
+      return response.data
     } catch (error) {
       console.error('Error fetching asset types:', error)
       throw error

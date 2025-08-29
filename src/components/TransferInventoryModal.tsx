@@ -138,8 +138,7 @@ export default function TransferInventoryModal({
   const fetchDepartments = async () => {
     setLoadingDepartments(true);
     try {
-      const consumerId = JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "";
-      const deptData = await departmentService.getDepartmentsByConsumerId(consumerId);
+      const deptData = await departmentService.getDepartmentsByConsumerId();
       setDepartments(deptData);
     } catch (err: any) {
       console.error("Error fetching departments:", err);

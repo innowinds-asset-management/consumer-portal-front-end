@@ -1,4 +1,4 @@
-import { ASSET_API_URL } from '@/config/environment';
+import httpClient from '@/services/http'
 
 export interface ServiceContract {
   contractId: string;
@@ -47,101 +47,55 @@ export interface ServiceContract {
   };
 }
 
-// Create a separate HTTP client for service contract API calls
-class ServiceContractHttpClient {
-  private baseURL: string;
-  private defaultHeaders: Record<string, string>;
-
-  constructor() {
-    this.baseURL = ASSET_API_URL;
-    this.defaultHeaders = {
-      'Content-Type': 'application/json',
-    };
-  }
-
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
-    
-    const config: RequestInit = {
-      headers: {
-        ...this.defaultHeaders,
-        ...options.headers,
-      },
-      ...options,
-    };
-
+class ServiceContractService {
+  async getServiceContracts(): Promise<ServiceContract[]> {
     try {
-      const response = await fetch(url, config);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
+      const response = await httpClient.get<ServiceContract[]>('/service-contract')
+      return response.data
     } catch (error) {
-      console.error('Service Contract API request failed:', error);
-      throw error;
+      console.error('Error fetching service contracts:', error)
+      throw error
     }
   }
 
-  async get<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: 'GET',
-    });
+  async getServiceContractById(id: string): Promise<ServiceContract> {
+    try {
+      const response = await httpClient.get<ServiceContract>(`/service-contract/${id}`)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching service contract:', error)
+      throw error
+    }
   }
 
-  async post<T>(endpoint: string, data: any): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+  async createServiceContract(contractData: Omit<ServiceContract, 'contractId' | 'createdAt' | 'updatedAt'>): Promise<ServiceContract> {
+    try {
+      const response = await httpClient.post<ServiceContract>('/service-contract', contractData)
+      return response.data
+    } catch (error) {
+      console.error('Error creating service contract:', error)
+      throw error
+    }
   }
 
-  async put<T>(endpoint: string, data: any): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
+  async updateServiceContract(id: string, contractData: Partial<ServiceContract>): Promise<ServiceContract> {
+    try {
+      const response = await httpClient.put<ServiceContract>(`/service-contract/${id}`, contractData)
+      return response.data
+    } catch (error) {
+      console.error('Error updating service contract:', error)
+      throw error
+    }
   }
 
-  async delete<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: 'DELETE',
-    });
-  }
-}
-
-const serviceContractHttp = new ServiceContractHttpClient();
-
-class ServiceContractService {
-  private httpClient: ServiceContractHttpClient;
-
-  constructor() {
-    this.httpClient = serviceContractHttp;
-  }
-
-  // Get service contracts by supplier ID
-  async getServiceContractsBySupplierId(supplierId: string): Promise<ServiceContract[]> {
-    return this.httpClient.get<ServiceContract[]>(`/service-contract/service-supplier/${supplierId}`);
-  }
-
-  // Get service contract by asset ID
-  async getServiceContractByAssetId(assetId: string): Promise<ServiceContract | null> {
-    return this.httpClient.get<ServiceContract | null>(`/service-contract/asset/${assetId}`);
-  }
-
-  // Create service contract
-  async createServiceContract(contract: Partial<ServiceContract>): Promise<ServiceContract> {
-    return this.httpClient.post<ServiceContract>('/service-contract', contract);
-  }
-
-  // Update service contract
-  async updateServiceContract(contractId: string, contract: Partial<ServiceContract>): Promise<ServiceContract> {
-    return this.httpClient.put<ServiceContract>(`/service-contract/${contractId}`, contract);
+  async deleteServiceContract(id: string): Promise<void> {
+    try {
+      await httpClient.delete(`/service-contract/${id}`)
+    } catch (error) {
+      console.error('Error deleting service contract:', error)
+      throw error
+    }
   }
 }
 
-export const serviceContractService = new ServiceContractService();
+export const serviceContractService = new ServiceContractService()

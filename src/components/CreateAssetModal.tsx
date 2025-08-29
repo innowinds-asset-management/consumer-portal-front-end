@@ -90,16 +90,7 @@ const CreateAssetModal: React.FC<CreateAssetModalProps> = ({
     const fetchWarrantyTypes = async () => {
       try {
         setLoadingWarrantyTypes(true)
-        const storedConsumerId = localStorage.getItem(STORAGE_KEYS.consumerId)
-        const consumerId = storedConsumerId ? storedConsumerId : ""
-        
-        if (!consumerId) {
-          console.warn("Consumer ID not found")
-          setWarrantyTypes([])
-          return
-        }
-        
-        const data = await warrantyTypeService.getWarrantyTypesByConsumerId(consumerId)
+        const data = await warrantyTypeService.getWarrantyTypesByConsumerId()
         setWarrantyTypes(data)
       } catch (err) {
         console.error('Error fetching warranty types:', err)

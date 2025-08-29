@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import PrintButton from '@/components/PrintButton'  
 import { Button, Card, CardBody, Col, Row, Table, Alert } from 'react-bootstrap'
-import { purchaseOrdersService, PurchaseOrder, PoLineItem } from '@/services/api/purchaseOrders'
+import { purchaseOrderService, PurchaseOrder, PoLineItem } from '@/services/api/purchaseOrders'
 import { grnService, Grn } from '@/services/api/grn'
 
 // Display type for line items
@@ -60,7 +60,7 @@ const PurchaseOrderDetail = () => {
       setError("")
       
       try {
-        const data = await purchaseOrdersService.getPurchaseOrderById(poId)
+        const data = await purchaseOrderService.getPurchaseOrderById(poId)
         setPurchaseOrder(data)
         
         // Convert poLineItem to display format

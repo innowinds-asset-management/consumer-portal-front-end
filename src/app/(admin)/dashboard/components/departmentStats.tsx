@@ -17,16 +17,7 @@ const DepartmentStats = () => {
         setLoading(true)
         setError(null)
         
-        // Get consumerId from localStorage
-        const consumerId = localStorage.getItem('consumer_id')
-        if (!consumerId) {
-          // Set count to 0 and show a message instead of throwing error
-          setDepartmentCount(0)
-          setError('Consumer ID not found. Please log in again.')
-          return
-        }
-        
-        const count = await departmentService.getDepartmentCountByConsumerId(consumerId)
+        const count = await departmentService.getDepartmentCountByConsumerId()
         setDepartmentCount(count)
       } catch (err) {
         console.error('Error fetching department count:', err)

@@ -17,16 +17,7 @@ const SupplierStats = () => {
         setLoading(true)
         setError(null)
         
-        // Get consumerId from localStorage
-        const consumerId = localStorage.getItem('consumer_id')
-        if (!consumerId) {
-          // Set count to 0 and show a message instead of throwing error
-          setSupplierCount(0)
-          setError('Consumer ID not found. Please log in again.')
-          return
-        }
-        
-        const count = await consumerSupplierService.getSupplierCountByConsumerId(consumerId)
+        const count = await consumerSupplierService.getSupplierCountByConsumerId()
         setSupplierCount(count)
       } catch (err) {
         console.error('Error fetching supplier count:', err)

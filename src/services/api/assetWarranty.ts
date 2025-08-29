@@ -1,11 +1,11 @@
-import { ASSET_API_URL } from '@/config/environment'
+import httpClient from '@/services/http'
 
 // Asset interface
 export interface AssetData {
   assetTypeId: string;
   assetSubTypeId: string;
   assetName: string;
-  consumerId: string;
+  consumerId?: string;
   warrantyPeriod: number;
   warrantyStartDate: string;
   warrantyEndDate: string;
@@ -46,7 +46,7 @@ export interface WarrantyData {
   cost?: string;
   isActive: boolean;
   autoRenewal: boolean;
-  consumerId: string;
+  consumerId?: string;
   supplierId: string;
 }
 
@@ -65,61 +65,44 @@ export interface CreateAssetWarrantyResponse {
   updatedAt: string;
 }
 
-// Create a separate HTTP client for asset warranty API calls
-class AssetWarrantyHttpClient {
-  private baseURL: string
-  private defaultHeaders: Record<string, string>
-
-  constructor() {
-    this.baseURL = ASSET_API_URL
-    this.defaultHeaders = {
-      'Content-Type': 'application/json',
-    }
-  }
-
-  private getHeaders(): Record<string, string> {
-    return { ...this.defaultHeaders }
-  }
-
-  async post<T>(endpoint: string, data: any): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`
-    
-    console.log('Making POST request to:', url)
-    console.log('Request data:', data)
-    
+class AssetWarrantyService {
+  async createAssetWarranty(assetWarrantyData: CreateAssetWarrantyRequest): Promise<CreateAssetWarrantyResponse> {
     try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify(data),
-      })
-
-      console.log('Response status:', response.status)
-      console.log('Response headers:', response.headers)
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Response error text:', errorText)
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`)
-      }
-
-      const result = await response.json()
-      console.log('Response data:', result)
-      return result
+      const response = await httpClient.post<CreateAssetWarrantyResponse>('/asset-warranty', assetWarrantyData)
+      return response.data
     } catch (error) {
-      console.error('Fetch error details:', error)
+      console.error('Error creating asset warranty:', error)
       throw error
     }
   }
-}
 
-const assetWarrantyHttp = new AssetWarrantyHttpClient()
+  async getAssetWarrantyById(id: string): Promise<CreateAssetWarrantyResponse> {
+    try {
+      const response = await httpClient.get<CreateAssetWarrantyResponse>(`/asset-warranty/${id}`)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching asset warranty:', error)
+      throw error
+    }
+  }
 
-class AssetWarrantyService {
-  async createAssetWarranty(assetWarrantyData: CreateAssetWarrantyRequest): Promise<CreateAssetWarrantyResponse> {
-    console.log("About to make API call to assetWarrantyService.createAssetWarranty");
-    console.log("Asset Warranty data:", assetWarrantyData);
-    return assetWarrantyHttp.post<CreateAssetWarrantyResponse>('/asset/warranty', assetWarrantyData)
+  async updateAssetWarranty(id: string, assetWarrantyData: Partial<CreateAssetWarrantyRequest>): Promise<CreateAssetWarrantyResponse> {
+    try {
+      const response = await httpClient.put<CreateAssetWarrantyResponse>(`/asset-warranty/${id}`, assetWarrantyData)
+      return response.data
+    } catch (error) {
+      console.error('Error updating asset warranty:', error)
+      throw error
+    }
+  }
+
+  async deleteAssetWarranty(id: string): Promise<void> {
+    try {
+      await httpClient.delete(`/asset-warranty/${id}`)
+    } catch (error) {
+      console.error('Error deleting asset warranty:', error)
+      throw error
+    }
   }
 }
 

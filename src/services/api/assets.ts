@@ -1,6 +1,7 @@
-import { ASSET_API_URL } from '@/config/environment'
+import { API_URL } from '@/config/environment'
 import { AssetType } from './assetTypes'
 import { AssetSubType } from './assetSubTypes'
+import httpClient from '@/services/http'
 
 // Asset interface
 export interface Asset {
@@ -62,7 +63,6 @@ export interface Asset {
   };
 }
 
-
 // Location interface
 export interface Location {
   id: string;
@@ -111,65 +111,8 @@ export interface ServiceRequest {
   assetConditionCode: string;
 }
 
-
-
-// Create a separate HTTP client for asset API calls
-class AssetHttpClient {
-  private baseURL: string
-  private defaultHeaders: Record<string, string>
-
-  constructor() {
-    this.baseURL = ASSET_API_URL
-    this.defaultHeaders = { 'Content-Type': 'application/json' }
-    console.log('AssetHttpClient initialized with baseURL:', this.baseURL)
-  }
-
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`
-    
-    try {
-      console.log(`Making request to: ${url}`)
-      
-      // Add timeout to fetch request
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
-      
-      const res = await fetch(url, { 
-        headers: this.defaultHeaders, 
-        ...options,
-        signal: controller.signal
-      })
-      
-      clearTimeout(timeoutId)
-      
-      if (!res.ok) {
-        const errorText = await res.text()
-        console.error(`HTTP error ${res.status} for ${url}:`, errorText)
-        throw new Error(`HTTP error ${res.status}: ${errorText}`)
-      }
-      
-      const data = await res.json()
-      console.log(`Response from ${url}:`, data)
-      return data
-    } catch (error) {
-      console.error(`Request failed for ${url}:`, error)
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('Request timeout - server not responding')
-      }
-      throw error
-    }
-  }
-
-  get<T>(endpoint: string) { return this.request<T>(endpoint, { method: 'GET' }) }
-  post<T>(endpoint: string, body: any) { return this.request<T>(endpoint, { method: 'POST', body: JSON.stringify(body) }) }
-  put<T>(endpoint: string, body: any) { return this.request<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) }) }
-}
-
-const assetHttp = new AssetHttpClient()
-
 // Assets API service
 class AssetsService {
-
 
   // Get all assets with optional query parameters
   async getAssets(params?: { consumerId?: string; supplierId?: string; departmentId?: string; groupstatus?: string }): Promise<Asset[]> {
@@ -192,8 +135,9 @@ class AssetsService {
       if (queryParams.toString()) {
         endpoint += `?${queryParams.toString()}`
       }
-      const response = await assetHttp.get<Asset[]>(endpoint)
-      return response
+      
+      const response = await httpClient.get<Asset[]>(endpoint)
+      return response.data
     } catch (error) {
       console.error('Error fetching assets:', error)
       throw error
@@ -203,8 +147,8 @@ class AssetsService {
   // Get asset by ID
   async getAssetById(id: string): Promise<Asset> {
     try {
-      const response = await assetHttp.get<Asset>(`/asset/${id}`)
-      return response
+      const response = await httpClient.get<Asset>(`/asset/${id}`)
+      return response.data
     } catch (error) {
       console.error('Error fetching asset:', error)
       throw error
@@ -214,8 +158,8 @@ class AssetsService {
   // Create asset from GRN PO line item
   async createAssetFromGrnPoLineItem(assetData: any): Promise<any> {
     try {
-      const response = await assetHttp.post<any>('/asset/grn-po-line-item', assetData)
-      return response
+      const response = await httpClient.post<any>('/asset/grn-po-line-item', assetData)
+      return response.data
     } catch (error) {
       console.error('Error creating asset from GRN PO line item:', error)
       throw error
@@ -225,8 +169,8 @@ class AssetsService {
   // Update asset
   async updateAsset(id: string, assetData: any): Promise<any> {
     try {
-      const response = await assetHttp.put<any>(`/asset/${id}`, assetData)
-      return response
+      const response = await httpClient.put<any>(`/asset/${id}`, assetData)
+      return response.data
     } catch (error) {
       console.error('Error updating asset:', error)
       throw error
@@ -243,7 +187,7 @@ class AssetsService {
     grandTotal: number;
   }> {
     try {
-      const response = await assetHttp.get<{
+      const response = await httpClient.get<{
         success: boolean;
         data: {
           active: number;
@@ -254,7 +198,7 @@ class AssetsService {
           grandTotal: number;
         };
       }>('/asset/count/status')
-      return response.data
+      return response.data.data
     } catch (error) {
       console.error('Error fetching asset counts by status:', error)
       throw error
@@ -263,12 +207,12 @@ class AssetsService {
 
   // Update asset and warranty
   async updateAssetWarranty(assetId: string, data: {
-    consumerId: string;
+    // consumerId: string;
     asset: {
       assetId: string;
       status?: string;
       departmentId?: string;
-      consumerId: string;
+      // consumerId: string;
       assetAssignTo?: string | null;
     };
     warranty: {
@@ -277,12 +221,12 @@ class AssetsService {
       endDate: string;
       warrantyPeriod: number;
       coverageType: string;
-      consumerId: string;
+      // consumerId: string;
     };
   }): Promise<any> {
     try {
-      const response = await assetHttp.put<any>(`/asset/${assetId}/warranty`, data)
-      return response
+      const response = await httpClient.put<any>(`/asset/${assetId}/warranty`, data)
+      return response.data
     } catch (error) {
       console.error('Error updating asset and warranty:', error)
       throw error
