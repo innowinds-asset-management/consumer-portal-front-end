@@ -39,7 +39,7 @@ class DepartmentService {
     }
   }
 
-  async createDepartment(departmentData: Omit<Department, 'deptId' | 'createdAt' | 'updatedAt'>): Promise<Department> {
+  async createDepartment(departmentData: { deptName: string }): Promise<Department> {
     try {
       const response = await httpClient.post<Department>('/department', departmentData)
       return response.data
