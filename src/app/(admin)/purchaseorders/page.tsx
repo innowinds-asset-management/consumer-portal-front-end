@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import ComponentContainerCard from "@/components/ComponentContainerCard";
 import { Alert, Button } from "react-bootstrap";
-import { purchaseOrdersService } from "@/services/api/purchaseOrders";
+import { purchaseOrderService } from "@/services/api/purchaseOrders";
 import { Grid } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
 import { useRouter } from "next/navigation";
@@ -32,7 +32,7 @@ export default function PurchaseOrdersListingPage() {
       setLoading(true);
       setError("");
       try {
-        const data = await purchaseOrdersService.getPurchaseOrders();
+        const data = await purchaseOrderService.getPurchaseOrders();
         setPurchaseOrders(Array.isArray(data) ? data : []);
       } catch (err) {
         setError("Failed to load purchase orders. Please try again.");

@@ -213,8 +213,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       // Store token in localStorage
       localStorage.setItem(STORAGE_KEYS.authToken, response.data.token)
-      localStorage.setItem(STORAGE_KEYS.refreshToken, response.data.refreshToken)
-      localStorage.setItem(STORAGE_KEYS.consumerId, JSON.stringify((response.data.user as any).consumerId || 'cons_it_dept'))
+      // localStorage.setItem(STORAGE_KEYS.refreshToken, response.data.refreshToken)
+      // localStorage.setItem(STORAGE_KEYS.consumerId, JSON.stringify((response.data.user as any).consumerId || 'cons_it_dept'))
       
       dispatch({ 
         type: 'LOGIN_SUCCESS', 

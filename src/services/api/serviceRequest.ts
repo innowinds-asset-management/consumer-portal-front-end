@@ -1,4 +1,5 @@
-import { ASSET_API_URL } from '@/config/environment'
+import { API_URL } from '@/config/environment'
+import httpClient from '@/services/http'
 
 // Service Request interface based on sample JSON
 export interface ServiceRequest {
@@ -92,133 +93,103 @@ export interface UpdateServiceRequestRequest {
   problem?: string;
 }
 
-// Create a separate HTTP client for service request API calls
-class ServiceRequestHttpClient {
-  private baseURL: string
-  private defaultHeaders: Record<string, string>
-
-  constructor() {
-    this.baseURL = ASSET_API_URL
-    this.defaultHeaders = {
-      'Content-Type': 'application/json',
-    }
-  }
-
-  private getHeaders(): Record<string, string> {
-    return { ...this.defaultHeaders }
-  }
-
-  async post<T>(endpoint: string, data: any): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(data),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    return response.json()
-  }
-
-  async put<T>(endpoint: string, data: any): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: this.getHeaders(),
-      body: JSON.stringify(data),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    return response.json()
-  }
-
-  async get<T>(endpoint: string): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: this.getHeaders(),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    return response.json()
-  }
-
-  async delete<T>(endpoint: string): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: this.getHeaders(),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    return response.json()
-  }
-}
-
-const serviceRequestHttp = new ServiceRequestHttpClient()
-
 class ServiceRequestService {
   async createServiceRequest(data: CreateServiceRequestRequest): Promise<ServiceRequest> {
-    console.log('Creating service request:', data)
-    return serviceRequestHttp.post<ServiceRequest>('/servicerequest', data)
+    try {
+      const response = await httpClient.post<ServiceRequest>('/servicerequest', data)
+      return response.data
+    } catch (error) {
+      console.error('Error creating service request:', error)
+      throw error
+    }
   }
 
   async getServiceRequests(params?: { status?: string; supplierId?: string; departmentId?: string }): Promise<ServiceRequest[]> {
-    let endpoint = '/servicerequest'
-    const queryParams = new URLSearchParams()
-    
-    if (params?.status) {
-      queryParams.append('status', params.status)
+    try {
+      let endpoint = '/servicerequest'
+      const queryParams = new URLSearchParams()
+      
+      if (params?.status) {
+        queryParams.append('status', params.status)
+      }
+      
+      if (params?.supplierId) {
+        queryParams.append('sid', params.supplierId)
+      }
+      
+      if (params?.departmentId) {
+        queryParams.append('did', params.departmentId)
+      }
+      
+      if (queryParams.toString()) {
+        endpoint += `?${queryParams.toString()}`
+      }
+      
+      const response = await httpClient.get<ServiceRequest[]>(endpoint)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching service requests:', error)
+      throw error
     }
-    
-    if (params?.supplierId) {
-      queryParams.append('sid', params.supplierId)
-    }
-    
-    if (params?.departmentId) {
-      queryParams.append('did', params.departmentId)
-    }
-    
-    if (queryParams.toString()) {
-      endpoint += `?${queryParams.toString()}`
-    }
-    
-    return serviceRequestHttp.get<ServiceRequest[]>(endpoint)
   }
 
   async getServiceRequestById(id: string): Promise<ServiceRequest> {
-    return serviceRequestHttp.get<ServiceRequest>(`/servicerequest/${id}`)
+    try {
+      const response = await httpClient.get<ServiceRequest>(`/servicerequest/${id}`)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching service request:', error)
+      throw error
+    }
   }
+
   async getServiceRequestByAssetId(assetId: string): Promise<ServiceRequest[]> {
-    return serviceRequestHttp.get<ServiceRequest[]>(`/servicerequest/asset/${assetId}`)
+    try {
+      const response = await httpClient.get<ServiceRequest[]>(`/servicerequest/asset/${assetId}`)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching service request by asset ID:', error)
+      throw error
+    }
   }
 
   async updateServiceRequest(id: string, data: UpdateServiceRequestRequest): Promise<ServiceRequest> {
-    return serviceRequestHttp.put<ServiceRequest>(`/servicerequest/${id}`, data)
+    try {
+      const response = await httpClient.put<ServiceRequest>(`/servicerequest/${id}`, data)
+      return response.data
+    } catch (error) {
+      console.error('Error updating service request:', error)
+      throw error
+    }
   }
 
   async createServiceRequestItem(data: CreateServiceRequestItemRequest): Promise<ServiceRequestItem> {
-    return serviceRequestHttp.post<ServiceRequestItem>(`/servicerequest/${data.serviceRequestId}/item`, data)
+    try {
+      const response = await httpClient.post<ServiceRequestItem>(`/servicerequest/${data.serviceRequestId}/item`, data)
+      return response.data
+    } catch (error) {
+      console.error('Error creating service request item:', error)
+      throw error
+    }
   }
 
   async updateServiceRequestItem(id: number, data: UpdateServiceRequestItemRequest): Promise<ServiceRequestItem> {
-    return serviceRequestHttp.put<ServiceRequestItem>(`/servicerequest/item/${id}`, data)
+    try {
+      const response = await httpClient.put<ServiceRequestItem>(`/servicerequest/item/${id}`, data)
+      return response.data
+    } catch (error) {
+      console.error('Error updating service request item:', error)
+      throw error
+    }
   }
 
   async deleteServiceRequestItem(id: number): Promise<void> {
-    return serviceRequestHttp.delete<void>(`/servicerequest/item/${id}`)
+    try {
+      await httpClient.delete(`/servicerequest/item/${id}`)
+    } catch (error) {
+      console.error('Error deleting service request item:', error)
+      throw error
+    }
   }
 
   // Get service request counts by status
@@ -231,7 +202,7 @@ class ServiceRequestService {
     pending: number;
   }> {
     try {
-      const response = await serviceRequestHttp.get<{
+      const response = await httpClient.get<{
         success: boolean;
         data: {
           cancelled: number;
@@ -242,13 +213,12 @@ class ServiceRequestService {
           pending: number;
         };
       }>('/servicerequest/count/status')
-      return response.data
+      return response.data.data
     } catch (error) {
       console.error('Error fetching service request counts by status:', error)
       throw error
     }
   }
-
 }
 
 export const serviceRequestService = new ServiceRequestService() 

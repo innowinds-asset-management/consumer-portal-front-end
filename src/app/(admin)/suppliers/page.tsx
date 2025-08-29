@@ -27,23 +27,14 @@ export default function SupplierListingPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string>("");
 
-    // Get consumerId from localStorage
-    const [consumerId, setConsumerId] = useState<string>("");
 
-    useEffect(() => {
-        const consumerId = JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "";
-        console.log("consumerId", JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId)!));
-        setConsumerId(consumerId);
-    }, []);
 
     useEffect(() => {
         const fetchSuppliers = async () => {
-            if (!consumerId) return; // Don't fetch if consumerId is not available
-
             setLoading(true);
             setError("");
             try {
-                const data = await supplierService.getSuppliersOfConsumerWithStats(consumerId);
+                const data = await supplierService.getSuppliersOfConsumerWithStats();
                 const mapped: SupplierListItem[] = Array.isArray(data)
                     ? data.map((record: ConsumerSupplierWithStats) => ({
                         id: record.supplier.id,
@@ -65,7 +56,7 @@ export default function SupplierListingPage() {
         };
 
         fetchSuppliers();
-    }, [consumerId]);
+    }, []);
 
     // Add click handlers to supplier number, asset count and service request count columns
     useEffect(() => {
@@ -96,9 +87,9 @@ export default function SupplierListingPage() {
                             (cell as HTMLElement).style.cursor = 'pointer';
                             (cell as HTMLElement).style.color = '#0d6efd';
                             (cell as HTMLElement).style.textDecoration = 'underline';
-                            cell.addEventListener('click', () => {
-                                router.push(`/assets?cid=${consumerId}&sid=${supplier.id}`);
-                            });
+                                                         cell.addEventListener('click', () => {
+                                 router.push(`/assets?sid=${supplier.id}`);
+                             });
                         }
                     });
                 }

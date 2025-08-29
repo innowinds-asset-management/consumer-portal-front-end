@@ -1,4 +1,5 @@
-import { ASSET_API_URL } from '@/config/environment'
+import { API_URL } from '@/config/environment'
+import httpClient from '@/services/http'
 
 // PoLineItem interface
 export interface PoLineItem {
@@ -60,100 +61,55 @@ export interface CreatePurchaseOrderRequest {
   status: string;
 }
 
-// Create a separate HTTP client for purchase order API calls
-class PurchaseOrderHttpClient {
-  private baseURL: string
-  private defaultHeaders: Record<string, string>
-
-  constructor() {
-    this.baseURL = ASSET_API_URL
-    this.defaultHeaders = {
-      'Content-Type': 'application/json',
-    }
-  }
-
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`
-    
-    const config: RequestInit = {
-      headers: {
-        ...this.defaultHeaders,
-        ...options.headers,
-      },
-      ...options,
-    }
-
+class PurchaseOrderService {
+  async getPurchaseOrders(): Promise<PurchaseOrder[]> {
     try {
-      const response = await fetch(url, config)
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      
-      return await response.json()
+      const response = await httpClient.get<PurchaseOrder[]>('/po')
+      return response.data
     } catch (error) {
-      console.error('Purchase Order API request failed:', error)
+      console.error('Error fetching purchase orders:', error)
       throw error
     }
   }
 
-  async get<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: 'GET',
-    })
-  }
-
-  async post<T>(endpoint: string, data: any): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    })
-  }
-
-  async put<T>(endpoint: string, data: any): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    })
-  }
-
-  async delete<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: 'DELETE',
-    })
-  }
-}
-
-class PurchaseOrdersService {
-  private httpClient: PurchaseOrderHttpClient
-
-  constructor() {
-    this.httpClient = new PurchaseOrderHttpClient()
-  }
-
-  async createPurchaseOrder(purchaseOrderData: CreatePurchaseOrderRequest): Promise<PurchaseOrder> {
-    return this.httpClient.post<PurchaseOrder>('/po', purchaseOrderData)
-  }
-
-  async getPurchaseOrders(): Promise<PurchaseOrder[]> {
-    return this.httpClient.get<PurchaseOrder[]>('/po')
-  }
-
   async getPurchaseOrderById(id: string): Promise<PurchaseOrder> {
-    return this.httpClient.get<PurchaseOrder>(`/po/${id}`)
+    try {
+      const response = await httpClient.get<PurchaseOrder>(`/po/${id}`)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching purchase order:', error)
+      throw error
+    }
   }
 
-  async updatePurchaseOrder(id: string, purchaseOrderData: Partial<CreatePurchaseOrderRequest>): Promise<PurchaseOrder> {
-    return this.httpClient.put<PurchaseOrder>(`/po/${id}`, purchaseOrderData)
+  async createPurchaseOrder(data: CreatePurchaseOrderRequest): Promise<PurchaseOrder> {
+    try {
+      const response = await httpClient.post<PurchaseOrder>('/po', data)
+      return response.data
+    } catch (error) {
+      console.error('Error creating purchase order:', error)
+      throw error
+    }
+  }
+
+  async updatePurchaseOrder(id: string, data: Partial<PurchaseOrder>): Promise<PurchaseOrder> {
+    try {
+      const response = await httpClient.put<PurchaseOrder>(`/po/${id}`, data)
+      return response.data
+    } catch (error) {
+      console.error('Error updating purchase order:', error)
+      throw error
+    }
   }
 
   async deletePurchaseOrder(id: string): Promise<void> {
-    return this.httpClient.delete<void>(`/po/${id}`)
+    try {
+      await httpClient.delete(`/po/${id}`)
+    } catch (error) {
+      console.error('Error deleting purchase order:', error)
+      throw error
+    }
   }
 }
 
-// Export a singleton instance
-export const purchaseOrdersService = new PurchaseOrdersService()
+export const purchaseOrderService = new PurchaseOrderService()

@@ -1,4 +1,5 @@
-import { ASSET_API_URL } from '@/config/environment'
+import { API_URL } from '@/config/environment'
+import httpClient from '@/services/http'
 
 export interface DepartmentInventory {
   id: string
@@ -19,54 +20,21 @@ export interface DepartmentInventory {
   }
 }
 
-// Create a separate HTTP client for department inventory API calls
-class DepartmentInventoryHttpClient {
-  private baseURL: string
-  private defaultHeaders: Record<string, string>
-
-  constructor() {
-    this.baseURL = ASSET_API_URL
-    this.defaultHeaders = {
-      'Content-Type': 'application/json',
-    }
-  }
-
-  private getHeaders(): Record<string, string> {
-    return { ...this.defaultHeaders }
-  }
-
-  async get<T>(endpoint: string): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: this.getHeaders(),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    return response.json()
-  }
-}
-
-const departmentInventoryHttp = new DepartmentInventoryHttpClient()
-
 // Department Inventory API service
 class DepartmentInventoryService {
   async getByDepartmentAndInventory(departmentId: string, inventoryId: string): Promise<DepartmentInventory | null> {
     try {
-      const response = await departmentInventoryHttp.get<{ success: boolean; data: DepartmentInventory; message?: string }>(`/inventory/department-inventory/${departmentId}/${inventoryId}`)
+      const response = await httpClient.get<{ success: boolean; data: DepartmentInventory; message?: string }>(`/inventory/department-inventory/${departmentId}/${inventoryId}`)
       
-      if (!response.success) {
+      if (!response.data.success) {
         // If it's a 404 or not found error, return null instead of throwing
-        if (response.message?.toLowerCase().includes('not found') || response.message?.toLowerCase().includes('404')) {
+        if (response.data.message?.toLowerCase().includes('not found') || response.data.message?.toLowerCase().includes('404')) {
           return null;
         }
-        throw new Error(response.message || 'Failed to fetch department inventory')
+        throw new Error(response.data.message || 'Failed to fetch department inventory')
       }
       
-      return response.data
+      return response.data.data
     } catch (error: any) {
       console.error('Error fetching department inventory:', error)
       
@@ -81,13 +49,13 @@ class DepartmentInventoryService {
 
   async getByDepartment(departmentId: string): Promise<DepartmentInventory[]> {
     try {
-      const response = await departmentInventoryHttp.get<{ success: boolean; data: DepartmentInventory[]; message?: string }>(`/inventory/department-inventory/${departmentId}`)
+      const response = await httpClient.get<{ success: boolean; data: DepartmentInventory[]; message?: string }>(`/inventory/department-inventory/${departmentId}`)
       
-      if (!response.success) {
-        throw new Error(response.message || 'Failed to fetch department inventory list')
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Failed to fetch department inventory list')
       }
       
-      return response.data
+      return response.data.data
     } catch (error) {
       console.error('Error fetching department inventory list:', error)
       throw error

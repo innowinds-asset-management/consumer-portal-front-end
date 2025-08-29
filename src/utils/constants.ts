@@ -147,7 +147,7 @@ export const PAGINATION = {
 
 // Local Storage Keys
 export const STORAGE_KEYS = {
-  authToken: 'auth_token',
+  authToken: 'auth-token',
   refreshToken: 'refresh_token',
   consumerId: 'consumer_id',
   userPreferences: 'user_preferences',

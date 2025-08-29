@@ -202,29 +202,7 @@ const GrnDetailPage = () => {
 
   const handleCreateAsset = async () => {
     try {
-      // Get consumer ID from storage and fetch supplier ID
-      const storedConsumerId = localStorage.getItem('consumerId') || sessionStorage.getItem('consumerId') || 'A123'
-      console.log('Stored Consumer ID:', storedConsumerId)
-      
       let finalSupplierId = 'SP123' // fallback
-      
-      if (storedConsumerId) {
-        try {
-          // Import the service dynamically to avoid circular dependencies
-          const { consumerSupplierService } = await import('@/services/api/consumerSupplier')
-          const data = await consumerSupplierService.getSupplierByConsumerId(storedConsumerId)
-          console.log('Supplier data received:', data)
-          
-          if (data && data.length > 0) {
-            finalSupplierId = data[0].supplierId
-            console.log('Using supplier ID from API:', finalSupplierId)
-          } else {
-            console.log('No supplier data found, using fallback:', finalSupplierId)
-          }
-        } catch (error) {
-          console.error('Error fetching supplier, using fallback:', error)
-        }
-      }
       
       // Parse serial numbers from textarea (optional)
       const serialNumbers = assetForm.serialNumbers
@@ -247,7 +225,6 @@ const GrnDetailPage = () => {
       const assetData = {
         assetSubType: assetForm.assetSubType,
         assetType: assetForm.assetType,
-        consumerId: storedConsumerId,
         grnId: assetForm.grnId,
         grnItemId: assetForm.grnItemId,
         assetName: assetForm.assetName,
@@ -268,7 +245,6 @@ const GrnDetailPage = () => {
           excluded: assetForm.excluded || "",
           isActive: true,
           autoRenewal: false,
-          consumerId: storedConsumerId,
           supplierId: finalSupplierId
         }
       }

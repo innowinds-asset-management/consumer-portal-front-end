@@ -100,12 +100,9 @@ export default function CreateInventoryPage() {
     searchTimeoutRef.current = setTimeout(async () => {
       try {
         setSearching(true);
-        const consumerId = JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "";
-        if (consumerId) {
-          const results = await inventoryService.searchInventoryItems(value.trim(), consumerId);
-          setSearchResults(results);
-          setShowSearchResults(true);
-        }
+        const results = await inventoryService.searchInventoryItems(value.trim());
+        setSearchResults(results);
+        setShowSearchResults(true);
       } catch (error) {
         console.error('Error searching inventory:', error);
         setSearchResults([]);
@@ -139,12 +136,9 @@ export default function CreateInventoryPage() {
     supplierSearchTimeoutRef.current = setTimeout(async () => {
       try {
         setSearchingSuppliers(true);
-        const consumerId = JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "";
-        if (consumerId) {
-          const results = await supplierService.searchSuppliers(value.trim(), consumerId);
-          setSupplierSearchResults(results);
-          setShowSupplierSearchResults(true);
-        }
+        const results = await supplierService.searchSuppliers(value.trim());
+        setSupplierSearchResults(results);
+        setShowSupplierSearchResults(true);
       } catch (error) {
         console.error('Error searching suppliers:', error);
         setSupplierSearchResults([]);
@@ -214,15 +208,12 @@ export default function CreateInventoryPage() {
     setError("");
 
     try {
-      const consumerId = JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "";
-
       console.log('form data=======>',formData)
       
         await inventoryService.createOrUpdateInventory({
         itemName: formData.itemName,
         quantity: formData.quantity,
         unitMeasure: formData.unitMeasure as any,
-        consumerId: consumerId,
         grnItemId: formData.grnItemId || undefined,
         poLineItemId: formData.poLineItemId || undefined,
         expiredAt: formData.expiredAt || undefined,
