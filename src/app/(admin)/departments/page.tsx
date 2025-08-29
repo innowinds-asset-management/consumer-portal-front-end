@@ -23,7 +23,7 @@ export default function DepartmentListingPage() {
       setLoading(true);
       setError("");
       try {
-        const data = await departmentService.getDepartments();
+        const data = await departmentService.getDepartmentsByConsumerId();
         const allDepartments = Array.isArray(data) ? data : [];
         setDepartments(allDepartments);
       } catch (err) {
@@ -110,7 +110,7 @@ export default function DepartmentListingPage() {
       setLoading(true);
       setError("");
       try {
-        const data = await departmentService.getDepartments();
+        const data = await departmentService.getDepartmentsByConsumerId();
         const allDepartments = Array.isArray(data) ? data : [];
         setDepartments(allDepartments);
       } catch (err) {
