@@ -96,6 +96,16 @@ class ServiceContractService {
       throw error
     }
   }
+
+  async getServiceContractsBySupplierId(supplierId: string): Promise<ServiceContract[]> {
+    try {
+      const response = await httpClient.get<ServiceContract[]>(`/service-contract/service-supplier/${supplierId}`)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching service contracts by supplier ID:', error)
+      throw error
+    }
+  }
 }
 
 export const serviceContractService = new ServiceContractService()
