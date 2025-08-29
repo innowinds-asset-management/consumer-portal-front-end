@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardBody, Row, Col, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { serviceContractService } from '@/services/api/serviceContract';
+import { contractTypesService, ContractType } from '@/services/api/contractTypes';
 import SearchAsset from '@/components/searchAsset';
 import SearchableSupplier from '@/components/searchableSupplier';
 
@@ -37,13 +38,6 @@ const PAYMENT_TERMS_OPTIONS = [
   { value: 'QUARTERLY', label: 'Quarterly' },
   { value: 'MONTHLY', label: 'Monthly' },
   { value: 'ONE_TIME', label: 'One Time' }
-];
-
-const COVERAGE_TYPE_OPTIONS = [
-  { value: 'COMPREHENSIVE', label: 'Comprehensive' },
-  { value: 'BASIC', label: 'Basic' },
-  { value: 'PREMIUM', label: 'Premium' },
-  { value: 'CUSTOM', label: 'Custom' }
 ];
 
 const STATUS_OPTIONS = [
@@ -81,6 +75,11 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Contract types state
+  const [contractTypes, setContractTypes] = useState<ContractType[]>([]);
+  const [loadingContractTypes, setLoadingContractTypes] = useState(false);
+  const [contractTypesError, setContractTypesError] = useState('');
+
   // Get supplier ID and asset ID from URL params
   const supplierId = searchParams.get('sid');
   const assetId = searchParams.get('aid');
@@ -93,6 +92,31 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
       setFormData(prev => ({ ...prev, assetId: assetId }));
     }
   }, [supplierId, assetId]);
+
+  // Load contract types on component mount
+  useEffect(() => {
+    const fetchContractTypes = async () => {
+      setLoadingContractTypes(true);
+      try {
+        console.log('Fetching contract types...'); // Debug
+        const data = await contractTypesService.getContractTypes();
+        console.log('Contract types response:', data); // Debug
+        setContractTypes(data);
+      } catch (err) {
+        console.error('Error fetching contract types:', err);
+        setContractTypesError('Failed to load contract types');
+      } finally {
+        setLoadingContractTypes(false);
+      }
+    };
+
+    fetchContractTypes();
+  }, []);
+
+  // Debug: Log contractTypes when it changes
+  useEffect(() => {
+    console.log('Contract types state updated:', contractTypes); // Debug
+  }, [contractTypes]);
 
   const handleInputChange = (field: keyof AmcCmcFormData, value: any) => {
     setFormData(prev => ({
@@ -144,7 +168,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
             excludes: formData.excludes || '',
             createdBy: formData.createdBy || '',
             updatedBy: null
-          };
+          } as any; // Type assertion to bypass interface mismatch
           
           await serviceContractService.createServiceContract(contractData);
           setSuccess('Contract created successfully!');
@@ -281,13 +305,39 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                   value={formData.coverageType}
                   onChange={(e) => handleInputChange('coverageType', e.target.value)}
                   required
+                  disabled={loadingContractTypes}
                 >
-                  {COVERAGE_TYPE_OPTIONS.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
+                  <option value="">
+                    {loadingContractTypes ? "Loading contract types..." : "Select coverage type"}
+                  </option>
+                  {contractTypes.length > 0 ? (
+                    contractTypes.map((type, index) => (
+                      <option key={type.contractTypeId || `contract-type-${index}`} value={type.typeName}>
+                        {type.typeName}
+                      </option>
+                    ))
+                  ) : (
+                    !loadingContractTypes && (
+                      <option value="" disabled>No contract types available</option>
+                    )
+                  )}
                 </Form.Select>
+                {loadingContractTypes && (
+                  <div className="mt-2">
+                    <small className="text-muted">Loading contract types...</small>
+                  </div>
+                )}
+                {contractTypesError && (
+                  <div className="mt-2">
+                    <small className="text-danger">{contractTypesError}</small>
+                  </div>
+                )}
+                {/* Debug info */}
+                <div className="mt-1">
+                  <small className="text-muted">
+                    Debug: {contractTypes.length} contract types loaded
+                  </small>
+                </div>
               </Form.Group>
             </Col>
 
