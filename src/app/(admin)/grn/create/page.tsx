@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { Alert, Button, Col, Form, Row, Table } from 'react-bootstrap'
-import { purchaseOrdersService, PurchaseOrder, PoLineItem } from '@/services/api/purchaseOrders'
+import { purchaseOrderService, PurchaseOrder, PoLineItem } from '@/services/api/purchaseOrders'
 import { grnService, Grn, GrnItem } from '@/services/api/grn'
 
 interface LineItemForm extends GrnItem {
@@ -68,8 +68,8 @@ export default function GrnCreatePage() {
       try {
         setLoadingPos(true)
         setPoError('')
-        // const data = await purchaseOrdersService.getPurchaseOrders()
-        const data = await purchaseOrdersService.getPurchaseOrderById(poId)
+        // const data = await purchaseOrderService.getPurchaseOrders()
+        const data = await purchaseOrderService.getPurchaseOrderById(poId) //FIXME: not found
         setPos(Array.isArray(data) ? data : [])
         
         // Auto-select PO based on poId query parameter

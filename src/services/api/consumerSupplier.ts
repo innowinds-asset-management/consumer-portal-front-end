@@ -28,9 +28,9 @@ export interface ConsumerSupplier {
 
 // Consumer Supplier API service
 class ConsumerSupplierService {
-  async getSupplierByConsumerId(consumerId: string): Promise<ConsumerSupplier[]> {
+  async getSupplierByConsumerId(): Promise<ConsumerSupplier[]> {
     try {
-      const response = await httpClient.get<ConsumerSupplier[]>(`/consumer-supplier/supplier/${consumerId}`)
+      const response = await httpClient.get<ConsumerSupplier[]>(`/consumer-supplier/supplier`)
       return response.data
     } catch (error) {
       console.error('Error fetching supplier by consumer ID:', error)

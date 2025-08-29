@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Form, InputGroup, ListGroup, Spinner, Alert } from 'react-bootstrap';
 import IconifyIcon from '@/components/wrappers/IconifyIcon';
-import { STORAGE_KEYS } from '@/utils/constants';
 import { consumerSupplierService, ConsumerSupplier } from '@/services/api/consumerSupplier';
 
 interface SearchableSupplierProps {
@@ -42,27 +41,11 @@ export default function SearchableSupplier({
   useEffect(() => {
     // Load suppliers on component mount
     const fetchSuppliers = async () => {
-      const consumerId = localStorage.getItem(STORAGE_KEYS.consumerId);
-      
-      // Handle both string and JSON string formats
-      let parsedConsumerId = consumerId;
-      if (consumerId && consumerId.startsWith('"') && consumerId.endsWith('"')) {
-        try {
-          parsedConsumerId = JSON.parse(consumerId);
-        } catch (e) {
-          console.error('Error parsing consumer ID:', e);
-        }
-      }
-      
-      if (!parsedConsumerId) {
-        setSearchError('No consumer ID found. Please log in again.');
-        setLoading(false);
-        return;
-      }
-      
       setLoading(true);
       try {
-        const consumerSuppliers = await consumerSupplierService.getSupplierByConsumerId(parsedConsumerId);
+        console.log('Fetching suppliers...'); // Debug
+        const consumerSuppliers = await consumerSupplierService.getSupplierByConsumerId();
+        console.log('Consumer suppliers response:', consumerSuppliers); // Debug
         
         // Extract supplier objects from the response
         const suppliers = consumerSuppliers.map(cs => ({
@@ -70,17 +53,18 @@ export default function SearchableSupplier({
           supplierCode: cs.supplierCode // Add supplierCode from the relationship
         })).filter(Boolean);
         
+        console.log('Processed suppliers:', suppliers); // Debug
         setSuppliers(suppliers);
       } catch (err) {
-        setSearchError('Failed to load suppliers');
         console.error('Error fetching suppliers:', err);
+        setSearchError('Failed to load suppliers');
       } finally {
         setLoading(false);
       }
     };
 
     fetchSuppliers();
-  }, []); // Remove consumerId dependency since we get it inside
+  }, []); // No dependencies needed since backend handles consumer ID
 
   useEffect(() => {
     // Filter suppliers based on search term
@@ -119,8 +103,14 @@ export default function SearchableSupplier({
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
-    setShowDropdown(value.length > 0);
+    setShowDropdown(true); // Always show dropdown when typing
     setSearchError('');
+  };
+
+  const handleInputFocus = () => {
+    if (suppliers.length > 0) {
+      setShowDropdown(true);
+    }
   };
 
   const handleSupplierSelect = (supplier: ConsumerSupplier['supplier']) => {
@@ -191,6 +181,7 @@ export default function SearchableSupplier({
           value={searchTerm}
           onChange={handleSearchChange}
           onKeyDown={handleKeyDown}
+          onFocus={handleInputFocus}
           placeholder={placeholder}
           disabled={disabled}
           required={required}
