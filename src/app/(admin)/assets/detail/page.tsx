@@ -161,7 +161,7 @@ export default function AssetDetailPage() {
   const fetchDepartments = async () => {
     try {
       setLoadingDepartments(true);
-      const deptData = await departmentService.getDepartmentsByConsumerId();
+      const deptData = await departmentService.getDepartments();
       setDepartments(deptData);
     } catch (error) {
       console.error('Error fetching departments:', error);
