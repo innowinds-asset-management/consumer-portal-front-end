@@ -161,11 +161,8 @@ export default function AssetDetailPage() {
   const fetchDepartments = async () => {
     try {
       setLoadingDepartments(true);
-      const consumerId = localStorage.getItem('consumer_id');
-      if (consumerId) {
-        const deptData = await departmentService.getDepartmentsByConsumerId(consumerId);
-        setDepartments(deptData);
-      }
+      const deptData = await departmentService.getDepartmentsByConsumerId();
+      setDepartments(deptData);
     } catch (error) {
       console.error('Error fetching departments:', error);
     } finally {
@@ -176,13 +173,10 @@ export default function AssetDetailPage() {
   const fetchWarrantyTypes = async () => {
     try {
       setLoadingWarrantyTypes(true);
-      const consumerId = localStorage.getItem('consumer_id');
-      if (consumerId) {
-        const warrantyTypesData = await warrantyTypeService.getWarrantyTypesByConsumerId(consumerId);
-        console.log('Fetched warranty types:', warrantyTypesData);
-        setWarrantyTypes(warrantyTypesData);
-        setWarrantyTypesLoaded(true);
-      }
+      const warrantyTypesData = await warrantyTypeService.getWarrantyTypesByConsumerId();
+      console.log('Fetched warranty types:', warrantyTypesData);
+      setWarrantyTypes(warrantyTypesData);
+      setWarrantyTypesLoaded(true);
     } catch (error) {
       console.error('Error fetching warranty types:', error);
     } finally {
@@ -444,33 +438,23 @@ export default function AssetDetailPage() {
     }
     
     try {
-      // Get consumer ID from localStorage
-      const consumerId = localStorage.getItem('consumer_id');
-      if (!consumerId) {
-        setMessage({ type: 'error', text: 'Consumer ID not found. Please login again.' });
-        return;
-      }
-
       // Calculate end date if not provided
       const calculatedEndDate = warrantyEndDate || new Date(new Date(warrantyStartDate).getTime() + warrantyPeriod * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
       // Create the JSON data structure as required
       const updateData = {
-        consumerId: consumerId,
         asset: {
           assetId: assetId!,
           status: selectedAssetStatus,
           departmentId: selectedDepartment,
-          assetAssignTo: assignedTo || null,
-          consumerId: consumerId
+          assetAssignTo: assignedTo || null
         },
         warranty: {
           warrantyTypeId: parseInt(selectedWarrantyType),
           startDate: warrantyStartDate,
           endDate: calculatedEndDate,
           warrantyPeriod: warrantyPeriod,
-          coverageType: selectedCoverageType,
-          consumerId: consumerId
+          coverageType: selectedCoverageType
         }
       };
 

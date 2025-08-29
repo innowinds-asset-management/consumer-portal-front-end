@@ -148,9 +148,7 @@ export default function AssetPage() {
       try {
         setLoadingDepartments(true);
         setDepartmentsError("");
-        const storedConsumerId = localStorage.getItem(STORAGE_KEYS.consumerId);
-        const consumerId = storedConsumerId ? storedConsumerId : "";        
-        const data = await departmentService.getDepartmentsByConsumerId(consumerId);
+        const data = await departmentService.getDepartmentsByConsumerId();
         setDepartments(data);
       } catch (err) {
         console.error('Error fetching departments:', err);
@@ -164,14 +162,8 @@ export default function AssetPage() {
       try {
         setLoadingSuppliers(true);
         setSuppliersError("");
-        const storedConsumerId = localStorage.getItem(STORAGE_KEYS.consumerId);
-        const consumerId = storedConsumerId ? storedConsumerId : "";
-        
-        if (!consumerId) {
-          setSuppliersError("Consumer ID not found. Please refresh the page.");
-          return;
-        }
-        const data = await supplierService.getSuppliersOfConsumerWithStats(consumerId);
+
+        const data = await supplierService.getSuppliersOfConsumerWithStats();
         //const data = await supplierService.getAllSuppliers();
 
         console.log("Suppliers API Response:", data);
@@ -192,15 +184,7 @@ export default function AssetPage() {
       try {
         setLoadingWarrantyTypes(true);
         setWarrantyTypesError("");
-        const storedConsumerId = localStorage.getItem(STORAGE_KEYS.consumerId);
-        const consumerId = storedConsumerId ? storedConsumerId : "";
-        
-        if (!consumerId) {
-          setWarrantyTypesError("Consumer ID not found. Please refresh the page.");
-          return;
-        }
-        
-        const data = await warrantyTypeService.getWarrantyTypesByConsumerId(consumerId);
+        const data = await warrantyTypeService.getWarrantyTypesByConsumerId();
         setWarrantyTypes(data);
       } catch (err) {
         console.error('Error fetching warranty types:', err);
@@ -383,18 +367,15 @@ export default function AssetPage() {
         throw new Error("Invalid asset type or sub-type selected");
       }
 
-      // Get consumer ID and supplier ID for warranty
-      const storedConsumerId = localStorage.getItem(STORAGE_KEYS.consumerId);
-      const consumerId = storedConsumerId ? storedConsumerId : "";
+      
       
       // Create the asset warranty request with nested asset and warranty objects
       const assetWarrantyData: CreateAssetWarrantyRequest = {
-        asset: {
-          assetTypeId: selectedAssetType!.id,
-          assetSubTypeId: selectedAssetSubType!.id,
-          assetName: formData.name,
-          consumerId: consumerId || "",
-          warrantyPeriod: formData.warrantyPeriod,
+                 asset: {
+           assetTypeId: selectedAssetType!.id,
+           assetSubTypeId: selectedAssetSubType!.id,
+           assetName: formData.name,
+           warrantyPeriod: formData.warrantyPeriod,
           warrantyStartDate: new Date(formData.warrantyStartDate).toISOString(),
           warrantyEndDate: new Date(formData.warrantyEndDate).toISOString(),
           installationDate: new Date(formData.installationDate).toISOString(),
@@ -419,21 +400,20 @@ export default function AssetPage() {
           roomNumber: formData.roomNumber || "",
           isCurrentLocation: true
         },
-        warranty: {
-            warrantyTypeId: parseInt(String(formData.warrantyType)) || 1,
-            startDate: formData.warrantyStartDate,
-            endDate: formData.warrantyEndDate,
-            warrantyPeriod: formData.warrantyPeriod,
-            coverageType: formData.coverageType,
-            coverageDescription: formData.coverageDescription,
-            termsConditions: formData.termsConditions,
-            included: formData.included,
-            excluded: formData.excluded,
-            isActive: true,
-            autoRenewal: false,
-            consumerId: consumerId || "",
-            supplierId: formData.supplierId || "SP123"
-          }
+                 warranty: {
+             warrantyTypeId: parseInt(String(formData.warrantyType)) || 1,
+             startDate: formData.warrantyStartDate,
+             endDate: formData.warrantyEndDate,
+             warrantyPeriod: formData.warrantyPeriod,
+             coverageType: formData.coverageType,
+             coverageDescription: formData.coverageDescription,
+             termsConditions: formData.termsConditions,
+             included: formData.included,
+             excluded: formData.excluded,
+             isActive: true,
+             autoRenewal: false,
+             supplierId: formData.supplierId || "SP123"
+           }
       };
 
       // Log the request data for debugging

@@ -55,13 +55,8 @@ export default function AssetListingPage() {
       setError("");
       try {
         // Build query parameters object
-        const queryParams: { consumerId?: string; supplierId?: string; departmentId?: string ;groupstatus?: string} = {};
-        if (consumerId && consumerId !== 'null' && consumerId !== 'undefined' && consumerId !== ''  && consumerId !== '0') {
-          queryParams.consumerId = consumerId;
-        }else{
-          //queryParams.consumerId = localStorage.getItem('consumer_id') || '';
-          queryParams.consumerId = JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "";
-        }
+        const queryParams: { supplierId?: string; departmentId?: string ;groupstatus?: string} = {};
+      
         if (supplierId) {
           queryParams.supplierId = supplierId;
         }

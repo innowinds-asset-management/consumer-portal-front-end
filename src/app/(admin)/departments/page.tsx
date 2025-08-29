@@ -23,15 +23,7 @@ export default function DepartmentListingPage() {
       setLoading(true);
       setError("");
       try {
-        const consumerId = JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "";
-        
-        if (!consumerId) {
-          setError("Consumer ID not found. Please login again.");
-          setLoading(false);
-          return;
-        }
-
-        const data = await departmentService.getDepartmentsByConsumerId(consumerId);
+        const data = await departmentService.getDepartments();
         const allDepartments = Array.isArray(data) ? data : [];
         setDepartments(allDepartments);
       } catch (err) {
@@ -69,12 +61,11 @@ export default function DepartmentListingPage() {
           assetCountCells.forEach((cell, index) => {
             if (index < departments.length) {
               const department = departments[index];
-              const consumerId = JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "";
               (cell as HTMLElement).style.cursor = 'pointer';
               (cell as HTMLElement).style.color = '#0d6efd';
               (cell as HTMLElement).style.textDecoration = 'underline';
               cell.addEventListener('click', () => {
-                router.push(`/assets?cid=${consumerId}&did=${department.deptId}`);
+                router.push(`/assets?did=${department.deptId}`);
               });
             }
           });
@@ -86,7 +77,6 @@ export default function DepartmentListingPage() {
           srCountCells.forEach((cell, index) => {
             if (index < departments.length) {
               const department = departments[index];
-              const consumerId = JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "";
               (cell as HTMLElement).style.cursor = 'pointer';
               (cell as HTMLElement).style.color = '#0d6efd';
               (cell as HTMLElement).style.textDecoration = 'underline';
@@ -120,15 +110,7 @@ export default function DepartmentListingPage() {
       setLoading(true);
       setError("");
       try {
-        const consumerId = JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "";
-        
-        if (!consumerId) {
-          setError("Consumer ID not found. Please login again.");
-          setLoading(false);
-          return;
-        }
-
-        const data = await departmentService.getDepartmentsByConsumerId(consumerId);
+        const data = await departmentService.getDepartments();
         const allDepartments = Array.isArray(data) ? data : [];
         setDepartments(allDepartments);
       } catch (err) {

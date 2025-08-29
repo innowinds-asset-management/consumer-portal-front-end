@@ -1,4 +1,5 @@
-import { WARRANTY_API_URL } from '@/config/environment'
+import { API_URL } from '@/config/environment'
+import httpClient from '@/services/http'
 
 // Warranty interface
 export interface Warranty {
@@ -38,43 +39,15 @@ export interface Warranty {
   }>;
 }
 
-// Create a separate HTTP client for warranty API calls
-class WarrantyHttpClient {
-  private baseURL: string
-  private defaultHeaders: Record<string, string>
-
-  constructor() {
-    this.baseURL = WARRANTY_API_URL
-    this.defaultHeaders = {
-      'Content-Type': 'application/json',
-    }
-  }
-
-  private getHeaders(): Record<string, string> {
-    return { ...this.defaultHeaders }
-  }
-
-  async get<T>(endpoint: string): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: this.getHeaders(),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    return response.json()
-  }
-}
-
-const warrantyHttp = new WarrantyHttpClient()
-
 class WarrantyService {
   async getWarrantiesByAssetId(assetId: string): Promise<Warranty[]> {
-    console.log('warrantyHttp Endpoint', warrantyHttp.get<Warranty[]>(`/warranty/asset/${assetId}`))
-    return warrantyHttp.get<Warranty[]>(`/warranty/asset/${assetId}`)
+    try {
+      const response = await httpClient.get<Warranty[]>(`/warranty/asset/${assetId}`)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching warranties by asset ID:', error)
+      throw error
+    }
   }
 }
 

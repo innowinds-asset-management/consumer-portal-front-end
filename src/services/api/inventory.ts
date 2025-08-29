@@ -1,4 +1,5 @@
-import { ASSET_API_URL } from '@/config/environment'
+import { API_URL } from '@/config/environment'
+import httpClient from '@/services/http'
 
 export interface Inventory {
   id: string;
@@ -58,110 +59,62 @@ export interface InventorySearchResult {
   unitMeasure: string;
 }
 
-class InventoryHttpClient {
-  private baseURL: string
-  private defaultHeaders: Record<string, string>
-
-  constructor() {
-    this.baseURL = ASSET_API_URL
-    this.defaultHeaders = {
-      'Content-Type': 'application/json',
-    }
-  }
-
-  private getHeaders(): Record<string, string> {
-    return { ...this.defaultHeaders }
-  }
-
-  async get<T>(endpoint: string): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: this.getHeaders(),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    return response.json()
-  }
-
-  async post<T>(endpoint: string, data: any): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(data),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    return response.json()
-  }
-}
-
-const inventoryHttp = new InventoryHttpClient()
-
 class InventoryService {
-  async getInventoryByConsumerId(consumerId: string): Promise<Inventory[]> {
+  async getInventories(): Promise<Inventory[]> {
     try {
-      const response = await inventoryHttp.get<Inventory[]>(`/inventory?cid=${consumerId}`)
-      return response
+      const response = await httpClient.get<Inventory[]>('/inventory')
+      return response.data
     } catch (error) {
-      console.error('Error fetching inventory by consumer ID:', error)
+      console.error('Error fetching inventories:', error)
       throw error
     }
   }
 
-  async getAllInventory(): Promise<Inventory[]> {
+  async getInventoryById(id: string): Promise<Inventory> {
     try {
-      const response = await inventoryHttp.get<Inventory[]>(`/inventory`)
-      return response
+      const response = await httpClient.get<Inventory>(`/inventory/${id}`)
+      return response.data
     } catch (error) {
-      console.error('Error fetching all inventory:', error)
+      console.error('Error fetching inventory:', error)
       throw error
     }
   }
 
-  async getInventoryById(inventoryId: string): Promise<Inventory> {
+  async createInventory(inventoryData: Omit<Inventory, 'id' | 'createdAt' | 'updatedAt'>): Promise<Inventory> {
     try {
-      const response = await inventoryHttp.get<Inventory>(`/inventory/${inventoryId}`)
-      return response
+      const response = await httpClient.post<Inventory>('/inventory', inventoryData)
+      return response.data
     } catch (error) {
-      console.error('Error fetching inventory by ID:', error)
+      console.error('Error creating inventory:', error)
       throw error
     }
   }
 
-  async searchInventoryItems(searchTerm: string, consumerId: string): Promise<InventorySearchResult[]> {
+  async updateInventory(id: string, inventoryData: Partial<Inventory>): Promise<Inventory> {
     try {
-      const response = await inventoryHttp.get<InventorySearchResult[]>(`/inventory/search?search=${encodeURIComponent(searchTerm)}&cid=${consumerId}`)
-      return response
+      const response = await httpClient.put<Inventory>(`/inventory/${id}`, inventoryData)
+      return response.data
     } catch (error) {
-      console.error('Error searching inventory items:', error)
+      console.error('Error updating inventory:', error)
       throw error
     }
   }
 
-  async createOrUpdateInventory(data: {
-    itemId?: string;
-    itemName: string;
-    quantity: number;
-    unitMeasure?: 'PIECE' | 'BOX' | 'PACK' | 'LITER' | 'MILLILITER' | 'GRAM' | 'KILOGRAM' | 'TABLET' | 'STRIP' | 'VIAL' | 'AMPULLE';
-    consumerId: string;
-    grnItemId?: string;
-    poLineItemId?: string;
-    expiredAt?: string;
-    supplierId?: string;
-  }): Promise<{ message: string; data: Inventory }> {
+  async deleteInventory(id: string): Promise<void> {
     try {
-      const response = await inventoryHttp.post<{ message: string; data: Inventory }>('/inventory', data)
-      return response
+      await httpClient.delete(`/inventory/${id}`)
     } catch (error) {
-      console.error('Error creating/updating inventory:', error)
+      console.error('Error deleting inventory:', error)
+      throw error
+    }
+  }
+
+  async searchInventories(searchTerm: string): Promise<InventorySearchResult[]> {
+    try {
+      const response = await httpClient.get<InventorySearchResult[]>(`/inventory/search?search=${encodeURIComponent(searchTerm)}`)
+      return response.data
+    } catch (error) {
+      console.error('Error searching inventories:', error)
       throw error
     }
   }

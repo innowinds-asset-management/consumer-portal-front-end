@@ -47,7 +47,7 @@ export default function InventoryListingPage() {
       setError("");
       try {
         let data: InventoryListItem[];
-        data = await inventoryService.getInventoryByConsumerId(JSON.parse(localStorage.getItem(STORAGE_KEYS.consumerId) || "{}") || "");
+        data = await inventoryService.getInventories();
         
         const mapped: InventoryListItem[] = Array.isArray(data)
           ? data.map((item) => ({

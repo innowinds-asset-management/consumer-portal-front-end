@@ -1,4 +1,5 @@
-import { ASSET_API_URL } from '@/config/environment'
+import { API_URL } from '@/config/environment'
+import httpClient from '@/services/http'
 
 export interface Supplier {
   primaryContactName?: string;
@@ -34,51 +35,31 @@ export interface ConsumerSupplierWithStats {
   registeredFrom: string; // createdAt from consumerSupplier
 }
 
-class SupplierHttpClient {
-  private baseURL: string
-  private defaultHeaders: Record<string, string>
-
-  constructor() {
-    this.baseURL = ASSET_API_URL
-    this.defaultHeaders = {
-      'Content-Type': 'application/json',
-    }
-  }
-
-  private getHeaders(): Record<string, string> {
-    return { ...this.defaultHeaders }
-  }
-
-  async get<T>(endpoint: string): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: this.getHeaders(),
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    return response.json()
-  }
-}
-
-const supplierHttp = new SupplierHttpClient()
-
 class SupplierService {
   async getSuppliersByConsumerId(consumerId: string): Promise<Supplier[]> {
-    return supplierHttp.get<Supplier[]>(`/consumer/${consumerId}/suppliers`)
+    try {
+      const response = await httpClient.get<Supplier[]>(`/consumer/${consumerId}/suppliers`)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching suppliers by consumer ID:', error)
+      throw error
+    }
   }
 
   async getAllSuppliers(): Promise<Supplier[]> {
-    return supplierHttp.get<Supplier[]>(`/supplier/all`)
+    try {
+      const response = await httpClient.get<Supplier[]>(`/supplier/all`)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching all suppliers:', error)
+      throw error
+    }
   }
 
-  async getSuppliersOfConsumerWithStats(consumerId: string): Promise<ConsumerSupplierWithStats[]> {
+  async getSuppliersOfConsumerWithStats(): Promise<ConsumerSupplierWithStats[]> {
     try {
-      const response = await supplierHttp.get<ConsumerSupplierWithStats[]>(`/supplier/?cid=${consumerId}`)
-      return response
+      const response = await httpClient.get<ConsumerSupplierWithStats[]>(`/supplier/`)
+      return response.data
     } catch (error) {
       console.error('Error fetching suppliers of consumer with stats:', error)
       throw error
@@ -87,8 +68,8 @@ class SupplierService {
 
   async getSupplierDetailsById(supplierId: string): Promise<SupplierDetails> {
     try {
-      const response = await supplierHttp.get<SupplierDetails>(`/supplier/${supplierId}/details`)
-      return response
+      const response = await httpClient.get<SupplierDetails>(`/supplier/${supplierId}/details`)
+      return response.data
     } catch (error) {
       console.error('Error fetching supplier details:', error)
       throw error
