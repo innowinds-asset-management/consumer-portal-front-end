@@ -100,7 +100,7 @@ export default function CreateInventoryPage() {
     searchTimeoutRef.current = setTimeout(async () => {
       try {
         setSearching(true);
-        const results = await inventoryService.searchInventoryItems(value.trim());
+        const results = await inventoryService.searchInventories(value.trim());
         setSearchResults(results);
         setShowSearchResults(true);
       } catch (error) {
@@ -210,7 +210,7 @@ export default function CreateInventoryPage() {
     try {
       console.log('form data=======>',formData)
       
-        await inventoryService.createOrUpdateInventory({
+        await inventoryService.createInventory({
         itemName: formData.itemName,
         quantity: formData.quantity,
         unitMeasure: formData.unitMeasure as any,
