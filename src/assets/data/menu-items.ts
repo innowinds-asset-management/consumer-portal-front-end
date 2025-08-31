@@ -28,7 +28,7 @@ export const MENU_ITEMS: MenuItemType[] = [
         key: 'purchaseorders',
         label: 'Purchase Orders',
         icon: LogsIcon,
-        url: '/purchaseorders ',
+        url: '/purchaseorders',
        
       }, 
       {
