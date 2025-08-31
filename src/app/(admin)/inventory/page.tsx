@@ -16,7 +16,7 @@ interface InventoryListItem {
   quantity: number;
   unitMeasure?: string;
   minStock?: number;
-  consumerId: string;
+  // consumerId: string;
   createdAt: string;
   updatedAt: string;
   itemNo?: string;
@@ -56,7 +56,7 @@ export default function InventoryListingPage() {
               quantity: item.quantity,
               unitMeasure: item.unitMeasure,
               minStock: item.minStock,
-              consumerId: item.consumerId,
+              // consumerId: item.consumerId,
               createdAt: item.createdAt,
               updatedAt: item.updatedAt,
               consumer: item.consumer,

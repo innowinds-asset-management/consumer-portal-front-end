@@ -13,7 +13,7 @@ interface InventoryListItem {
   quantity: number;
   unitMeasure?: string;
   minStock?: number;
-  consumerId: string;
+  // consumerId: string;
   createdAt: string;
   updatedAt: string;
   itemNo?: string;
