@@ -5,6 +5,7 @@ import { Card, CardBody, Row, Col, Form, Button, Alert, Spinner } from 'react-bo
 import { useRouter, useSearchParams } from 'next/navigation';
 import { serviceContractService } from '@/services/api/serviceContract';
 import { contractTypesService, ContractType } from '@/services/api/contractTypes';
+import { serviceContractStatusService, ServiceContractStatus } from '@/services/api/serviceContractStatus';
 import SearchAsset from '@/components/searchAsset';
 import SearchableSupplier from '@/components/searchableSupplier';
 
@@ -13,14 +14,16 @@ interface AmcCmcFormData {
   startDate: string;
   endDate: string;
   paymentTerms: string;
-  coverageType: string;
+  contractType: string; // For contract type dropdown
+  coverageType: string; // For coverage type dropdown
+  serviceFrequency: string;
   includes: string;
   excludes: string;
   preventiveMaintenanceIncluded: boolean;
   breakdownMaintenanceIncluded: boolean;
   autoRenewal: boolean;
   createdBy: string;
-  status: string;
+  status: number;
   amount?: number;
   contractTypeId?: number;
   serviceSupplierId?: string;
@@ -40,12 +43,7 @@ const PAYMENT_TERMS_OPTIONS = [
   { value: 'ONE_TIME', label: 'One Time' }
 ];
 
-const STATUS_OPTIONS = [
-  { value: 'ACTIVE', label: 'Active' },
-  { value: 'PENDING', label: 'Pending' },
-  { value: 'EXPIRED', label: 'Expired' },
-  { value: 'CANCELLED', label: 'Cancelled' }
-];
+// Status options will be loaded dynamically from API
 
 export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: AmcCmcFormProps) {
   const router = useRouter();
@@ -53,17 +51,21 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
   
   const [formData, setFormData] = useState<AmcCmcFormData>({
     contractName: '',
+    // Set contractTypeId to the value from initialData if provided, otherwise undefined.
+    contractTypeId: initialData?.contractTypeId ?? undefined,
     startDate: '',
     endDate: '',
     paymentTerms: 'YEARLY',
-    coverageType: 'COMPREHENSIVE',
+    contractType: '', // For contract type dropdown
+    coverageType: 'COMPREHENSIVE', // For coverage type dropdown
+    serviceFrequency: 'QUARTERLY',
     includes: '',
     excludes: '',
     preventiveMaintenanceIncluded: true,
     breakdownMaintenanceIncluded: true,
     autoRenewal: false,
     createdBy: '',
-    status: 'PENDING',
+    status: initialData?.status ?? 4, // Default to Draft status (statusId: 4)
     amount: undefined,
     ...initialData
   });
@@ -74,11 +76,17 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
   // Contract types state
   const [contractTypes, setContractTypes] = useState<ContractType[]>([]);
   const [loadingContractTypes, setLoadingContractTypes] = useState(false);
   const [contractTypesError, setContractTypesError] = useState('');
+
+  // Service contract statuses state
+  const [serviceContractStatuses, setServiceContractStatuses] = useState<ServiceContractStatus[]>([]);
+  const [loadingStatuses, setLoadingStatuses] = useState(false);
+  const [statusesError, setStatusesError] = useState('');
 
   // Get supplier ID and asset ID from URL params
   const supplierId = searchParams.get('sid');
@@ -93,24 +101,39 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
     }
   }, [supplierId, assetId]);
 
-  // Load contract types on component mount
+  // Load contract types and service contract statuses on component mount
   useEffect(() => {
-    const fetchContractTypes = async () => {
+    const fetchData = async () => {
+      // Fetch contract types
       setLoadingContractTypes(true);
       try {
         console.log('Fetching contract types...'); // Debug
-        const data = await contractTypesService.getContractTypes();
-        console.log('Contract types response:', data); // Debug
-        setContractTypes(data);
+        const contractTypesData = await contractTypesService.getContractTypes();
+        console.log('Contract types response:', contractTypesData); // Debug
+        setContractTypes(contractTypesData);
       } catch (err) {
         console.error('Error fetching contract types:', err);
         setContractTypesError('Failed to load contract types');
       } finally {
         setLoadingContractTypes(false);
       }
+
+      // Fetch service contract statuses
+      setLoadingStatuses(true);
+      try {
+        console.log('Fetching service contract statuses...'); // Debug
+        const statusesData = await serviceContractStatusService.getServiceContractStatuses();
+        console.log('Service contract statuses response:', statusesData); // Debug
+        setServiceContractStatuses(statusesData);
+      } catch (err) {
+        console.error('Error fetching service contract statuses:', err);
+        setStatusesError('Failed to load service contract statuses');
+      } finally {
+        setLoadingStatuses(false);
+      }
     };
 
-    fetchContractTypes();
+    fetchData();
   }, []);
 
   // Debug: Log contractTypes when it changes
@@ -121,7 +144,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
   const handleInputChange = (field: keyof AmcCmcFormData, value: any) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: field === 'status' ? Number(value) : value
     }));
   };
 
@@ -157,24 +180,56 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
           console.log('Edit contract:', formData);
         } else {
           // Handle create - transform form data to match ServiceContract interface
-          const { status, ...formDataWithoutStatus } = formData;
+          const { status, contractType, coverageType, serviceFrequency, ...formDataWithoutStatus } = formData;          
+          // Find the selected contract type to get its ID
+          const selectedContractType = contractTypes.find(type => type.typeName === contractType);          
           const contractData = {
             ...formDataWithoutStatus,
-            statusId: parseInt(status) || 1, // Convert status string to statusId
+            statusId: status, 
+            contractTypeId: selectedContractType?.contractTypeId,
             paymentTerms: formData.paymentTerms as any,
-            coverageType: formData.coverageType as any,
-            serviceFrequency: 'QUARTERLY' as any, // Default value
+            serviceFrequency: serviceFrequency as any, // Use selected service frequency
             includes: formData.includes || '',
             excludes: formData.excludes || '',
             createdBy: formData.createdBy || '',
             updatedBy: null
           } as any; // Type assertion to bypass interface mismatch
           
+          // Log the final request body that will be sent to API
+          console.log('🚀 Final Request Body for Service Contract Creation:', JSON.stringify(contractData, null, 2));
+          
           await serviceContractService.createServiceContract(contractData);
+          setSubmitted(true);
           setSuccess('Contract created successfully!');
-          setTimeout(() => {
-            router.back();
-          }, 2000);
+          
+          // Reset form after successful submission
+          setFormData({
+            contractName: '',
+            contractTypeId: undefined,
+            startDate: '',
+            endDate: '',
+            paymentTerms: 'YEARLY',
+            contractType: '',
+            coverageType: 'COMPREHENSIVE',
+            serviceFrequency: 'QUARTERLY',
+            includes: '',
+            excludes: '',
+            preventiveMaintenanceIncluded: true,
+            breakdownMaintenanceIncluded: true,
+            autoRenewal: false,
+            createdBy: '',
+            status: 4,
+            amount: undefined,
+            serviceSupplierId: formData.serviceSupplierId, // Keep selected supplier
+            assetId: formData.assetId, // Keep selected asset
+          });
+          
+          // Reset selected components
+          setSelectedAsset(null);
+          setSelectedSupplier(null);
+          
+          // Reset submitted state after 3 seconds
+          setTimeout(() => setSubmitted(false), 3000);
         }
       }
     } catch (err) {
@@ -197,7 +252,11 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
         </div>
 
         {error && <Alert variant="danger">{error}</Alert>}
-        {success && <Alert variant="success">{success}</Alert>}
+        {submitted && (
+          <Alert variant="success" className="mb-4">
+            Contract created successfully!
+          </Alert>
+        )}
 
         <Form onSubmit={handleSubmit}>
           <Row>
@@ -297,18 +356,18 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
               </Form.Group>
             </Col>
 
-            {/* Coverage Type */}
+            {/* Contract Type */}
             <Col md={6}>
               <Form.Group className="mb-3">
-                <Form.Label>Coverage Type *</Form.Label>
+                <Form.Label>Contract Type *</Form.Label>
                 <Form.Select
-                  value={formData.coverageType}
-                  onChange={(e) => handleInputChange('coverageType', e.target.value)}
+                  value={formData.contractType}
+                  onChange={(e) => handleInputChange('contractType', e.target.value)}
                   required
                   disabled={loadingContractTypes}
                 >
                   <option value="">
-                    {loadingContractTypes ? "Loading contract types..." : "Select coverage type"}
+                    {loadingContractTypes ? "Loading contract types..." : "Select contract type"}
                   </option>
                   {contractTypes.length > 0 ? (
                     contractTypes.map((type, index) => (
@@ -341,21 +400,78 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
               </Form.Group>
             </Col>
 
+            {/* Coverage Type */}
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Coverage Type *</Form.Label>
+                <Form.Select
+                  value={formData.coverageType}
+                  onChange={(e) => handleInputChange('coverageType', e.target.value)}
+                  required
+                >
+                  <option value="">Select coverage type</option>
+                  <option value="COMPREHENSIVE">Comprehensive</option>
+                  <option value="PARTS_ONLY">Parts Only</option>
+                  <option value="LABOR_ONLY">Labor Only</option>
+                  <option value="PREVENTIVE_ONLY">Preventive Only</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+
+            {/* Service Frequency */}
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Service Frequency *</Form.Label>
+                <Form.Select
+                  value={formData.serviceFrequency}
+                  onChange={(e) => handleInputChange('serviceFrequency', e.target.value)}
+                  required
+                >
+                  <option value="">Select service frequency</option>
+                  <option value="MONTHLY">Monthly</option>
+                  <option value="QUARTERLY">Quarterly</option>
+                  <option value="HALF_YEARLY">Half Yearly</option>
+                  <option value="YEARLY">Yearly</option>
+                  <option value="AS_REQUIRED">As Required</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+
             {/* Status */}
             <Col md={6}>
               <Form.Group className="mb-3">
                 <Form.Label>Status *</Form.Label>
                 <Form.Select
-                  value={formData.status}
+                  value={formData.status.toString()}
                   onChange={(e) => handleInputChange('status', e.target.value)}
                   required
+                  disabled={loadingStatuses}
                 >
-                  {STATUS_OPTIONS.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
+                  <option value="">
+                    {loadingStatuses ? "Loading statuses..." : "Select status"}
+                  </option>
+                  {serviceContractStatuses.length > 0 ? (
+                    serviceContractStatuses.map((status) => (
+                      <option key={status.statusId} value={status.statusId}>
+                        {status.name}
+                      </option>
+                    ))
+                  ) : (
+                    !loadingStatuses && (
+                      <option value="" disabled>No statuses available</option>
+                    )
+                  )}
                 </Form.Select>
+                {loadingStatuses && (
+                  <div className="mt-2">
+                    <small className="text-muted">Loading statuses...</small>
+                  </div>
+                )}
+                {statusesError && (
+                  <div className="mt-2">
+                    <small className="text-danger">{statusesError}</small>
+                  </div>
+                )}
               </Form.Group>
             </Col>
 
