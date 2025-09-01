@@ -17,6 +17,7 @@ export default function DepartmentListingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const isAppProduction = process.env.NEXT_PUBLIC_APP_ENV === 'production';
 
   useEffect(() => {
     const fetchDepartments = async () => {
@@ -71,20 +72,23 @@ export default function DepartmentListingPage() {
           });
         }
 
-        // Add click handlers for Number of Open SRs column (4th column, index 3)
-        const srCountCells = document.querySelectorAll('td:nth-child(4)');
-        if (srCountCells.length > 0) {
-          srCountCells.forEach((cell, index) => {
-            if (index < departments.length) {
-              const department = departments[index];
-              (cell as HTMLElement).style.cursor = 'pointer';
-              (cell as HTMLElement).style.color = '#0d6efd';
-              (cell as HTMLElement).style.textDecoration = 'underline';
-              cell.addEventListener('click', () => {
-                router.push(`/servicerequests?status=OP&did=${department.deptId}`);
-              });
-            }
-          });
+        // Add click handlers for Number of Open SRs column
+        if (!isAppProduction) {
+          // In non-production, Open SRs is the 4th column (index 3)
+          const srCountCells = document.querySelectorAll('td:nth-child(4)');
+          if (srCountCells.length > 0) {
+            srCountCells.forEach((cell, index) => {
+              if (index < departments.length) {
+                const department = departments[index];
+                (cell as HTMLElement).style.cursor = 'pointer';
+                (cell as HTMLElement).style.color = '#0d6efd';
+                (cell as HTMLElement).style.textDecoration = 'underline';
+                cell.addEventListener('click', () => {
+                  router.push(`/servicerequests?status=OP&did=${department.deptId}`);
+                });
+              }
+            });
+          }
         }
       };
       
@@ -96,7 +100,7 @@ export default function DepartmentListingPage() {
       // Cleanup timeout
       return () => clearTimeout(timeoutId);
     }
-  }, [loading, departments, router]);
+      }, [loading, departments, router, isAppProduction]);
 
   // Format date for display
   const formatDate = (dateString: string) => {
@@ -124,13 +128,20 @@ export default function DepartmentListingPage() {
   };
 
   // Prepare data for GridJS
-  const gridData = departments.map((department) => [
-    department.deptId || "",
-    department.deptName || "",
-    department.assetCount || 0,
-    department.openServiceRequestCount || 0,
-    formatDate(department.createdAt)
-  ]);
+  const gridData = departments.map((department) => {
+    const baseData = [
+      department.deptId || "",
+      department.deptName || "",
+      department.assetCount || 0,
+    ];
+    
+    if (!isAppProduction) {
+      baseData.push(department.openServiceRequestCount || 0);
+    }
+    
+    baseData.push(formatDate(department.createdAt));
+    return baseData;
+  });
 
   return (
     <>
@@ -172,7 +183,7 @@ export default function DepartmentListingPage() {
                 { name: "Department ID", sort: false, search: true },
                 { name: "Department Name", sort: false, search: true },
                 { name: "Number of Assets", sort: true, search: true },
-                { name: "Number of Open SRs", sort: true, search: true },
+                ...(isAppProduction ? [] : [{ name: "Number of Open SRs", sort: true, search: true }]),
                 { name: "Created Date", sort: true, search: true }
               ]}
               pagination={{

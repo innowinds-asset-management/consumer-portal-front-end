@@ -10,6 +10,7 @@ import { Dropdown, DropdownHeader, DropdownItem, DropdownMenu, DropdownToggle } 
 const ProfileDropdown = () => {
   const { user } = useAuth()
   const { handleLogout, isLoggingOut } = useLogout()
+  const isAppProduction = process.env.NEXT_PUBLIC_APP_ENV === 'production';
 
   return (
     <div className="topbar-item nav-user">
@@ -32,29 +33,33 @@ const ProfileDropdown = () => {
           <DropdownHeader className="noti-title">
             <h6 className="text-overflow m-0">Welcome {user?.name || 'User'}!</h6>
           </DropdownHeader>
-          <DropdownItem>
-            <IconifyIcon icon="ri:account-circle-line" className=" me-1 fs-16 align-middle" />
-            <span className="align-middle">My Account</span>
-          </DropdownItem>
-          <DropdownItem>
-            <IconifyIcon icon="ri:wallet-3-line" className="me-1 fs-16 align-middle" />
-            <span className="align-middle">
-              Wallet : <span className="fw-semibold">$985.25</span>
-            </span>
-          </DropdownItem>
-          <DropdownItem>
-            <IconifyIcon icon="ri:settings-2-line" className=" me-1 fs-16 align-middle" />
-            <span className="align-middle">Settings</span>
-          </DropdownItem>
-          <DropdownItem>
-            <IconifyIcon icon="ri:question-line" className=" me-1 fs-16 align-middle" />
-            <span className="align-middle">Support</span>
-          </DropdownItem>
-          <div className="dropdown-divider" />
-          <DropdownItem as={Link} href="/auth/lock-screen">
-            <IconifyIcon icon="ri:lock-line" className="me-1 fs-16 align-middle" />
-            <span className="align-middle">Lock Screen</span>
-          </DropdownItem>
+          {!isAppProduction && (
+            <>
+              <DropdownItem>
+                <IconifyIcon icon="ri:account-circle-line" className=" me-1 fs-16 align-middle" />
+                <span className="align-middle">My Account</span>
+              </DropdownItem>
+              <DropdownItem>
+                <IconifyIcon icon="ri:wallet-3-line" className="me-1 fs-16 align-middle" />
+                <span className="align-middle">
+                  Wallet : <span className="fw-semibold">$985.25</span>
+                </span>
+              </DropdownItem>
+              <DropdownItem>
+                <IconifyIcon icon="ri:settings-2-line" className=" me-1 fs-16 align-middle" />
+                <span className="align-middle">Settings</span>
+              </DropdownItem>
+              <DropdownItem>
+                <IconifyIcon icon="ri:question-line" className=" me-1 fs-16 align-middle" />
+                <span className="align-middle">Support</span>
+              </DropdownItem>
+              <div className="dropdown-divider" />
+              <DropdownItem as={Link} href="/auth/lock-screen">
+                <IconifyIcon icon="ri:lock-line" className="me-1 fs-16 align-middle" />
+                <span className="align-middle">Lock Screen</span>
+              </DropdownItem>
+            </>
+          )}
           <DropdownItem 
             onClick={() => handleLogout()}
             className="active fw-semibold text-danger"

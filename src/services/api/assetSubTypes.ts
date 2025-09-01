@@ -58,6 +58,17 @@ class AssetSubTypesService {
       throw error
     }
   }
+
+  // Search asset sub-types by asset type ID and search word
+  async searchAssetSubTypesByAssetTypeId(assetTypeId: string, searchWord: string): Promise<AssetSubType[]> {
+    try {
+      const response = await httpClient.get<AssetSubType[]>(`/asset-sub-type/by-asset-type-searchable/${assetTypeId}?search=${encodeURIComponent(searchWord)}`)
+      return response.data
+    } catch (error) {
+      console.error('Error searching asset sub-types by asset type ID:', error)
+      throw error
+    }
+  }
 }
 
 export const assetSubTypesService = new AssetSubTypesService() 

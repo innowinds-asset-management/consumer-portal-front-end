@@ -5,14 +5,16 @@ export const getMenuItems = (): MenuItemType[] => {
   // Check if we're in production using custom env variable
   const isProduction = process.env.NEXT_PUBLIC_APP_ENV === 'production'
  
-  console.log('isProduction===>', process.env.NEXT_PUBLIC_APP_ENV);
+  // console.log('isProduction===>', process.env.NEXT_PUBLIC_APP_ENV);
   
   if (isProduction) {
     // In production, only show Assets and Departments
     return MENU_ITEMS.filter(item => 
       item.key === 'assets' || 
       item.key === 'departments' ||
-      item.key === 'navigation' // Keep the title
+      item.key === 'navigation' || // Keep the title
+      item.key === 'dashboard' ||
+      item.key === 'suppliers'
     )
   }
   

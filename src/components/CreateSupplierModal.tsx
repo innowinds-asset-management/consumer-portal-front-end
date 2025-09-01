@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import { Modal, Button, Form, Alert } from 'react-bootstrap';
-import { departmentService } from '@/services/api/departments';
-import { STORAGE_KEYS } from '@/utils/constants';
+import { supplierService } from '@/services/api/suppliers';
 
-interface CreateDepartmentModalProps {
+interface CreateSupplierModalProps {
   show: boolean;
   onHide: () => void;
   onSuccess: () => void;
-  existingDepartments?: Array<{ deptName: string }>;
+  existingSuppliers?: Array<{ name: string; code?: string }>;
 }
 
-export default function CreateDepartmentModal({ show, onHide, onSuccess, existingDepartments = [] }: CreateDepartmentModalProps) {
-  const [departmentName, setDepartmentName] = useState('');
+export default function CreateSupplierModal({ show, onHide, onSuccess, existingSuppliers = [] }: CreateSupplierModalProps) {
+  const [supplierName, setSupplierName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -19,24 +18,24 @@ export default function CreateDepartmentModal({ show, onHide, onSuccess, existin
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!departmentName.trim()) {
-      setError('Department name is required');
+    if (!supplierName.trim()) {
+      setError('Supplier name is required');
       return;
     }
 
-    if (departmentName.trim().length < 2) {
-      setError('Department name must be at least 2 characters long');
+    if (supplierName.trim().length < 2) {
+      setError('Supplier name must be at least 2 characters long');
       return;
     }
 
-    // Check for duplicate department names
-    const trimmedName = departmentName.trim();
-    const isDuplicate = existingDepartments.some(
-      dept => dept.deptName.toLowerCase() === trimmedName.toLowerCase()
+    // Check for duplicate supplier names
+    const trimmedName = supplierName.trim();
+    const isDuplicateName = existingSuppliers.some(
+      supplier => supplier.name.toLowerCase() === trimmedName.toLowerCase()
     );
     
-    if (isDuplicate) {
-      setError('A department with this name already exists');
+    if (isDuplicateName) {
+      setError('A supplier with this name already exists');
       return;
     }
 
@@ -45,14 +44,15 @@ export default function CreateDepartmentModal({ show, onHide, onSuccess, existin
     setSuccess('');
 
     try {
-      const departmentData = {
-        deptName: departmentName.trim()
+      const supplierData = {
+        name: supplierName.trim(),
+        isActive: true
       };
 
-      await departmentService.createDepartment(departmentData);
+      await supplierService.createSupplier(supplierData);
       
-      setSuccess('Department created successfully!');
-      setDepartmentName('');
+      setSuccess('Supplier created successfully!');
+      setSupplierName('');
       
       // Close modal after a short delay to show success message
       setTimeout(() => {
@@ -62,8 +62,8 @@ export default function CreateDepartmentModal({ show, onHide, onSuccess, existin
       }, 1500);
       
     } catch (err: any) {
-      console.error('Error creating department:', err);
-      setError(err.response?.data?.message || 'Failed to create department. Please try again.');
+      console.error('Error creating supplier:', err);
+      setError(err.response?.data?.message || 'Failed to create supplier. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -71,7 +71,7 @@ export default function CreateDepartmentModal({ show, onHide, onSuccess, existin
 
   const handleClose = () => {
     if (!loading) {
-      setDepartmentName('');
+      setSupplierName('');
       setError('');
       setSuccess('');
       onHide();
@@ -82,8 +82,8 @@ export default function CreateDepartmentModal({ show, onHide, onSuccess, existin
     <Modal show={show} onHide={handleClose} backdrop="static" keyboard={false} centered>
       <Modal.Header closeButton={!loading} className="border-bottom">
         <Modal.Title className="fw-bold">
-          <i className="ri-building-line me-2"></i>
-          Create New Department
+          <i className="ri-store-line me-2"></i>
+          Create New Supplier
         </Modal.Title>
       </Modal.Header>
       
@@ -93,20 +93,22 @@ export default function CreateDepartmentModal({ show, onHide, onSuccess, existin
           {success && <Alert variant="success">{success}</Alert>}
           
           <Form.Group className="mb-3">
-            <Form.Label className="fw-semibold">Department Name *</Form.Label>
+            <Form.Label className="fw-semibold">Supplier Name *</Form.Label>
             <Form.Control
               type="text"
-              // placeholder="e.g., IT Department, Finance, Operations"
-              value={departmentName}
-              onChange={(e) => setDepartmentName(e.target.value)}
+            //   placeholder="e.g., ABC Electronics, XYZ Services"
+              value={supplierName}
+              onChange={(e) => setSupplierName(e.target.value)}
               disabled={loading}
               required
               className="form-control-lg"
             />
             <Form.Text className="text-muted">
-              {/* Enter a unique name for the department (minimum 2 characters) */}
+              {/* Enter a unique name for the supplier (minimum 2 characters) */}
             </Form.Text>
           </Form.Group>
+
+
         </Modal.Body>
         
         <Modal.Footer className="border-top">
@@ -122,7 +124,7 @@ export default function CreateDepartmentModal({ show, onHide, onSuccess, existin
           <Button 
             variant="primary" 
             type="submit"
-            disabled={loading || !departmentName.trim()}
+            disabled={loading || !supplierName.trim()}
             size="lg"
           >
             {loading ? (
@@ -133,7 +135,7 @@ export default function CreateDepartmentModal({ show, onHide, onSuccess, existin
             ) : (
               <>
                 <i className="ri-add-line me-1"></i>
-                Create Department
+                Create Supplier
               </>
             )}
           </Button>
