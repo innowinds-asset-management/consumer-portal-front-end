@@ -175,7 +175,7 @@ export default function AssetDetailPage() {
     try {
       setLoadingWarrantyTypes(true);
       const warrantyTypesData = await warrantyTypeService.getWarrantyTypesByConsumerId();
-      console.log('Fetched warranty types:', warrantyTypesData);
+      
       setWarrantyTypes(warrantyTypesData);
       setWarrantyTypesLoaded(true);
     } catch (error) {
@@ -314,7 +314,7 @@ export default function AssetDetailPage() {
       try {
         setLoadingAssetWarranties(true);
         const existingWarranties = await warrantyService.getWarrantiesByAssetId(assetId);
-        console.log('Fetched warranties for asset:', existingWarranties);
+
         
         // Store all warranties for the asset
         setAssetWarranties(existingWarranties || []);
@@ -341,15 +341,9 @@ export default function AssetDetailPage() {
             setWarrantyEndDate(endDate.toISOString().split('T')[0]);
           }
           
-          console.log('Populated warranty data:', {
-            warrantyType: currentWarranty.warrantyType?.warrantyTypeId,
-            coverageType: currentWarranty.coverageType,
-            period: currentWarranty.warrantyPeriod,
-            startDate: currentWarranty.startDate,
-            endDate: currentWarranty.endDate
-          });
+
         } else {
-          console.log('No warranty data found for asset:', assetId);
+
           // Reset warranty fields if no warranty exists
           setSelectedWarrantyType("");
           setSelectedCoverageType("");
@@ -459,7 +453,7 @@ export default function AssetDetailPage() {
         }
       };
 
-      console.log('Sending update data:', updateData);
+      
 
       // Call the new API endpoint
       const response = await assetsService.updateAssetWarranty(assetId!, updateData);
@@ -497,6 +491,59 @@ export default function AssetDetailPage() {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  // Compute warranty status from warranties array
+  const getWarrantyStatus = (warranties: any[]): string => {
+    if (!warranties || warranties.length === 0) return "N/A";
+    
+    // Get current date in YYYY-MM-DD format for comparison
+    const now = new Date();
+    const today = now.toISOString().split('T')[0]; // Format: "2025-01-XX"
+    
+
+    
+    // Check each warranty in the array
+    for (const warranty of warranties) {
+      if (warranty.startDate && warranty.endDate) {
+        // Parse warranty dates and convert to YYYY-MM-DD format
+        const startDate = warranty.startDate.split('T')[0]; // Format: "2025-09-30"
+        const endDate = warranty.endDate.split('T')[0];   // Format: "2026-09-30"
+        
+
+        
+        // Simple string comparison (YYYY-MM-DD format allows this)
+        if (today >= startDate && today <= endDate) {
+
+          return "Active";
+        }
+      }
+    }
+    
+    // If no active warranty found, check if any warranty has expired
+    for (const warranty of warranties) {
+      if (warranty.startDate && warranty.endDate) {
+        const endDate = warranty.endDate.split('T')[0];
+        if (today > endDate) {
+
+          return "Expired";
+        }
+      }
+    }
+    
+    // If no warranty has started yet
+    for (const warranty of warranties) {
+      if (warranty.startDate) {
+        const startDate = warranty.startDate.split('T')[0];
+        if (today < startDate) {
+
+          return "Not Started";
+        }
+      }
+    }
+    
+
+    return "N/A";
   };
 
 
@@ -647,40 +694,16 @@ export default function AssetDetailPage() {
                       <strong>Warranty Status:</strong>
                       <Badge bg={
                         (() => {
-                          // Check if warranties array exists and has items
-                          if (warranties && warranties.length > 0) {
-                            // Get the most recent active warranty
-                            const activeWarranties = warranties.filter((w: Warranty) => w.isActive);
-                            if (activeWarranties.length > 0) {
-                              const currentDate = new Date();
-                              const startDate = new Date(activeWarranties[0].startDate);
-                              const endDate = new Date(activeWarranties[0].endDate);
-                              
-                              if (currentDate < startDate) return 'warning';
-                              if (currentDate > endDate) return 'danger';
-                              return 'success';
-                            }
+                          const warrantyStatus = getWarrantyStatus(warranties);
+                          switch (warrantyStatus) {
+                            case 'Active': return 'success';
+                            case 'Expired': return 'danger';
+                            case 'Not Started': return 'warning';
+                            default: return 'secondary';
                           }
-                          return 'secondary';
                         })()
                       } className="ms-2">
-                        {(() => {
-                          // Check if warranties array exists and has items
-                          if (warranties && warranties.length > 0) {
-                            // Get the most recent active warranty
-                            const activeWarranties = warranties.filter((w: Warranty) => w.isActive);
-                            if (activeWarranties.length > 0) {
-                              const currentDate = new Date();
-                              const startDate = new Date(activeWarranties[0].startDate);
-                              const endDate = new Date(activeWarranties[0].endDate);
-                              
-                              if (currentDate < startDate) return 'Not Started';
-                              if (currentDate > endDate) return 'Expired';
-                              return 'Active';
-                            }
-                          }
-                          return 'No Warranty';
-                        })()}
+                        {getWarrantyStatus(warranties)}
                       </Badge>
                     </div>
                     {!isAppProduction && (
@@ -788,10 +811,10 @@ export default function AssetDetailPage() {
                                 <tr>
                                   <td><strong>Warranty Type</strong></td>
                                   <td>{warranty.warrantyType?.typeName || 'N/A'}</td>
-                                  <td>
-                                    <Badge bg={warranty.isActive ? 'success' : 'danger'}>
+                                  <td> -
+                                    {/* <Badge bg={warranty.isActive ? 'success' : 'danger'}>
                                       {warranty.isActive ? 'Active' : 'Inactive'}
-                                    </Badge>
+                                    </Badge> */}
                                   </td>
                                 </tr>
                                 <tr>
@@ -825,6 +848,25 @@ export default function AssetDetailPage() {
                                   <td>-</td>
                                 </tr>
                                 <tr>
+                                  <td><strong>Warranty Status</strong></td>
+                                  <td>-</td>
+                                  <td>
+                                    <Badge bg={
+                                      (() => {
+                                        const warrantyStatus = getWarrantyStatus([warranty]);
+                                        switch (warrantyStatus) {
+                                          case 'Active': return 'success';
+                                          case 'Expired': return 'danger';
+                                          case 'Not Started': return 'warning';
+                                          default: return 'secondary';
+                                        }
+                                      })()
+                                    }>
+                                      {getWarrantyStatus([warranty])}
+                                    </Badge>
+                                  </td>
+                                </tr>
+                                {/* <tr>
                                   <td><strong>Cost</strong></td>
                                   <td>${warranty.cost}</td>
                                   <td>-</td>
@@ -852,7 +894,7 @@ export default function AssetDetailPage() {
                                   <td><strong>Terms & Conditions</strong></td>
                                   <td>{warranty.termsConditions || 'N/A'}</td>
                                   <td>-</td>
-                                </tr>
+                                </tr> */}
                               </tbody>
                             </Table>
 
