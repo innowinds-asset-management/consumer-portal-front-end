@@ -421,8 +421,15 @@ export default function AssetDetailPage() {
       return;
     }
     
-    if (!selectedWarrantyType || !selectedCoverageType || !warrantyPeriod || !warrantyStartDate) {
-      setMessage({ type: 'error', text: 'Please fill in all required warranty fields' });
+    if (!selectedWarrantyType || !selectedCoverageType) {
+      setMessage({ type: 'error', text: 'Please select warranty type and coverage type' });
+      return;
+    }
+    
+    // For new warranty data, require period and start date
+    // For existing warranty updates, these might already exist
+    if (!warrantyPeriod && !warrantyStartDate) {
+      setMessage({ type: 'error', text: 'Please provide either warranty period or start date' });
       return;
     }
     
@@ -434,7 +441,10 @@ export default function AssetDetailPage() {
     
     try {
       // Calculate end date if not provided
-      const calculatedEndDate = warrantyEndDate || new Date(new Date(warrantyStartDate).getTime() + warrantyPeriod * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      let calculatedEndDate = warrantyEndDate;
+      if (warrantyStartDate && warrantyPeriod) {
+        calculatedEndDate = warrantyEndDate || new Date(new Date(warrantyStartDate).getTime() + warrantyPeriod * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      }
 
       // Create the JSON data structure as required
       const updateData = {
@@ -446,9 +456,9 @@ export default function AssetDetailPage() {
         },
         warranty: {
           warrantyTypeId: parseInt(selectedWarrantyType),
-          startDate: warrantyStartDate,
-          endDate: calculatedEndDate,
-          warrantyPeriod: warrantyPeriod,
+          startDate: warrantyStartDate || new Date().toISOString().split('T')[0], // Default to today if not provided
+          endDate: calculatedEndDate || new Date().toISOString().split('T')[0], // Default to today if not provided
+          warrantyPeriod: warrantyPeriod || 12, // Default to 12 months if not provided
           coverageType: selectedCoverageType
         }
       };
@@ -1274,13 +1284,19 @@ export default function AssetDetailPage() {
           )}
         </Modal.Body>
         <Modal.Footer>
+          <div className="w-100 mb-2">
+            <small className="text-muted">
+              <IconifyIcon icon="tabler:info-circle" className="me-1" />
+              <strong>Note:</strong> For existing warranties, warranty period and dates will be updated with provided values or use defaults.
+            </small>
+          </div>
           <Button variant="secondary" onClick={handleCloseInitiateModal}>
             Cancel
           </Button>
           <Button 
             variant="success" 
             onClick={handleInitiateActivation}
-            disabled={!selectedAssetStatus || !selectedDepartment || !selectedWarrantyType || !selectedCoverageType || !warrantyPeriod || !warrantyStartDate || loadingAssetStatuses || loadingDepartments || loadingWarrantyTypes || loadingAssetWarranties}
+            disabled={!selectedAssetStatus || !selectedDepartment || !selectedWarrantyType || !selectedCoverageType || !warrantyStartDate || !warrantyEndDate || loadingAssetStatuses || loadingDepartments || loadingWarrantyTypes || loadingAssetWarranties}
           >
             Update Asset & Warranty
           </Button>

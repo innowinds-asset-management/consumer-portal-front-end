@@ -121,15 +121,19 @@ export default function AssetListingPage() {
   const getWarrantyStatus = (warranties: any[]): string => {
     if (!warranties || warranties.length === 0) return "N/A";
     
+    // Get current date in YYYY-MM-DD format for comparison
     const now = new Date();
+    const today = now.toISOString().split('T')[0]; // Format: "2025-01-XX"
     
     // Check each warranty in the array
     for (const warranty of warranties) {
       if (warranty.startDate && warranty.endDate) {
-        const start = new Date(warranty.startDate);
-        const end = new Date(warranty.endDate);
+        // Parse warranty dates and convert to YYYY-MM-DD format
+        const startDate = warranty.startDate.split('T')[0]; // Format: "2025-09-30"
+        const endDate = warranty.endDate.split('T')[0];   // Format: "2026-09-30"
         
-        if (now >= start && now <= end) {
+        // Simple string comparison (YYYY-MM-DD format allows this)
+        if (today >= startDate && today <= endDate) {
           return "Active";
         }
       }
@@ -138,8 +142,8 @@ export default function AssetListingPage() {
     // If no active warranty found, check if any warranty has expired
     for (const warranty of warranties) {
       if (warranty.startDate && warranty.endDate) {
-        const end = new Date(warranty.endDate);
-        if (now > end) {
+        const endDate = warranty.endDate.split('T')[0];
+        if (today > endDate) {
           return "Expired";
         }
       }
@@ -148,8 +152,8 @@ export default function AssetListingPage() {
     // If no warranty has started yet
     for (const warranty of warranties) {
       if (warranty.startDate) {
-        const start = new Date(warranty.startDate);
-        if (now < start) {
+        const startDate = warranty.startDate.split('T')[0];
+        if (today < startDate) {
           return "Not Started";
         }
       }
@@ -198,7 +202,6 @@ export default function AssetListingPage() {
   // Prepare data for GridJS (in requested column order)
   const gridData = filteredAssets.map((asset) => {
     const warrantyStatus = getWarrantyStatus(asset.warranties || []);
-    console.log('Asset warranty status:', asset.assetName, '->', warrantyStatus, 'warranties:', asset.warranties); // Debug: Check warranty status
     return [
       asset.assetName || "",
       asset.assetType?.assetName || "",
