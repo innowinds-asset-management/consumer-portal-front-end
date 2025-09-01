@@ -691,8 +691,8 @@ export default function AssetDetailPage() {
                     </div>
                     <div className="mb-3">
                       <strong>Asset Condition:</strong> {
-                        typeof asset.assetCondition === 'object' && asset.assetCondition?.name 
-                          ? asset.assetCondition.name 
+                        typeof asset.assetCondition === 'object' && asset.assetCondition?.displayName 
+                          ? asset.assetCondition.displayName 
                           : (typeof asset.assetCondition === 'string' ? asset.assetCondition : 'N/A')
                       }
                     </div>
