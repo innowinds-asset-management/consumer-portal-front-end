@@ -17,6 +17,8 @@ export default function DepartmentDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const departmentId = searchParams.get('did');
+  
+  const isAppProduction = process.env.NEXT_PUBLIC_APP_ENV === 'production';
 
   const [department, setDepartment] = useState<Department | null>(null);
   const [loading, setLoading] = useState(true);
@@ -100,9 +102,11 @@ export default function DepartmentDetailPage() {
                      <div className="mb-3">
                        <strong>Total Assets:</strong> {department.assetCount || 0}
                      </div>
+                     {!isAppProduction && (
                      <div className="mb-3">
                        <strong>Open Service Requests:</strong> {department.openServiceRequestCount || 0}
                      </div>
+                     )}
                    </Col>
                  </Row>
               </CardBody>
@@ -118,18 +122,22 @@ export default function DepartmentDetailPage() {
                 Assets
               </NavLink>
             </NavItem>
-            <NavItem as="li" role="presentation">
-              <NavLink eventKey="serviceRequest">
-                <IconifyIcon icon="tabler:history" className="fs-18 me-1" />
-                Service Request
-              </NavLink>
-            </NavItem>
-            <NavItem as="li" role="presentation">
-              <NavLink eventKey="inventory">
-                <IconifyIcon icon="tabler:box" className="fs-18 me-1" />
-                Inventory
-              </NavLink>
-            </NavItem>
+            {!isAppProduction && (
+              <NavItem as="li" role="presentation">
+                <NavLink eventKey="serviceRequest">
+                  <IconifyIcon icon="tabler:history" className="fs-18 me-1" />
+                  Service Request
+                </NavLink>
+              </NavItem>
+            )}
+            {!isAppProduction && (
+              <NavItem as="li" role="presentation">
+                <NavLink eventKey="inventory">
+                  <IconifyIcon icon="tabler:box" className="fs-18 me-1" />
+                  Inventory
+                </NavLink>
+              </NavItem>
+            )}
           </Nav>
 
           <TabContent>
@@ -148,24 +156,28 @@ export default function DepartmentDetailPage() {
             </TabPane>
 
             {/* Service Request Tab */}
-            <TabPane eventKey="serviceRequest" id="serviceRequest">
-              <ServiceRequestTab 
-                assetId={undefined}
-                departmentId={departmentId!}
-                asset={undefined}
-                showCreateButton={true}
-                title="Department Service Requests"
-              />
-            </TabPane>
+            {!isAppProduction && (
+              <TabPane eventKey="serviceRequest" id="serviceRequest">
+                <ServiceRequestTab 
+                  assetId={undefined}
+                  departmentId={departmentId!}
+                  asset={undefined}
+                  showCreateButton={true}
+                  title="Department Service Requests"
+                />
+              </TabPane>
+            )}
 
             {/* Inventory Tab */}
-            <TabPane eventKey="inventory" id="inventory">
-              <DepartmentInventoryTabs 
-                departmentId={departmentId!}
-                showCreateButton={true}
-                title="Department Inventory"
-              />
-            </TabPane>
+            {!isAppProduction && (
+              <TabPane eventKey="inventory" id="inventory">
+                <DepartmentInventoryTabs 
+                  departmentId={departmentId!}
+                  showCreateButton={true}
+                  title="Department Inventory"
+                />
+              </TabPane>
+            )}
           </TabContent>
         </TabContainer>
       </ComponentContainerCard>

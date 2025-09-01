@@ -18,6 +18,8 @@ import { STORAGE_KEYS } from "@/utils/constants";
 export default function SupplierDetailPage() {
   const searchParams = useSearchParams();
   const supplierId = searchParams.get('sid');
+  
+  const isAppProduction = process.env.NEXT_PUBLIC_APP_ENV === 'production';
 
   const [supplier, setSupplier] = useState<SupplierDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -140,18 +142,22 @@ export default function SupplierDetailPage() {
                 Assets ({supplier.assetCount})
               </NavLink>
             </NavItem>
-            <NavItem as="li" role="presentation">
-              <NavLink eventKey="serviceRequest">
-                <IconifyIcon icon="tabler:history" className="fs-18 me-1" />
-                Service Requests ({supplier.openServiceRequestCount})
-              </NavLink>
-            </NavItem>
-            <NavItem as="li" role="presentation">
-              <NavLink eventKey="amc">
-                <IconifyIcon icon="tabler:shield-check" className="fs-18 me-1" />
-                AMC/CMC
-              </NavLink>
-            </NavItem>
+            {!isAppProduction && (
+              <NavItem as="li" role="presentation">
+                <NavLink eventKey="serviceRequest">
+                  <IconifyIcon icon="tabler:history" className="fs-18 me-1" />
+                  Service Requests ({supplier.openServiceRequestCount})
+                </NavLink>
+              </NavItem>
+            )}
+            {!isAppProduction && (
+              <NavItem as="li" role="presentation">
+                <NavLink eventKey="amc">
+                  <IconifyIcon icon="tabler:shield-check" className="fs-18 me-1" />
+                  AMC/CMC
+                </NavLink>
+              </NavItem>
+            )}
           </Nav>
 
           <TabContent>
@@ -166,24 +172,28 @@ export default function SupplierDetailPage() {
             </TabPane>
 
             {/* Service Request Tab */}
-            <TabPane eventKey="serviceRequest" id="serviceRequest">
-              <ServiceRequestTab 
-                supplierId={supplierId!} 
-                supplier={supplier}
-                showCreateButton={false}
-                title="Service Requests"
-              />
-            </TabPane>
+            {!isAppProduction && (
+              <TabPane eventKey="serviceRequest" id="serviceRequest">
+                <ServiceRequestTab 
+                  supplierId={supplierId!} 
+                  supplier={supplier}
+                  showCreateButton={false}
+                  title="Service Requests"
+                />
+              </TabPane>
+            )}
 
             {/* AMC/CMC Tab */}
-            <TabPane eventKey="amc" id="amc">
-              <AmcCmcTab 
-                supplierId={supplierId!} 
-                supplier={supplier}
-                showCreateButton={false}
-                title="AMC/CMC Contracts"
-              />
-            </TabPane>
+            {!isAppProduction && (
+              <TabPane eventKey="amc" id="amc">
+                <AmcCmcTab 
+                  supplierId={supplierId!} 
+                  supplier={supplier}
+                  showCreateButton={false}
+                  title="AMC/CMC Contracts"
+                />
+              </TabPane>
+            )}
           </TabContent>
         </TabContainer>
       </ComponentContainerCard>

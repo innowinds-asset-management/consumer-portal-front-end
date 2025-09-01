@@ -75,6 +75,20 @@ class SupplierService {
       throw error
     }
   }
+
+  async createSupplier(data: {
+    name: string;
+    code?: string;
+    isActive?: boolean;
+  }): Promise<Supplier> {
+    try {
+      const response = await httpClient.post<Supplier>('/supplier', data)
+      return response.data
+    } catch (error) {
+      console.error('Error creating supplier:', error)
+      throw error
+    }
+  }
 }
 
 export const supplierService = new SupplierService()

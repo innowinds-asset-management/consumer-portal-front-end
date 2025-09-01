@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 
 
 export default function AssetDetailPage() {
+  const isAppProduction = process.env.NEXT_PUBLIC_APP_ENV === 'production'
   const router = useRouter();
   const searchParams = useSearchParams();
   const assetId = searchParams.get('aid');
@@ -537,6 +538,14 @@ export default function AssetDetailPage() {
             <span>{`${asset.assetName}(${asset.consumerSerialNo})`}</span>
             <div className="d-flex gap-2">
               <Button 
+                variant="primary" 
+                size="sm"
+                onClick={() => router.push(`/assets/edit?aid=${assetId}`)}
+              >
+                <IconifyIcon icon="mdi:pencil" className="me-1" />
+                Edit Asset
+              </Button>
+              <Button 
                 variant="success" 
                 size="sm"
                 onClick={handleInitiateActivateClick}
@@ -674,6 +683,8 @@ export default function AssetDetailPage() {
                         })()}
                       </Badge>
                     </div>
+                    {!isAppProduction && (
+                    <>
                     <div className="mb-3">
                       <strong>Last Service Date:</strong> {
                         (() => {
@@ -689,19 +700,25 @@ export default function AssetDetailPage() {
                         })()
                       }
                     </div>
-                    <div className="mb-3">
-                      <strong>Asset Condition:</strong> {
-                        typeof asset.assetCondition === 'object' && asset.assetCondition?.displayName 
-                          ? asset.assetCondition.displayName 
-                          : (typeof asset.assetCondition === 'string' ? asset.assetCondition : 'N/A')
-                      }
-                    </div>
-                    <div className="mb-3">
-                      <strong>AMC:</strong>
-                      <Badge bg={asset.isAmc ? 'success' : 'secondary'} className="ms-2">
-                        {asset.isAmc ? 'Yes' : 'No'}
-                      </Badge>
-                    </div>
+                    </>
+                    )}
+                    {!isAppProduction && (
+                      <>
+                        <div className="mb-3">
+                          <strong>Asset Condition:</strong> {
+                            typeof asset.assetCondition === 'object' && asset.assetCondition?.displayName 
+                              ? asset.assetCondition.displayName 
+                              : (typeof asset.assetCondition === 'string' ? asset.assetCondition : 'N/A')
+                          }
+                        </div>
+                        <div className="mb-3">
+                          <strong>AMC:</strong>
+                          <Badge bg={asset.isAmc ? 'success' : 'secondary'} className="ms-2">
+                            {asset.isAmc ? 'Yes' : 'No'}
+                          </Badge>
+                        </div>
+                      </>
+                    )}
                   </Col>
                 </Row>
               </CardBody>
@@ -709,26 +726,30 @@ export default function AssetDetailPage() {
           </Col>
         </Row>
 
-        <TabContainer defaultActiveKey="department" onSelect={handleTabSelect}>
+        <TabContainer defaultActiveKey="warranty" onSelect={handleTabSelect}>
           <Nav role="tablist" className="nav-tabs nav-bordered mb-3">
-            <NavItem as="li" role="presentation">
-              <NavLink eventKey="department">
-                <IconifyIcon icon="tabler:building" className="fs-18 me-1" />
-                Transfers
-              </NavLink>
-            </NavItem>
+            {!isAppProduction && (
+              <NavItem as="li" role="presentation">
+                <NavLink eventKey="department">
+                  <IconifyIcon icon="tabler:building" className="fs-18 me-1" />
+                  Transfers
+                </NavLink>
+              </NavItem>
+            )}
             <NavItem as="li" role="presentation">
               <NavLink eventKey="warranty">
                 <IconifyIcon icon="tabler:shield-check" className="fs-18 me-1" />
                 Warranty
               </NavLink>
             </NavItem>
-            <NavItem as="li" role="presentation">
-              <NavLink eventKey="serviceRequest">
-                <IconifyIcon icon="tabler:history" className="fs-18 me-1" />
-                Service Request
-              </NavLink>
-            </NavItem>
+            {!isAppProduction && (
+              <NavItem as="li" role="presentation">
+                <NavLink eventKey="serviceRequest">
+                  <IconifyIcon icon="tabler:history" className="fs-18 me-1" />
+                  Service Request
+                </NavLink>
+              </NavItem>
+            )}
           </Nav>
 
           <TabContent>
@@ -874,67 +895,71 @@ export default function AssetDetailPage() {
             </TabPane>
 
             {/* Department Tab */}
-            <TabPane eventKey="department" id="department">
-              <Row>
-                <Col sm="12">
-                  <Card className="border-0">
-                    <CardBody>
-                      <h6 className="text-muted mb-3">Location Information</h6>
-                      {!assetLocation?.locations || assetLocation.locations.length === 0 ? (
-                        <div className="text-center py-4">
-                          <p className="text-muted">No location information available</p>
-                        </div>
-                      ) : (
-                        <Table responsive striped>
-                          <thead>
-                            <tr>
-                              <th>Department Name</th>
-                              <th>Building</th>
-                              <th>Floor</th>
-                              <th>Room</th>
-                              <th>Current Location</th>
-                              <th>Created Date</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {assetLocation.locations.map((location: Location) => (
-                              <tr key={location.id}>
-                                <td>{location.departmentId ? (assetDepartment?.department?.deptName || '') : ''}</td>
-                                <td>{location.building}</td>
-                                <td>{location.floorNumber}</td>
-                                <td>{location.roomNumber}</td>
-                                <td>
-                                  <Badge bg={location.isCurrentLocation ? 'success' : 'secondary'}>
-                                    {location.isCurrentLocation ? 'Current' : 'Historical'}
-                                  </Badge>
-                                </td>
-                                <td>{formatDate(location.createdAt)}</td>
+            {!isAppProduction && (
+              <TabPane eventKey="department" id="department">
+                <Row>
+                  <Col sm="12">
+                    <Card className="border-0">
+                      <CardBody>
+                        <h6 className="text-muted mb-3">Location Information</h6>
+                        {!assetLocation?.locations || assetLocation.locations.length === 0 ? (
+                          <div className="text-center py-4">
+                            <p className="text-muted">No location information available</p>
+                          </div>
+                        ) : (
+                          <Table responsive striped>
+                            <thead>
+                              <tr>
+                                <th>Department Name</th>
+                                <th>Building</th>
+                                <th>Floor</th>
+                                <th>Room</th>
+                                <th>Current Location</th>
+                                <th>Created Date</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </Table>
-                      )}
+                            </thead>
+                            <tbody>
+                              {assetLocation.locations.map((location: Location) => (
+                                <tr key={location.id}>
+                                  <td>{location.departmentId ? (assetDepartment?.department?.deptName || '') : ''}</td>
+                                  <td>{location.building}</td>
+                                  <td>{location.floorNumber}</td>
+                                  <td>{location.roomNumber}</td>
+                                  <td>
+                                    <Badge bg={location.isCurrentLocation ? 'success' : 'secondary'}>
+                                      {location.isCurrentLocation ? 'Current' : 'Historical'}
+                                    </Badge>
+                                  </td>
+                                  <td>{formatDate(location.createdAt)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </Table>
+                        )}
 
-                      <div className="text-center mt-3">
-                        <small className="text-muted">
-                          Showing {assetLocation?.locations?.length || 0} location records
-                        </small>
-                      </div>
-                    </CardBody>
-                  </Card>
-                </Col>
-              </Row>
-            </TabPane>
+                        <div className="text-center mt-3">
+                          <small className="text-muted">
+                            Showing {assetLocation?.locations?.length || 0} location records
+                          </small>
+                        </div>
+                      </CardBody>
+                    </Card>
+                  </Col>
+                </Row>
+              </TabPane>
+            )}
 
             {/* Service Request Tab */}
-            <TabPane eventKey="serviceRequest" id="serviceRequest">
-              <ServiceRequestTab 
-                assetId={assetId!} 
-                asset={asset}
-                showCreateButton={true}
-                title="Service History"
-              />
-            </TabPane>
+            {!isAppProduction && (
+              <TabPane eventKey="serviceRequest" id="serviceRequest">
+                <ServiceRequestTab 
+                  assetId={assetId!} 
+                  asset={asset}
+                  showCreateButton={true}
+                  title="Service History"
+                />
+              </TabPane>
+            )}
           </TabContent>
         </TabContainer>
       </ComponentContainerCard>

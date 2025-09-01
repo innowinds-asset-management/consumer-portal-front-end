@@ -11,6 +11,8 @@ import ThemeModeToggle from './components/ThemeModeToggle'
 import SearchBox from './components/SearchBox'
 
 const TopNavigationBar = () => {
+  const isAppProduction = process.env.NEXT_PUBLIC_APP_ENV === 'production';
+  
   return (
     <header 
       className="app-topbar"
@@ -23,7 +25,7 @@ const TopNavigationBar = () => {
         <div className="d-flex align-items-center gap-2">
           <LogoBox />
           <LeftSideBarToggle />
-          <SearchBox />
+          {!isAppProduction && <SearchBox />}
         </div>
         <div className="d-flex align-items-center gap-2">
           {/* <Flags /> */}
@@ -31,7 +33,7 @@ const TopNavigationBar = () => {
           {/* <Apps /> */}
           {/* <ThemeCustomizeToggle /> */}
           {/* <ThemeModeToggle /> */}
-          <ScannerIcon />
+          {!isAppProduction && <ScannerIcon />}
           <ProfileDropdown />
         </div>
       </div>

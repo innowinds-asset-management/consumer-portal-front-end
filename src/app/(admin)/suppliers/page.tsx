@@ -9,6 +9,7 @@ import { Grid } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
 import { useRouter } from "next/navigation";
 import { STORAGE_KEYS } from "@/utils/constants";
+import CreateSupplierModal from "@/components/CreateSupplierModal";
 
 interface SupplierListItem {
     id: string;
@@ -26,6 +27,8 @@ export default function SupplierListingPage() {
     const [suppliers, setSuppliers] = useState<SupplierListItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string>("");
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const isAppProduction = process.env.NEXT_PUBLIC_APP_ENV === 'production';
 
 
 
@@ -79,35 +82,38 @@ export default function SupplierListingPage() {
                 }
 
                 // Add click handlers for Number of Assets column (2nd column, index 1)
-                const assetCountCells = document.querySelectorAll('td:nth-child(2)');
-                if (assetCountCells.length > 0) {                    
+                const assetCountCells = document.querySelectorAll('td:nth-child(3)');
+                if (assetCountCells.length > 0) {
                     assetCountCells.forEach((cell, index) => {
                         if (index < suppliers.length) {
                             const supplier = suppliers[index];
                             (cell as HTMLElement).style.cursor = 'pointer';
                             (cell as HTMLElement).style.color = '#0d6efd';
                             (cell as HTMLElement).style.textDecoration = 'underline';
-                                                         cell.addEventListener('click', () => {
-                                 router.push(`/assets?sid=${supplier.id}`);
-                             });
+                            cell.addEventListener('click', () => {
+                                router.push(`/assets?sid=${supplier.id}`);
+                            });
                         }
                     });
                 }
 
-                // Add click handlers for Number of Open SRs column (3rd column, index 2)
-                const srCountCells = document.querySelectorAll('td:nth-child(3)');
-                if (srCountCells.length > 0) {
-                    srCountCells.forEach((cell, index) => {
-                        if (index < suppliers.length) {
-                            const supplier = suppliers[index];
-                            (cell as HTMLElement).style.cursor = 'pointer';
-                            (cell as HTMLElement).style.color = '#0d6efd';
-                            (cell as HTMLElement).style.textDecoration = 'underline';
-                            cell.addEventListener('click', () => {
-                                router.push(`/servicerequests?status=OP&sid=${supplier.id}`);
-                            });
-                        }
-                    });
+                // Add click handlers for Number of Open SRs column
+                if (!isAppProduction) {
+                    // In non-production, Open SRs is the 3rd column (index 2)
+                    const srCountCells = document.querySelectorAll('td:nth-child(3)');
+                    if (srCountCells.length > 0) {
+                        srCountCells.forEach((cell, index) => {
+                            if (index < suppliers.length) {
+                                const supplier = suppliers[index];
+                                (cell as HTMLElement).style.cursor = 'pointer';
+                                (cell as HTMLElement).style.color = '#0d6efd';
+                                (cell as HTMLElement).style.textDecoration = 'underline';
+                                cell.addEventListener('click', () => {
+                                    router.push(`/servicerequests?status=OP&sid=${supplier.id}`);
+                                });
+                            }
+                        });
+                    }
                 }
             };
             // Try immediately
@@ -118,7 +124,37 @@ export default function SupplierListingPage() {
             // Cleanup timeout
             return () => clearTimeout(timeoutId);
         }
-    }, [loading, suppliers, router]);
+    }, [loading, suppliers, router, isAppProduction]);
+
+    // Function to refresh suppliers list
+    const refreshSuppliers = () => {
+        const fetchSuppliers = async () => {
+            setLoading(true);
+            setError("");
+            try {
+                const data = await supplierService.getSuppliersOfConsumerWithStats();
+                const mapped: SupplierListItem[] = Array.isArray(data)
+                    ? data.map((record: ConsumerSupplierWithStats) => ({
+                        id: record.supplier.id,
+                        code: record.supplier.code,
+                        name: record.supplier.name,
+                        contactName: record.supplier.primaryContactName || '', // Using name as contact name for demo
+                        contactPhone: record.supplier.primaryContactPhone || '',
+                        assetCount: record.assetCount,
+                        openServiceRequestCount: record.openServiceRequestCount,
+                        registeredFrom: record.registeredFrom,
+                    }))
+                    : [];
+                setSuppliers(mapped);
+            } catch (err) {
+                setError("Failed to load suppliers. Please try again.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchSuppliers();
+    };
 
     // Format date for display
     const formatDate = (dateString: string) => {
@@ -126,25 +162,36 @@ export default function SupplierListingPage() {
         return new Date(dateString).toLocaleDateString();
     };
 
-    const gridData = suppliers.map((supplier) => [
-        supplier.code,
-        supplier.assetCount,
-        supplier.openServiceRequestCount,
-        formatDate(supplier.registeredFrom),
-        supplier.contactName || "",
-        supplier.contactPhone || ""
-    ]);
+    const gridData = suppliers.map((supplier) => {
+        const baseData = [
+            supplier.id,
+            supplier.name,
+            supplier.assetCount,
+        ];
+
+        if (!isAppProduction) {
+            baseData.push(supplier.openServiceRequestCount);
+        }
+
+        baseData.push(
+            formatDate(supplier.registeredFrom),
+            supplier.contactName || "",
+            supplier.contactPhone || ""
+        );
+
+        return baseData;
+    });
 
     return (
         <>
-      
+
 
             <ComponentContainerCard title={
                 <div className="d-flex justify-content-between align-items-center">
                     <span>Suppliers</span>
                     <Button
                         variant="primary"
-                        onClick={() => router.push('/suppliers/create')}
+                        onClick={() => setShowCreateModal(true)}
                         className="d-flex align-items-center gap-2"
                         size="sm"
                     >
@@ -173,8 +220,9 @@ export default function SupplierListingPage() {
                             data={gridData}
                             columns={[
                                 { name: "Supplier No", sort: true, search: true, },
+                                { name: "Name", sort: false, search: true, },
                                 { name: "Number of Assets", sort: true, search: true },
-                                { name: "Number of Open SRs", sort: true, search: true },
+                                ...(isAppProduction ? [] : [{ name: "Number of Open SRs", sort: true, search: true }]),
                                 { name: "Registered From", sort: true, search: true },
                                 { name: "Contact Name", sort: true, search: true },
                                 { name: "Contact Phone", sort: true, search: true },
@@ -202,6 +250,14 @@ export default function SupplierListingPage() {
                     </div>
                 )}
             </ComponentContainerCard>
+
+            {/* Create Supplier Modal */}
+            <CreateSupplierModal
+                show={showCreateModal}
+                onHide={() => setShowCreateModal(false)}
+                onSuccess={refreshSuppliers}
+                existingSuppliers={suppliers.map(s => ({ name: s.name }))}
+            />
         </>
     );
 }
