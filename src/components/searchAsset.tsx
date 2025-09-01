@@ -44,7 +44,7 @@ export default function SearchAsset({
       setLoading(true);
       try {
         console.log('Fetching assets...'); // Debug
-        const assetsData = await assetsService.getAssets({ groupstatus: 'active' });
+        const assetsData = await assetsService.getAssets({ groupstatus: 'active-or-pre-active' });
         console.log('Assets response:', assetsData); // Debug
         setAssets(assetsData);
       } catch (err) {
@@ -136,6 +136,7 @@ export default function SearchAsset({
           {asset.partNo && <span className="me-2">Part No: {asset.partNo}</span>}
           {asset.brand && <span className="me-2">• Brand: {asset.brand}</span>}
           {asset.model && <span className="me-2">• Model: {asset.model}</span>}
+          {asset.consumerSerialNo && <span className="me-2">• Serial No: {asset.consumerSerialNo}</span>}
         </div>
         <div className="small text-muted">
           {asset.assetType?.assetName && <span className="me-2">Type: {asset.assetType.assetName}</span>}

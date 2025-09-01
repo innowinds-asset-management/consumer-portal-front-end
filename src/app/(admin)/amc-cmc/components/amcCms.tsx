@@ -491,7 +491,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
             {/* Includes */}
             <Col md={12}>
               <Form.Group className="mb-3">
-                <Form.Label>Includes</Form.Label>
+                <Form.Label>Included</Form.Label>
                 <Form.Control
                   as="textarea"
                   rows={3}
@@ -505,7 +505,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
             {/* Excludes */}
             <Col md={12}>
               <Form.Group className="mb-3">
-                <Form.Label>Excludes</Form.Label>
+                <Form.Label>Excluded</Form.Label>
                 <Form.Control
                   as="textarea"
                   rows={3}
