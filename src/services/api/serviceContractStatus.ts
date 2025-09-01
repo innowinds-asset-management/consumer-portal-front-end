@@ -1,4 +1,4 @@
-import { ASSET_API_URL } from '@/config/environment'
+import { API_URL } from '@/config/environment'
 import httpClient from '@/services/http'
 
 // Service Contract Status interface
@@ -11,7 +11,7 @@ export interface ServiceContractStatus {
 
 // Service Contract Status API service
 class ServiceContractStatusService {
-  private baseURL = `${ASSET_API_URL}/service-contract-status`;
+  private baseURL = `${API_URL}/service-contract-status`;
 
   // Get all service contract statuses
   async getServiceContractStatuses(): Promise<ServiceContractStatus[]> {
