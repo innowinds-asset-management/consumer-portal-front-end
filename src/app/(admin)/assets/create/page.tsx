@@ -115,8 +115,8 @@ export default function AssetPage() {
     
     // Warranty Information
     warrantyType: "",
-    warrantyStartDate: new Date().toISOString().split('T')[0],
-    warrantyEndDate: new Date().toISOString().split('T')[0],
+    warrantyStartDate: "",
+    warrantyEndDate: "",
     warrantyPeriod: 0,
     coverageType: "",
     coverageDescription: "",
@@ -310,27 +310,11 @@ export default function AssetPage() {
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    // Asset Information validation
+    // Only validate the required fields: asset type, asset sub type, asset name, and department
     if (!formData.name.trim()) newErrors.name = "Asset name is required";
     if (!formData.assetType) newErrors.assetType = "Asset type is required";
     if (!formData.subAssetType) newErrors.subAssetType = "Sub asset type is required";
-    if (!formData.brand.trim()) newErrors.brand = "Brand is required";
-    if (!formData.model.trim()) newErrors.model = "Model is required";
-    if (!formData.installationDate) newErrors.installationDate = "Installation date is required";
-    if (!formData.installStatus) newErrors.installStatus = "Installation status is required";
-
-    if (!formData.buildingNumber.trim()) newErrors.buildingNumber = "Building number is required";
     if (!formData.departmentId) newErrors.departmentId = "Department is required";
-    if (!formData.floorNumber.trim()) newErrors.floorNumber = "Floor number is required";
-    if (!formData.roomNumber.trim()) newErrors.roomNumber = "Room number is required";
-    if (!formData.supplierId) newErrors.supplierId = "Supplier is required";
-
-    // Warranty Information validation
-    if (!formData.warrantyType) newErrors.warrantyType = "Warranty type is required";
-    if (!formData.warrantyStartDate) newErrors.warrantyStartDate = "Warranty start date is required";
-    if (!formData.warrantyEndDate) newErrors.warrantyEndDate = "Warranty end date is required";
-    if (formData.warrantyPeriod < 0) newErrors.warrantyPeriod = "Warranty period must be 0 or greater";
-    if (!formData.coverageType) newErrors.coverageType = "Coverage type is required";
 
     console.log("Validation errors:", newErrors);
     setErrors(newErrors);
@@ -369,55 +353,69 @@ export default function AssetPage() {
 
       
       
-      // Create the asset warranty request with nested asset and warranty objects
-      const assetWarrantyData: CreateAssetWarrantyRequest = {
-                 asset: {
-           assetTypeId: selectedAssetType!.id,
-           assetSubTypeId: selectedAssetSubType!.id,
-           assetName: formData.name,
-           warrantyPeriod: formData.warrantyPeriod,
-          warrantyStartDate: new Date(formData.warrantyStartDate).toISOString(),
-          warrantyEndDate: new Date(formData.warrantyEndDate).toISOString(),
-          installationDate: new Date(formData.installationDate).toISOString(),
-          installStatus: formData.installStatus,
-          // status: formData.status,
-          brand: formData.brand,
-          model: formData.model,
-          subModel: formData.subModel,
-          isActive: true,
-          partNo: formData.model, // Using model as part number
-          supplierCode:suppliers.find(s => s.id === formData.supplierId)?.code || "",
-          consumerSerialNo: formData.name, // Using asset name as consumer serial
-          grnId: "", 
-          grnItemId: "", 
-          poLineItemId: "",
-          supplierId: formData.supplierId,
-          isAmc: true,
-          supplierSerialNo: formData.model, // Using model as serial number
-          departmentId: formData.departmentId,
-          building: formData.buildingNumber || "",
-          floorNumber: formData.floorNumber || "",
-          roomNumber: formData.roomNumber || "",
-          isCurrentLocation: true
-        },
-                 warranty: {
-             warrantyTypeId: parseInt(String(formData.warrantyType)) || 1,
-             startDate: formData.warrantyStartDate,
-             endDate: formData.warrantyEndDate,
-             warrantyPeriod: formData.warrantyPeriod,
-             coverageType: formData.coverageType,
-             coverageDescription: formData.coverageDescription,
-             termsConditions: formData.termsConditions,
-             included: formData.included,
-             excluded: formData.excluded,
-             isActive: true,
-             autoRenewal: false,
-             supplierId: formData.supplierId || "SP123"
-           }
-      };
+             // Create the asset warranty request with nested asset and warranty objects
+               // Check if warranty fields have actual values
+        const hasWarrantyData = formData.warrantyType || 
+          (formData.warrantyStartDate && formData.warrantyStartDate.trim() !== '') || 
+          (formData.warrantyEndDate && formData.warrantyEndDate.trim() !== '') ||
+          formData.warrantyPeriod > 0 ||
+          (formData.coverageType && formData.coverageType.trim() !== '') ||
+          (formData.coverageDescription && formData.coverageDescription.trim() !== '') ||
+          (formData.termsConditions && formData.termsConditions.trim() !== '') ||
+          (formData.included && formData.included.trim() !== '') ||
+          (formData.excluded && formData.excluded.trim() !== '');
 
-      // Log the request data for debugging
-      console.log("Sending asset warranty creation request:", JSON.stringify(assetWarrantyData, null, 2));
+        const assetWarrantyData: CreateAssetWarrantyRequest = {
+          asset: {
+            assetTypeId: selectedAssetType!.id,
+            assetSubTypeId: selectedAssetSubType!.id,
+            assetName: formData.name,
+            departmentId: formData.departmentId,
+            
+            isActive: true,
+            isCurrentLocation: true,
+            // Only include optional fields if they have values
+            ...(formData.installationDate && formData.installationDate.trim() !== '' && { installationDate: new Date(formData.installationDate).toISOString() }),
+            ...(formData.installStatus && formData.installStatus.trim() !== '' && { installStatus: formData.installStatus }),
+            ...(formData.brand && formData.brand.trim() !== '' && { brand: formData.brand }),
+            ...(formData.model && formData.model.trim() !== '' && { model: formData.model }),
+            ...(formData.subModel && formData.subModel.trim() !== '' && { subModel: formData.subModel }),
+            ...(formData.model && formData.model.trim() !== '' && { partNo: formData.model }), // Using model as part number
+            ...(formData.supplierId && suppliers.find(s => s.id === formData.supplierId)?.code && { supplierCode: suppliers.find(s => s.id === formData.supplierId)?.code }),
+            ...(formData.name && { consumerSerialNo: formData.name }), // Using asset name as consumer serial
+            ...(formData.supplierId && formData.supplierId.trim() !== '' && { supplierId: formData.supplierId }),
+            ...(formData.model && formData.model.trim() !== '' && { supplierSerialNo: formData.model }), // Using model as serial number
+            ...(formData.buildingNumber && formData.buildingNumber.trim() !== '' && { building: formData.buildingNumber }),
+            ...(formData.floorNumber && formData.floorNumber.trim() !== '' && { floorNumber: formData.floorNumber }),
+            ...(formData.roomNumber && formData.roomNumber.trim() !== '' && { roomNumber: formData.roomNumber }),
+            // Set default values for required asset fields
+            isAmc: true
+          },
+          ...(hasWarrantyData && {
+            warranty: {
+              // Only include warranty fields if they have values
+              ...(formData.warrantyType && formData.warrantyType.toString().trim() !== '' && { warrantyTypeId: parseInt(String(formData.warrantyType)) }),
+              ...(formData.warrantyStartDate && formData.warrantyStartDate.trim() !== '' && { startDate: formData.warrantyStartDate }),
+              ...(formData.warrantyEndDate && formData.warrantyEndDate.trim() !== '' && { endDate: formData.warrantyEndDate }),
+              ...(formData.warrantyPeriod > 0 && { warrantyPeriod: formData.warrantyPeriod }),
+              ...(formData.coverageType && formData.coverageType.trim() !== '' && { coverageType: formData.coverageType }),
+              ...(formData.coverageDescription && formData.coverageDescription.trim() !== '' && { coverageDescription: formData.coverageDescription }),
+              ...(formData.termsConditions && formData.termsConditions.trim() !== '' && { termsConditions: formData.termsConditions }),
+              ...(formData.included && formData.included.trim() !== '' && { included: formData.included }),
+              ...(formData.excluded && formData.excluded.trim() !== '' && { excluded: formData.excluded }),
+              ...(formData.supplierId && formData.supplierId.trim() !== '' && { supplierId: formData.supplierId }),
+ 
+              // Set default values for required warranty fields
+              isActive: true,
+              autoRenewal: false
+            }
+          })
+        };
+
+              // Log the request data for debugging
+        console.log("Form data:", formData);
+        console.log("Has warranty data:", hasWarrantyData);
+        console.log("Sending asset warranty creation request:", JSON.stringify(assetWarrantyData, null, 2));
       
       console.log("About to make API call to assetWarrantyService.createAssetWarranty");
       
@@ -429,32 +427,32 @@ export default function AssetPage() {
       console.log("Form submitted:", formData);
       setSubmitted(true);
       
-      // Reset form
-      setFormData({
-        name: "",
-        assetType: "",
-        subAssetType: "",
-        brand: "",
-        model: "",
-        subModel: "",
-        installationDate: "",
-        installStatus: "",
-        status: "",
-        buildingNumber: "",
-        departmentId: "",
-        floorNumber: "",
-        roomNumber: "",
-        supplierId: "",
-        warrantyType: "",
-        warrantyStartDate: new Date().toISOString().split('T')[0],
-        warrantyEndDate: new Date().toISOString().split('T')[0],
-        warrantyPeriod: 0,
-        coverageType: "",
-        coverageDescription: "",
-        termsConditions: "",
-        included: "",
-        excluded: "",
-      });
+             // Reset form
+       setFormData({
+         name: "",
+         assetType: "",
+         subAssetType: "",
+         brand: "",
+         model: "",
+         subModel: "",
+         installationDate: "",
+         installStatus: "",
+         status: "",
+         buildingNumber: "",
+         departmentId: "",
+         floorNumber: "",
+         roomNumber: "",
+         supplierId: "",
+         warrantyType: "",
+         warrantyStartDate: "",
+         warrantyEndDate: "",
+         warrantyPeriod: 0,
+         coverageType: "",
+         coverageDescription: "",
+         termsConditions: "",
+         included: "",
+         excluded: "",
+       });
       setErrors({});
       
       // Reset submitted state after 3 seconds
@@ -485,8 +483,8 @@ export default function AssetPage() {
       roomNumber: "",
       supplierId: "",
       warrantyType: "",
-      warrantyStartDate: new Date().toISOString().split('T')[0],
-      warrantyEndDate: new Date().toISOString().split('T')[0],
+      warrantyStartDate: "",
+      warrantyEndDate: "",
       warrantyPeriod: 0,
       coverageType: "",
       coverageDescription: "",
@@ -633,8 +631,8 @@ export default function AssetPage() {
                     {/* Row 2: Brand, Model, Sub Model */}
                     <Row>
                       <Col lg={4}>
-                        <div className="mb-3">
-                          <Form.Label htmlFor="brand">Brand *</Form.Label>
+                                                 <div className="mb-3">
+                           <Form.Label htmlFor="brand">Brand</Form.Label>
                           <Form.Control
                             type="text"
                             id="brand"
@@ -652,8 +650,8 @@ export default function AssetPage() {
                       </Col>
                       
                       <Col lg={4}>
-                        <div className="mb-3">
-                          <Form.Label htmlFor="model">Model *</Form.Label>
+                                                 <div className="mb-3">
+                           <Form.Label htmlFor="model">Model</Form.Label>
                           <Form.Control
                             type="text"
                             id="model"
@@ -693,8 +691,8 @@ export default function AssetPage() {
                     {/* Row 3: Installation Date, Installation Status, Supplier */}
                     <Row>
                       <Col lg={4}>
-                        <div className="mb-3">
-                          <Form.Label htmlFor="installationDate">Installation Date *</Form.Label>
+                                                 <div className="mb-3">
+                           <Form.Label htmlFor="installationDate">Installation Date</Form.Label>
                           <Form.Control
                             type="date"
                             id="installationDate"
@@ -711,8 +709,8 @@ export default function AssetPage() {
                       </Col>
                       
                       <Col lg={4}>
-                        <div className="mb-3">
-                          <Form.Label htmlFor="installStatus">Installation Status *</Form.Label>
+                                                 <div className="mb-3">
+                           <Form.Label htmlFor="installStatus">Installation Status</Form.Label>
                           <Form.Select
                             id="installStatus"
                             value={formData.installStatus}
@@ -733,8 +731,8 @@ export default function AssetPage() {
                       </Col>
                       
                       <Col lg={4}>
-                        <div className="mb-3">
-                          <Form.Label htmlFor="supplierId">Supplier *</Form.Label>
+                                                 <div className="mb-3">
+                           <Form.Label htmlFor="supplierId">Supplier</Form.Label>
                           <Form.Select
                             id="supplierId"
                             value={formData.supplierId}
@@ -796,8 +794,8 @@ export default function AssetPage() {
                       </Col>
                       
                       <Col lg={4}>
-                        <div className="mb-3">
-                          <Form.Label htmlFor="buildingNumber">Building Number *</Form.Label>
+                                                 <div className="mb-3">
+                           <Form.Label htmlFor="buildingNumber">Building Number</Form.Label>
                           <Form.Control
                             type="text"
                             id="buildingNumber"
@@ -815,8 +813,8 @@ export default function AssetPage() {
                       </Col>
 
                       <Col lg={4}>
-                        <div className="mb-3">
-                          <Form.Label htmlFor="floorNumber">Floor Number *</Form.Label>
+                                                 <div className="mb-3">
+                           <Form.Label htmlFor="floorNumber">Floor Number</Form.Label>
                           <Form.Control
                             type="text"
                             id="floorNumber"
@@ -837,8 +835,8 @@ export default function AssetPage() {
                     {/* Row 5: Room Number */}
                     <Row>
                       <Col lg={4}>
-                        <div className="mb-3">
-                          <Form.Label htmlFor="roomNumber">Room Number *</Form.Label>
+                                                 <div className="mb-3">
+                           <Form.Label htmlFor="roomNumber">Room Number</Form.Label>
                           <Form.Control
                             type="text"
                             id="roomNumber"
@@ -872,7 +870,7 @@ export default function AssetPage() {
                   <Row>
                     <Col lg={4}>
                       <div className="mb-3">
-                        <Form.Label htmlFor="warrantyType">Warranty Type *</Form.Label>
+                                                 <Form.Label htmlFor="warrantyType">Warranty Type</Form.Label>
                         <Form.Select
                           id="warrantyType"
                           value={formData.warrantyType}
@@ -904,7 +902,7 @@ export default function AssetPage() {
 
                     <Col lg={4}>
                       <div className="mb-3">
-                        <Form.Label htmlFor="coverageType">Coverage Type *</Form.Label>
+                                                 <Form.Label htmlFor="coverageType">Coverage Type</Form.Label>
                         <Form.Select
                           id="coverageType"
                           value={formData.coverageType}
@@ -928,7 +926,7 @@ export default function AssetPage() {
 
                     <Col lg={4}>
                       <div className="mb-3">
-                        <Form.Label htmlFor="warrantyPeriod">Warranty Period (months) *</Form.Label>
+                                                 <Form.Label htmlFor="warrantyPeriod">Warranty Period (months)</Form.Label>
                         <Form.Control
                           type="number"
                           id="warrantyPeriod"
@@ -951,7 +949,7 @@ export default function AssetPage() {
                   <Row>
                     <Col lg={4}>
                       <div className="mb-3">
-                        <Form.Label htmlFor="warrantyStartDate">Warranty Start Date *</Form.Label>
+                                                 <Form.Label htmlFor="warrantyStartDate">Warranty Start Date</Form.Label>
                         <Form.Control
                           type="date"
                           id="warrantyStartDate"

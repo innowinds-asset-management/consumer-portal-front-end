@@ -6,6 +6,7 @@ import SupplierStats from './components/supplierStats'
 import { Card, CardBody, Col, Row } from 'react-bootstrap'
 
 const DashboardPage = () => {
+  const isAppProduction = process.env.NEXT_PUBLIC_APP_ENV === 'production';
   return (
     <>
   
@@ -27,7 +28,9 @@ const DashboardPage = () => {
         </Col>
       </Row>
 
-      {/* Service Request Management Section */}
+{!isAppProduction && (
+      <>
+      Service Request Management Section
       <Row className="mb-4">
         <Col>
           <Card>
@@ -43,7 +46,8 @@ const DashboardPage = () => {
           </Card>
         </Col>
       </Row>
-
+      </>
+)}
       {/* Department Management Section */}
       <Row className="mb-4">
         <Col>
