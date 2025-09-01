@@ -84,7 +84,7 @@ export default function GrnListingPage() {
         <div className="d-flex justify-content-between align-items-center">
           <span>Goods Receipt Notes</span>
           <Button 
-            variant="primary" 
+            variant="light" 
             onClick={() => router.push('/grn/create')}
             className="d-flex align-items-center gap-2"
             size="sm"
@@ -130,7 +130,7 @@ export default function GrnListingPage() {
                 container: "table table-striped table-hover",
                 table: "table",
                 thead: "table-light",
-                th: "border-0",
+                th: "border-0 text-bg-success bg-gradient",
                 td: "border-0",
                 search: "form-control",
                 pagination: "pagination pagination-sm"

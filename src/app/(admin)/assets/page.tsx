@@ -219,7 +219,7 @@ export default function AssetListingPage() {
          <div className="d-flex justify-content-between align-items-center">
            <span>Assets</span>
                      <Button 
-             variant="primary" 
+             variant="light" 
              onClick={() => router.push('/assets/create')}
              className="d-flex align-items-center gap-2"
              size="sm"
@@ -286,7 +286,7 @@ export default function AssetListingPage() {
                 container: "table table-striped table-hover",
                 table: "table",
                 thead: "table-light",
-                th: "border-0",
+                th: "border-0 text-bg-success bg-gradient",
                 td: "border-0",
                 search: "form-control",
                 pagination: "pagination pagination-sm"

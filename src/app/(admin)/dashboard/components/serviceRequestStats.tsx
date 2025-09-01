@@ -130,13 +130,13 @@ const ServiceRequestStats = () => {
                     Open Service Requests
                   </h2>
                   <h2 className="mt-2 mb-1 fw-bold fs-1 text-white">{serviceRequestCounts?.open || 0}</h2>
-                  <p className="mb-0 fw-bold text-white">
+                  {/* <p className="mb-0 fw-bold text-white">
                     <span className="text-white me-1">
                       <IconifyIcon icon="ri:time-line" style={{ marginBottom: '5px', marginRight: '5px' }} />
                       Pending
                     </span>
                     <span className="text-nowrap">Awaiting action</span>
-                  </p>
+                  </p> */}
                 </div>
                 <div className="avatar-lg flex-shrink-0">
                   <span className="avatar-title bg-white text-success rounded fs-28">
@@ -175,13 +175,13 @@ const ServiceRequestStats = () => {
                     In Progress
                   </h2>
                   <h2 className="mt-2 mb-1 fw-bold fs-1 text-white">{serviceRequestCounts?.inProgress || 0}</h2>
-                  <p className="mb-0 fw-bold text-white">
+                  {/* <p className="mb-0 fw-bold text-white">
                     <span className="text-white me-1">
                       <IconifyIcon icon="ri:tools-line" style={{ marginBottom: '5px', marginRight: '5px' }} />
                       Working
                     </span>
                     <span className="text-nowrap">Under repair</span>
-                  </p>
+                  </p> */}
                 </div>
                 <div className="avatar-lg flex-shrink-0">
                   <span className="avatar-title bg-white text-success rounded fs-28">
@@ -220,13 +220,13 @@ const ServiceRequestStats = () => {
                     Completed
                   </h2>
                   <h2 className="mt-2 mb-1 fw-bold fs-1 text-white">{serviceRequestCounts?.completed || 0}</h2>
-                  <p className="mb-0 fw-bold text-white">
+                  {/* <p className="mb-0 fw-bold text-white">
                     <span className="text-white me-1">
                       <IconifyIcon icon="ri:check-line" style={{ marginBottom: '5px', marginRight: '5px' }} />
                       Finished
                     </span>
                     <span className="text-nowrap">Successfully resolved</span>
-                  </p>
+                  </p> */}
                 </div>
                 <div className="avatar-lg flex-shrink-0">
                   <span className="avatar-title bg-white text-success rounded fs-28">
@@ -265,13 +265,13 @@ const ServiceRequestStats = () => {
                     Closed
                   </h2>
                   <h2 className="mt-2 mb-1 fw-bold fs-1 text-white">{serviceRequestCounts?.closed || 0}</h2>
-                  <p className="mb-0 fw-bold text-white">
+                  {/* <p className="mb-0 fw-bold text-white">
                     <span className="text-white me-1">
                       <IconifyIcon icon="ri:lock-line" style={{ marginBottom: '5px', marginRight: '5px' }} />
                       Closed
                     </span>
                     <span className="text-nowrap">Request finalized</span>
-                  </p>
+                  </p> */}
                 </div>
                 <div className="avatar-lg flex-shrink-0">
                   <span className="avatar-title bg-white text-success rounded fs-28">
@@ -310,13 +310,13 @@ const ServiceRequestStats = () => {
                     Cancelled
                   </h2>
                   <h2 className="mt-2 mb-1 fw-bold fs-1 text-white">{serviceRequestCounts?.cancelled || 0}</h2>
-                  <p className="mb-0 fw-bold text-white">
+                  {/* <p className="mb-0 fw-bold text-white">
                     <span className="text-white me-1">
                       <IconifyIcon icon="ri:close-line" style={{ marginBottom: '5px', marginRight: '5px' }} />
                       Cancelled
                     </span>
                     <span className="text-nowrap">Request terminated</span>
-                  </p>
+                  </p> */}
                 </div>
                 <div className="avatar-lg flex-shrink-0">
                   <span className="avatar-title bg-white text-success rounded fs-28">
@@ -355,13 +355,7 @@ const ServiceRequestStats = () => {
                     Pending
                   </h2>
                   <h2 className="mt-2 mb-1 fw-bold fs-1 text-white">{serviceRequestCounts?.pending || 0}</h2>
-                  <p className="mb-0 fw-bold text-white">
-                    <span className="text-white me-1">
-                      <IconifyIcon icon="ri:time-line" style={{ marginBottom: '5px', marginRight: '5px' }} />
-                      Waiting
-                    </span>
-                    <span className="text-nowrap">Awaiting approval</span>
-                  </p>
+                  
                 </div>
                 <div className="avatar-lg flex-shrink-0">
                   <span className="avatar-title bg-white text-success rounded fs-28">

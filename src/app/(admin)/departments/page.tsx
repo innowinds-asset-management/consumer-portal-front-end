@@ -183,7 +183,7 @@ export default function DepartmentListingPage() {
                 container: "table table-striped table-hover",
                 table: "table",
                 thead: "table-light",
-                th: "border-0",
+                th: "border-0 text-bg-success bg-gradient",
                 td: "border-0",
                 search: "form-control",
                 pagination: "pagination pagination-sm"

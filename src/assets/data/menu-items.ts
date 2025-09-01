@@ -12,10 +12,10 @@ export const MENU_ITEMS: MenuItemType[] = [
     key: 'dashboard',
     label: 'Home',
     icon: LayoutDashboard,
-    badge: {
-      text: '3',
-      variant: 'danger',
-    },
+    // badge: {
+    //   text: '3',
+    //   variant: 'danger',
+    // },
     url: '/dashboard',
   },
   // {
@@ -31,6 +31,13 @@ export const MENU_ITEMS: MenuItemType[] = [
         url: '/purchaseorders',
        
       }, 
+      {
+        key: 'grn',
+        label: 'GRN',
+         icon: HandCoins,
+        url: '/grn',
+       
+      },
       {
         key: 'assets',
         label: 'Assets',
@@ -62,13 +69,7 @@ export const MENU_ITEMS: MenuItemType[] = [
           },
         ],
       },
-      {
-        key: 'grn',
-        label: 'GRN',
-         icon: HandCoins,
-        url: '/grn ',
-       
-      }, 
+      
       // {
       //   key: 'assets',
       //   label: 'Assets',
@@ -166,31 +167,31 @@ export const MENU_ITEMS: MenuItemType[] = [
     icon: FileText,
     url: '/servicecontracts',
   },
-  {
-    key: 'invoice',
-    label: 'Invoice',
-    icon: FileText,
-    children: [
-      {
-        key: 'invoices',
-        label: 'Invoices',
-        url: '/invoices',
-        parentKey: 'invoice',
-      },
-      {
-        key: 'view-invoices',
-        label: 'View Invoices',
-        url: '/invoices/view-invoice',
-        parentKey: 'invoice',
-      },
-      {
-        key: 'create-invoices',
-        label: 'Create Invoices',
-        url: '/invoices/create-invoices',
-        parentKey: 'invoice',
-      },
-    ],
-  },
+  // {
+  //   key: 'invoice',
+  //   label: 'Invoice',
+  //   icon: FileText,
+  //   children: [
+  //     {
+  //       key: 'invoices',
+  //       label: 'Invoices',
+  //       url: '/invoices',
+  //       parentKey: 'invoice',
+  //     },
+  //     {
+  //       key: 'view-invoices',
+  //       label: 'View Invoices',
+  //       url: '/invoices/view-invoice',
+  //       parentKey: 'invoice',
+  //     },
+  //     {
+  //       key: 'create-invoices',
+  //       label: 'Create Invoices',
+  //       url: '/invoices/create-invoices',
+  //       parentKey: 'invoice',
+  //     },
+  //   ],
+  // },
   // {
   //   key: 'extra pages',
   //   label: 'Extra Pages',
@@ -819,62 +820,62 @@ export const MENU_ITEMS: MenuItemType[] = [
   //   label: 'More',
   //   isTitle: true,
   // },
-  {
-    key: 'layouts',
-    label: 'Layouts',
-    icon: LayoutGrid,
-    children: [
-      {
-        key: 'horizontal',
-        label: 'Horizontal',
-        url: '/layouts/horizontal',
-        parentKey: 'layouts',
-        target: '_blank',
-      },
-      {
-        key: 'full-view',
-        label: 'Full View',
-        url: '/layouts/full-view',
-        parentKey: 'layouts',
-        target: '_blank',
-      },
-      {
-        key: 'fullscreen-view',
-        label: 'FullScreen View',
-        url: '/layouts/fullscreen-view',
-        parentKey: 'layouts',
-        target: '_blank',
-      },
-      {
-        key: 'hover-menu',
-        label: 'Hover Menu',
-        url: '/layouts/hover-menu',
-        parentKey: 'layouts',
-        target: '_blank',
-      },
-      {
-        key: 'compact',
-        label: 'Compact',
-        url: '/layouts/compact',
-        parentKey: 'layouts',
-        target: '_blank',
-      },
-      {
-        key: 'icon-view',
-        label: 'Icon View',
-        url: '/layouts/icon-view',
-        parentKey: 'layouts',
-        target: '_blank',
-      },
-      {
-        key: 'dark-mode',
-        label: 'Dark Mode',
-        url: '/layouts/dark-mode',
-        parentKey: 'layouts',
-        target: '_blank',
-      },
-    ],
-  },
+  // {
+  //   key: 'layouts',
+  //   label: 'Layouts',
+  //   icon: LayoutGrid,
+  //   children: [
+  //     {
+  //       key: 'horizontal',
+  //       label: 'Horizontal',
+  //       url: '/layouts/horizontal',
+  //       parentKey: 'layouts',
+  //       target: '_blank',
+  //     },
+  //     {
+  //       key: 'full-view',
+  //       label: 'Full View',
+  //       url: '/layouts/full-view',
+  //       parentKey: 'layouts',
+  //       target: '_blank',
+  //     },
+  //     {
+  //       key: 'fullscreen-view',
+  //       label: 'FullScreen View',
+  //       url: '/layouts/fullscreen-view',
+  //       parentKey: 'layouts',
+  //       target: '_blank',
+  //     },
+  //     {
+  //       key: 'hover-menu',
+  //       label: 'Hover Menu',
+  //       url: '/layouts/hover-menu',
+  //       parentKey: 'layouts',
+  //       target: '_blank',
+  //     },
+  //     {
+  //       key: 'compact',
+  //       label: 'Compact',
+  //       url: '/layouts/compact',
+  //       parentKey: 'layouts',
+  //       target: '_blank',
+  //     },
+  //     {
+  //       key: 'icon-view',
+  //       label: 'Icon View',
+  //       url: '/layouts/icon-view',
+  //       parentKey: 'layouts',
+  //       target: '_blank',
+  //     },
+  //     {
+  //       key: 'dark-mode',
+  //       label: 'Dark Mode',
+  //       url: '/layouts/dark-mode',
+  //       parentKey: 'layouts',
+  //       target: '_blank',
+  //     },
+  //   ],
+  // },
   // {
   //   key: 'multi-level',
   //   label: 'Multi Level',

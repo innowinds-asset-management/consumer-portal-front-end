@@ -158,16 +158,17 @@ export default function PurchaseOrdersListingPage() {
               className={{
                 container: "table table-striped table-hover",
                 table: "table",
-                thead: "table-light",
-                th: "border-0",
-                td: "border-0",
+                thead: "table-light ",
+                th: "border-0 text-bg-success bg-gradient",
+                td: "border-0  ",
                 search: "form-control",
                 pagination: "pagination pagination-sm"
               }}
 
               style={{
                 table: {
-                  width: "100%"
+                  width: "100%",
+                  color: "white"
                 }
               }}
             />

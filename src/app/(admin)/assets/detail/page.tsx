@@ -533,7 +533,7 @@ export default function AssetDetailPage() {
     <>
       <ComponentContainerCard
         title={
-          <div className="d-flex justify-content-between align-items-center">
+          <div className="d-flex justify-content-between align-items-center ">
             <span>{`${asset.assetName}(${asset.consumerSerialNo})`}</span>
             <div className="d-flex gap-2">
               <Button 
@@ -541,7 +541,7 @@ export default function AssetDetailPage() {
                 size="sm"
                 onClick={handleInitiateActivateClick}
               >
-                Initiate Activate
+                 Activate Asset
               </Button>
               <Button 
                 variant="primary" 

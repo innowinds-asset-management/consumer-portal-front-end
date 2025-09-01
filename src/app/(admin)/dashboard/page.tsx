@@ -16,7 +16,7 @@ const DashboardPage = () => {
           <Card>
             <CardBody>
               <div className="d-flex align-items-center mb-3">
-                <h4 className="mb-0 fw-bold text-primary">
+                <h4 className="mb-0 fw-bold text-primary bg-gradient">
                   <i className="ri-database-2-line me-2"></i>
                   Assets
                 </h4>

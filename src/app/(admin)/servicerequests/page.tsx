@@ -168,7 +168,7 @@ export default function ServiceRequestListingPage() {
           <div className="d-flex justify-content-between align-items-center">
             <span>Service Requests</span>
             <Button
-              variant="primary"
+              variant="light"
               onClick={() => router.push("/servicerequests/create")}
               className="d-flex align-items-center gap-2"
               size="sm"
@@ -216,6 +216,9 @@ export default function ServiceRequestListingPage() {
                   name: "Age",
                   sort: true,
                   search: false,
+                  cell: (cell: any) => {
+                    return `<span style="width=100px;">${cell}</span>`;
+                  },
                 },
                 {
                   name: "Asset Name",
@@ -270,11 +273,12 @@ export default function ServiceRequestListingPage() {
                 limit: 10,
               }}
               sort={true}
+             
               className={{
                 container: "table table-striped",
                 table: "table",
                 thead: "table-light",
-                th: "border-0",
+                th: "border-0 text-bg-success bg-gradient",
                 td: "border-0",
                 search: "form-control",
                 pagination: "pagination pagination-sm",
