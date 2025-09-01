@@ -6,54 +6,54 @@ export interface AssetData {
   assetSubTypeId: string;
   assetName: string;
   consumerId?: string;
-  warrantyPeriod: number;
-  warrantyStartDate: string;
-  warrantyEndDate: string;
-  installationDate: string;
-  brand: string;
-  model: string;
-  subModel: string;
-  isActive: boolean;
-  partNo: string;
-  supplierCode: string;
-  consumerSerialNo: string;
-  grnId: string;
-  grnItemId: string;
-  poLineItemId: string;
-  supplierId: string;
-  isAmc: boolean;
-  supplierSerialNo: string;
+  warrantyPeriod?: number;
+  warrantyStartDate?: string | null;
+  warrantyEndDate?: string | null;
+  installationDate?: string | null;
+  brand?: string;
+  model?: string;
+  subModel?: string;
+  isActive?: boolean;
+  partNo?: string;
+  supplierCode?: string;
+  consumerSerialNo?: string;
+  grnId?: string;
+  grnItemId?: string;
+  poLineItemId?: string;
+  supplierId?: string;
+  isAmc?: boolean;
+  supplierSerialNo?: string;
   departmentId: string;
-  building: string;
-  floorNumber: string;
-  roomNumber: string;
-  isCurrentLocation: boolean;
-  installStatus: string;
+  building?: string;
+  floorNumber?: string;
+  roomNumber?: string;
+  isCurrentLocation?: boolean;
+  installStatus?: string;
 }
 
 // Warranty interface
 export interface WarrantyData {
-  warrantyTypeId: number;
+  warrantyTypeId?: number;
   warrantyNumber?: string;
-  startDate: string;
-  endDate: string;
-  warrantyPeriod: number;
-  coverageType: string;
-  coverageDescription: string;
-  termsConditions: string;
-  included: string;
-  excluded: string;
+  startDate?: string;
+  endDate?: string;
+  warrantyPeriod?: number;
+  coverageType?: string;
+  coverageDescription?: string;
+  termsConditions?: string;
+  included?: string;
+  excluded?: string;
   cost?: string;
-  isActive: boolean;
-  autoRenewal: boolean;
+  isActive?: boolean;
+  autoRenewal?: boolean;
   consumerId?: string;
-  supplierId: string;
+  supplierId?: string;
 }
 
 // Asset Warranty Request interface
 export interface CreateAssetWarrantyRequest {
   asset: AssetData;
-  warranty: WarrantyData;
+  warranty?: WarrantyData;
 }
 
 // Asset Warranty Response interface
