@@ -240,7 +240,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     
     console.log('🔄 Logout called from:', new Error().stack?.split('\n')[2]?.trim() || 'unknown location')
     try {
-      await authService.logout()
+      // await authService.logout()
     } catch (error) {
       console.error('Logout API call failed:', error)
     } finally {

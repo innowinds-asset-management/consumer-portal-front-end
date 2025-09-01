@@ -13,6 +13,7 @@ import { supplierService, Supplier } from '@/services/api/suppliers'
 import { warrantyTypeService, WarrantyType } from '@/services/api/warrantyTypes'
 import { assetWarrantyService, CreateAssetWarrantyRequest } from '@/services/api/assetWarranty'
 import { assetStatusService, AssetStatus } from '@/services/api/assetStatus'
+import CreateDepartmentModal from '@/components/CreateDepartmentModal'
 
 // Form data interface
 interface FormData {
@@ -88,12 +89,13 @@ export default function AssetPage() {
   const [loadingDepartments, setLoadingDepartments] = useState(true);
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
   const [loadingWarrantyTypes, setLoadingWarrantyTypes] = useState(true);
-  const [loadingAssetStatuses, setLoadingAssetStatuses] = useState(true);
-  const [assetTypesError, setAssetTypesError] = useState("");
-  const [assetSubTypesError, setAssetSubTypesError] = useState("");
-  const [departmentsError, setDepartmentsError] = useState("");
-  const [suppliersError, setSuppliersError] = useState("");
-  const [warrantyTypesError, setWarrantyTypesError] = useState("");
+     const [loadingAssetStatuses, setLoadingAssetStatuses] = useState(true);
+   const [assetTypesError, setAssetTypesError] = useState("");
+   const [assetSubTypesError, setAssetSubTypesError] = useState("");
+   const [departmentsError, setDepartmentsError] = useState("");
+   const [suppliersError, setSuppliersError] = useState("");
+   const [warrantyTypesError, setWarrantyTypesError] = useState("");
+   const [showCreateDepartmentModal, setShowCreateDepartmentModal] = useState(false);
 
       // Form data state
   const [formData, setFormData] = useState<FormData>({
@@ -465,8 +467,24 @@ export default function AssetPage() {
     }
   };
 
-  // Reset form
-  const handleReset = () => {
+     // Handle department creation
+   const handleDepartmentCreated = async () => {
+     try {
+       // Refresh the departments list to get the newly created department
+       const updatedDepartments = await departmentService.getDepartmentsByConsumerId();
+       setDepartments(updatedDepartments);
+       
+       // If there's only one department now, select it automatically
+       if (updatedDepartments.length === 1) {
+         setFormData(prev => ({ ...prev, departmentId: updatedDepartments[0].deptId }));
+       }
+     } catch (err) {
+       console.error('Error refreshing departments:', err);
+     }
+   };
+
+   // Reset form
+   const handleReset = () => {
     setFormData({
       name: "",
       assetType: "",
@@ -761,37 +779,49 @@ export default function AssetPage() {
 
                     {/* Row 4: Department, Building Number, Floor Number */}
                     <Row>
-                      <Col lg={4}>
-                        <div className="mb-3">
-                          <Form.Label htmlFor="departmentId">Department *</Form.Label>
-                          <Form.Select
-                            id="departmentId"
-                            value={formData.departmentId}
-                            onChange={(e) => handleFieldChange("departmentId", e.target.value)}
-                            isInvalid={!!errors.departmentId}
-                            disabled={loadingDepartments}
-                          >
-                            <option value="">
-                              {loadingDepartments ? "Loading departments..." : "Select department"}
-                            </option>
-                            {departments.map((department) => (
-                              <option key={department.deptId} value={department.deptId}>
-                                {department.deptName}
-                              </option>
-                            ))}
-                          </Form.Select>
-                          {loadingDepartments && (
-                            <div className="mt-2">
-                              <small className="text-muted">Loading departments...</small>
-                            </div>
-                          )}
-                          {errors.departmentId && (
-                            <Form.Control.Feedback type="invalid">
-                              {errors.departmentId}
-                            </Form.Control.Feedback>
-                          )}
-                        </div>
-                      </Col>
+                                             <Col lg={4}>
+                         <div className="mb-3">
+                           <Form.Label htmlFor="departmentId">Department *</Form.Label>
+                           <div className="d-flex">
+                             <Form.Select
+                               id="departmentId"
+                               value={formData.departmentId}
+                               onChange={(e) => handleFieldChange("departmentId", e.target.value)}
+                               isInvalid={!!errors.departmentId}
+                               disabled={loadingDepartments}
+                               className="me-2"
+                             >
+                               <option value="">
+                                 {loadingDepartments ? "Loading departments..." : "Select department"}
+                               </option>
+                               {departments.map((department) => (
+                                 <option key={department.deptId} value={department.deptId}>
+                                   {department.deptName}
+                                 </option>
+                               ))}
+                             </Form.Select>
+                             <Button
+                               variant="outline-primary"
+                               size="sm"
+                               onClick={() => setShowCreateDepartmentModal(true)}
+                               className="d-flex align-items-center"
+                               style={{ minWidth: '40px' }}
+                             >
+                               <IconifyIcon icon="tabler:plus" />
+                             </Button>
+                           </div>
+                           {loadingDepartments && (
+                             <div className="mt-2">
+                               <small className="text-muted">Loading departments...</small>
+                             </div>
+                           )}
+                           {errors.departmentId && (
+                             <Form.Control.Feedback type="invalid">
+                               {errors.departmentId}
+                             </Form.Control.Feedback>
+                           )}
+                         </div>
+                       </Col>
                       
                       <Col lg={4}>
                                                  <div className="mb-3">
@@ -1107,8 +1137,16 @@ export default function AssetPage() {
               </Form>
             </CardBody>
           </Card>
-        </Col>
-      </Row>
-    </>
-  );
-} 
+                 </Col>
+       </Row>
+
+       {/* Create Department Modal */}
+       <CreateDepartmentModal
+         show={showCreateDepartmentModal}
+         onHide={() => setShowCreateDepartmentModal(false)}
+         onSuccess={handleDepartmentCreated}
+         existingDepartments={departments}
+       />
+     </>
+   );
+ } 
