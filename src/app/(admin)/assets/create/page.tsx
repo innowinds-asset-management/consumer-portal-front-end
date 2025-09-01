@@ -243,6 +243,19 @@ export default function AssetPage() {
     fetchAssetSubTypes();
   }, [formData.assetType]);
 
+  // Auto-generate asset name when asset type or sub type changes
+  useEffect(() => {
+    if (formData.assetType && formData.subAssetType) {
+      const selectedAssetType = assetTypes.find(at => at.id === formData.assetType);
+      const selectedAssetSubType = assetSubTypes.find(ast => ast.id === formData.subAssetType);
+      
+      if (selectedAssetType && selectedAssetSubType) {
+        const generatedName = `${selectedAssetType.assetName} - ${selectedAssetSubType.name}`;
+        setFormData(prev => ({ ...prev, name: generatedName }));
+      }
+    }
+  }, [formData.assetType, formData.subAssetType, assetTypes, assetSubTypes]);
+
   // Calculate warranty end date based on start date and period
   const calculateWarrantyEndDate = (startDate: string, durationMonths: number): string => {
     if (!startDate || durationMonths <= 0) return "";
@@ -626,24 +639,31 @@ export default function AssetPage() {
                         </div>
                       </Col>
 
-                      <Col lg={4}>
-                        <div className="mb-3">
-                          <Form.Label htmlFor="name">Asset Name *</Form.Label>
-                          <Form.Control
-                            type="text"
-                            id="name"
-                            placeholder="Enter asset name"
-                            value={formData.name}
-                            onChange={(e) => handleFieldChange("name", e.target.value)}
-                            isInvalid={!!errors.name}
-                          />
-                          {errors.name && (
-                            <Form.Control.Feedback type="invalid">
-                              {errors.name}
-                            </Form.Control.Feedback>
-                          )}
-                        </div>
-                      </Col>
+                                             <Col lg={4}>
+                         <div className="mb-3">
+                           <Form.Label htmlFor="name">Asset Name *</Form.Label>
+                           <Form.Control
+                             type="text"
+                             id="name"
+                             placeholder="Enter asset name"
+                             value={formData.name}
+                             onChange={(e) => handleFieldChange("name", e.target.value)}
+                             isInvalid={!!errors.name}
+                           />
+                           {formData.assetType && formData.subAssetType && (
+                             <div className="mt-2">
+                               <small className="text-muted">
+                                 Auto-generated from selected asset type and sub type. You can edit this field.
+                               </small>
+                             </div>
+                           )}
+                           {errors.name && (
+                             <Form.Control.Feedback type="invalid">
+                               {errors.name}
+                             </Form.Control.Feedback>
+                           )}
+                         </div>
+                       </Col>
                     </Row>
 
                     {/* Row 2: Brand, Model, Sub Model */}
