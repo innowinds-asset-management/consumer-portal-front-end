@@ -87,7 +87,7 @@ export const MENU_ITEMS: MenuItemType[] = [
         key: 'warranty',
         label: 'Warranty',
          icon: File, 
-        url: '/warranty ',
+        url: '/warranty',
         parentKey: 'warranty',
       },
       
@@ -143,18 +143,18 @@ export const MENU_ITEMS: MenuItemType[] = [
     icon: HeadsetIcon,
     url: '/servicerequests',
   },
-  {
+  { 
     key: 'suppliers',
     label: 'Suppliers',
     icon: Disc,
     url: '/suppliers',
   },
-  // {
-  //   key: 'amc-cmc',
-  //   label: 'AMC/CMC',
-  //   icon: Disc,
-  //   url: '/amc-cmc/create',
-  // },
+  {
+    key: 'amc-cmc',
+    label: 'AMC/CMC',
+    icon: Disc,
+    url: '/amc-cmc/create',
+  },
   {
     key: 'inventory',
     label: 'Inventory',

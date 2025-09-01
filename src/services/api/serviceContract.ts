@@ -1,3 +1,4 @@
+import { API_URL } from '@/config/environment'
 import httpClient from '@/services/http'
 
 export interface ServiceContract {
@@ -48,9 +49,11 @@ export interface ServiceContract {
 }
 
 class ServiceContractService {
+  private baseURL = `${API_URL}/service-contract`
+
   async getServiceContracts(): Promise<ServiceContract[]> {
     try {
-      const response = await httpClient.get<ServiceContract[]>('/service-contract')
+      const response = await httpClient.get<ServiceContract[]>(this.baseURL)
       return response.data
     } catch (error) {
       console.error('Error fetching service contracts:', error)
@@ -60,7 +63,7 @@ class ServiceContractService {
 
   async getServiceContractById(id: string): Promise<ServiceContract> {
     try {
-      const response = await httpClient.get<ServiceContract>(`/service-contract/${id}`)
+      const response = await httpClient.get<ServiceContract>(`${this.baseURL}/${id}`)
       return response.data
     } catch (error) {
       console.error('Error fetching service contract:', error)
@@ -70,7 +73,9 @@ class ServiceContractService {
 
   async createServiceContract(contractData: Omit<ServiceContract, 'contractId' | 'createdAt' | 'updatedAt'>): Promise<ServiceContract> {
     try {
-      const response = await httpClient.post<ServiceContract>('/service-contract', contractData)
+      console.log('🚀 Creating service contract at URL:', this.baseURL)
+      console.log('📦 Request data:', JSON.stringify(contractData, null, 2))
+      const response = await httpClient.post<ServiceContract>(this.baseURL, contractData)
       return response.data
     } catch (error) {
       console.error('Error creating service contract:', error)
@@ -80,7 +85,7 @@ class ServiceContractService {
 
   async updateServiceContract(id: string, contractData: Partial<ServiceContract>): Promise<ServiceContract> {
     try {
-      const response = await httpClient.put<ServiceContract>(`/service-contract/${id}`, contractData)
+      const response = await httpClient.put<ServiceContract>(`${this.baseURL}/${id}`, contractData)
       return response.data
     } catch (error) {
       console.error('Error updating service contract:', error)
@@ -90,7 +95,7 @@ class ServiceContractService {
 
   async deleteServiceContract(id: string): Promise<void> {
     try {
-      await httpClient.delete(`/service-contract/${id}`)
+      await httpClient.delete(`${this.baseURL}/${id}`)
     } catch (error) {
       console.error('Error deleting service contract:', error)
       throw error
@@ -99,7 +104,7 @@ class ServiceContractService {
 
   async getServiceContractsBySupplierId(supplierId: string): Promise<ServiceContract[]> {
     try {
-      const response = await httpClient.get<ServiceContract[]>(`/service-contract/service-supplier/${supplierId}`)
+      const response = await httpClient.get<ServiceContract[]>(`${this.baseURL}/service-supplier/${supplierId}`)
       return response.data
     } catch (error) {
       console.error('Error fetching service contracts by supplier ID:', error)
