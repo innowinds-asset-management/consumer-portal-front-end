@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { serviceContractService } from '@/services/api/serviceContract';
 import { contractTypesService, ContractType } from '@/services/api/contractTypes';
 import { serviceContractStatusService, ServiceContractStatus } from '@/services/api/serviceContractStatus';
+import { serviceFrequencyService, ServiceFrequency } from '@/services/api/serviceFrequency';
+import { paymentTermsService, PaymentTerms } from '@/services/api/paymentTerms';
 import SearchAsset from '@/components/searchAsset';
 import SearchableSupplier from '@/components/searchableSupplier';
 
@@ -36,12 +38,7 @@ interface AmcCmcFormProps {
   onSubmit?: (data: AmcCmcFormData) => void;
 }
 
-const PAYMENT_TERMS_OPTIONS = [
-  { value: 'YEARLY', label: 'Yearly' },
-  { value: 'QUARTERLY', label: 'Quarterly' },
-  { value: 'MONTHLY', label: 'Monthly' },
-  { value: 'ONE_TIME', label: 'One Time' }
-];
+
 
 // Status options will be loaded dynamically from API
 
@@ -55,10 +52,10 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
     contractTypeId: initialData?.contractTypeId ?? undefined,
     startDate: '',
     endDate: '',
-    paymentTerms: 'YEARLY',
+    paymentTerms: '',
     contractType: '', // For contract type dropdown
     coverageType: 'COMPREHENSIVE', // For coverage type dropdown
-    serviceFrequency: 'QUARTERLY',
+    serviceFrequency: '',
     includes: '',
     excludes: '',
     preventiveMaintenanceIncluded: true,
@@ -87,6 +84,16 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
   const [serviceContractStatuses, setServiceContractStatuses] = useState<ServiceContractStatus[]>([]);
   const [loadingStatuses, setLoadingStatuses] = useState(false);
   const [statusesError, setStatusesError] = useState('');
+
+  // Service frequencies state
+  const [serviceFrequencies, setServiceFrequencies] = useState<ServiceFrequency[]>([]);
+  const [loadingFrequencies, setLoadingFrequencies] = useState(false);
+  const [frequenciesError, setFrequenciesError] = useState('');
+
+  // Payment terms state
+  const [paymentTerms, setPaymentTerms] = useState<PaymentTerms[]>([]);
+  const [loadingPaymentTerms, setLoadingPaymentTerms] = useState(false);
+  const [paymentTermsError, setPaymentTermsError] = useState('');
 
   // Get supplier ID and asset ID from URL params
   const supplierId = searchParams.get('sid');
@@ -130,6 +137,34 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
         setStatusesError('Failed to load service contract statuses');
       } finally {
         setLoadingStatuses(false);
+      }
+
+      // Fetch service frequencies
+      setLoadingFrequencies(true);
+      try {
+        console.log('Fetching service frequencies...'); // Debug
+        const frequenciesData = await serviceFrequencyService.getServiceFrequencies();
+        console.log('Service frequencies response:', frequenciesData); // Debug
+        setServiceFrequencies(frequenciesData);
+      } catch (err) {
+        console.error('Error fetching service frequencies:', err);
+        setFrequenciesError('Failed to load service frequencies');
+      } finally {
+        setLoadingFrequencies(false);
+      }
+
+      // Fetch payment terms
+      setLoadingPaymentTerms(true);
+      try {
+        console.log('Fetching payment terms...'); // Debug
+        const paymentTermsData = await paymentTermsService.getPaymentTerms();
+        console.log('Payment terms response:', paymentTermsData); // Debug
+        setPaymentTerms(paymentTermsData);
+      } catch (err) {
+        console.error('Error fetching payment terms:', err);
+        setPaymentTermsError('Failed to load payment terms');
+      } finally {
+        setLoadingPaymentTerms(false);
       }
     };
 
@@ -346,13 +381,20 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                   value={formData.paymentTerms}
                   onChange={(e) => handleInputChange('paymentTerms', e.target.value)}
                   required
+                  disabled={loadingPaymentTerms}
                 >
-                  {PAYMENT_TERMS_OPTIONS.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
+                  <option value="">
+                    {loadingPaymentTerms ? 'Loading payment terms...' : 'Select payment terms'}
+                  </option>
+                  {paymentTerms.map((term) => (
+                    <option key={term.paymentCode} value={term.paymentCode}>
+                      {term.displayName}
                     </option>
                   ))}
                 </Form.Select>
+                {paymentTermsError && (
+                  <div className="text-danger small mt-1">{paymentTermsError}</div>
+                )}
               </Form.Group>
             </Col>
 
@@ -426,14 +468,20 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                   value={formData.serviceFrequency}
                   onChange={(e) => handleInputChange('serviceFrequency', e.target.value)}
                   required
+                  disabled={loadingFrequencies}
                 >
-                  <option value="">Select service frequency</option>
-                  <option value="MONTHLY">Monthly</option>
-                  <option value="QUARTERLY">Quarterly</option>
-                  <option value="HALF_YEARLY">Half Yearly</option>
-                  <option value="YEARLY">Yearly</option>
-                  <option value="AS_REQUIRED">As Required</option>
+                  <option value="">
+                    {loadingFrequencies ? 'Loading frequencies...' : 'Select service frequency'}
+                  </option>
+                  {serviceFrequencies.map((frequency) => (
+                    <option key={frequency.code} value={frequency.code}>
+                      {frequency.displayName}
+                    </option>
+                  ))}
                 </Form.Select>
+                {frequenciesError && (
+                  <div className="text-danger small mt-1">{frequenciesError}</div>
+                )}
               </Form.Group>
             </Col>
 
