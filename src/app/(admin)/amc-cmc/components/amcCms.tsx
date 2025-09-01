@@ -297,26 +297,42 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
           <Row>
             {/* Supplier Selection */}
             <Col md={12}>
-              <SearchableSupplier
-                onSupplierSelect={handleSupplierSelect}
-                selectedSupplier={selectedSupplier}
-                placeholder="Search for suppliers..."
-                label="Select Service Supplier"
-                required={true}
-                error={formData.serviceSupplierId ? '' : 'Please select a service supplier'}
-              />
+              <div 
+                className="position-relative" 
+                style={{ 
+                  width: '100%',
+                  overflow: 'visible'
+                }}
+              >
+                <SearchableSupplier
+                  onSupplierSelect={handleSupplierSelect}
+                  selectedSupplier={selectedSupplier}
+                  placeholder="Search for suppliers..."
+                  label="Select Service Supplier"
+                  required={true}
+                  error={formData.serviceSupplierId ? '' : 'Please select a service supplier'}
+                />
+              </div>
             </Col>
 
             {/* Asset Selection */}
             <Col md={12}>
-              <SearchAsset
-                onAssetSelect={handleAssetSelect}
-                selectedAsset={selectedAsset}
-                placeholder="Search for assets..."
-                label="Select Asset"
-                required={true}
-                error={formData.assetId ? '' : 'Please select an asset'}
-              />
+              <div 
+                className="position-relative" 
+                style={{ 
+                  width: '100%',
+                  overflow: 'visible'
+                }}
+              >
+                <SearchAsset
+                  onAssetSelect={handleAssetSelect}
+                  selectedAsset={selectedAsset}
+                  placeholder="Search for assets..."
+                  label="Select Asset"
+                  required={true}
+                  error={formData.assetId ? '' : 'Please select an asset'}
+                />
+              </div>
             </Col>
 
             {/* Contract Name */}
