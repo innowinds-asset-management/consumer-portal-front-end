@@ -567,7 +567,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
             {/* Checkboxes */}
             <Col md={12}>
               <Row>
-                <Col md={4}>
+                <Col md={6}>
                   <Form.Group className="mb-3">
                     <Form.Check
                       type="checkbox"
@@ -577,7 +577,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                     />
                   </Form.Group>
                 </Col>
-                <Col md={4}>
+                <Col md={6}>
                   <Form.Group className="mb-3">
                     <Form.Check
                       type="checkbox"
@@ -587,16 +587,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                     />
                   </Form.Group>
                 </Col>
-                <Col md={4}>
-                  <Form.Group className="mb-3">
-                    <Form.Check
-                      type="checkbox"
-                      label="Auto Renewal"
-                      checked={formData.autoRenewal}
-                      onChange={(e) => handleInputChange('autoRenewal', e.target.checked)}
-                    />
-                  </Form.Group>
-                </Col>
+
               </Row>
             </Col>
           </Row>
