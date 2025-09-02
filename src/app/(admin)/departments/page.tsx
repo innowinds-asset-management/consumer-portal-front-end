@@ -3,14 +3,17 @@
 import React, { useEffect, useState, useRef } from "react";
 
 import ComponentContainerCard from "@/components/ComponentContainerCard";
-import { Alert, Button } from "react-bootstrap";
+import { Alert, Button, Card, CardBody, CardHeader } from "react-bootstrap";
 import { departmentService, Department } from "@/services/api/departments";
+import { CardTitle} from 'react-bootstrap'
 import { Grid } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
 import { useRouter } from "next/navigation";
 import { STORAGE_KEYS } from "@/utils/constants";
 import CreateDepartmentModal from "@/components/CreateDepartmentModal";
-
+import { Col, Row } from 'react-bootstrap'
+import IconifyIcon from "@/components/wrappers/IconifyIcon";
+import Link from "next/link";
 export default function DepartmentListingPage() {
   const router = useRouter();
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -145,12 +148,21 @@ export default function DepartmentListingPage() {
 
   return (
     <>
-
-      
-      <ComponentContainerCard title={
-        <div className="d-flex justify-content-between align-items-center">
-          <span>Departments</span>
-          <Button 
+    <Row>
+        <Col xs={12}>
+        <Card>
+      <CardHeader className="border-bottom card-tabs d-flex flex-wrap align-items-center gap-2">
+        <div className="flex-grow-1">
+          <h4 className="header-title">Departments</h4>
+        </div>
+        <div className="d-flex flex-wrap flex-lg-nowrap gap-2">
+          {/* <div className="flex-shrink-0 d-flex align-items-center gap-2">
+            <div className="position-relative">
+              <input type="text" className="form-control ps-4" placeholder="Search Here..." />
+              <IconifyIcon icon="ti:search" className="ti position-absolute top-50 translate-middle-y start-0 ms-2" />
+            </div>
+          </div> */}
+         <Button 
             variant="primary" 
             onClick={() => setShowCreateModal(true)}
             className="d-flex align-items-center gap-2"
@@ -160,55 +172,56 @@ export default function DepartmentListingPage() {
             Add Department
           </Button>
         </div>
-      } description="">
+      </CardHeader>
+      </Card>
+        </Col>
+      </Row>
+      <Row>
+        <Col lg={12}>
+          
+        <Card>
+        <CardBody>
         {loading && (
-          <div className="text-center my-4">
-            <div className="spinner-border" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </div>
-          </div>
-        )}
+              <div className="text-center my-4">
+                <div className="spinner-border" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            )}
+        
         
         {error && <Alert variant="danger">{error}</Alert>}
         
         {!loading && !error && departments.length === 0 && (
-          <div className="text-center text-muted my-4">No departments found.</div>
-        )}
-        
+              <div className="text-center text-muted my-4">No departments found.</div>
+            )}
+        {/* <CardTitle as={'h4'} className="mb-3 anchor" id="general"></CardTitle> */}
         {!loading && !error && departments.length > 0 && (
-          <div className="table-responsive">
-            <Grid
-              data={gridData}
-              columns={[
-                { name: "Department ID", sort: false, search: true },
-                { name: "Department Name", sort: false, search: true },
-                { name: "Number of Assets", sort: true, search: true },
-                ...(isAppProduction ? [] : [{ name: "Number of Open SRs", sort: true, search: true }]),
-                { name: "Created Date", sort: true, search: true }
-              ]}
-              pagination={{
-                limit: 10
-              }}
-              sort={true}
-              className={{
-                container: "table table-striped table-hover",
-                table: "table",
-                thead: "table-light",
-                th: "border-0 text-bg-success bg-gradient",
-                td: "border-0",
-                search: "form-control",
-                pagination: "pagination pagination-sm"
-              }}
-              style={{
-                table: {
-                  width: "100%"
-                }
-              }}
-            />
-          </div>
-        )}
-      </ComponentContainerCard>
-
+        <Grid
+                  data={gridData}
+                  columns={[
+                    { name: "Department ID", sort: false, search: true },
+                    { name: "Department Name", sort: false, search: true },
+                    { name: "Number of Assets", sort: true, search: true },
+                    ...(isAppProduction ? [] : [{ name: "Number of Open SRs", sort: true, search: true }]),
+                    { name: "Created Date", sort: true, search: true }
+                  ]}
+                  pagination={{
+                    limit: 50
+                  }}
+                  sort={true}
+                  search={true}
+                  resizable={true}
+                  // height ="300px"
+                />
+        
+              )}
+      </CardBody>
+    </Card>
+ 
+      
+      </Col>
+      </Row>
       {/* Create Department Modal */}
       <CreateDepartmentModal
         show={showCreateModal}

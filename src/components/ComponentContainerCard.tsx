@@ -10,7 +10,7 @@ type ContainerCardProps = {
 const ComponentContainerCard = ({ title, description, children }: ContainerCardProps) => {
   return (
     <Card>
-      <CardHeader className="border-0 border-bottom border-dashed text-bg-dark bg-gradient">
+      <CardHeader className="border-0 border-bottom border-dashed ">
         <h4 className="header-title">{title}</h4>
       </CardHeader>
       <CardBody>

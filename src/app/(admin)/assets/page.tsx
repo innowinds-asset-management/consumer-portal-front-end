@@ -3,12 +3,19 @@
 import React, { useEffect, useState, useRef } from "react";
 
 import ComponentContainerCard from "@/components/ComponentContainerCard";
-import { Alert, Button } from "react-bootstrap";
+import { Accordion, AccordionBody, AccordionHeader, AccordionItem, Alert, Button } from "react-bootstrap";
+
 import { assetsService } from "@/services/api/assets";
 import { Grid } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
 import { useRouter, useSearchParams } from "next/navigation";
 import { STORAGE_KEYS } from "@/utils/constants";
+import { Col, Row } from 'react-bootstrap'
+import {  Card, CardBody, CardHeader } from "react-bootstrap";
+import ChoicesFormInput from "@/components/form/ChoicesFormInput";
+import Select from 'react-select'
+import { options } from '@/components/form/data'
+import MultipleSelect from "@/components/form/MultipleSelect";
 
 interface Asset {
   id: string;
@@ -49,6 +56,11 @@ export default function AssetListingPage() {
   const supplierId = searchParams.get('sid');
   const departmentId = searchParams.get('did');
   const groupstatus = searchParams.get('groupstatus');
+  
+  
+  
+    
+  
   useEffect(() => {
     const fetchAssets = async (retryCount = 0) => {
       setLoading(true);
@@ -204,10 +216,11 @@ export default function AssetListingPage() {
     const warrantyStatus = getWarrantyStatus(asset.warranties || []);
     return [
       asset.assetName || "",
-      asset.assetType?.assetName || "",
-      asset.assetSubType?.name || "",
-      asset.department?.deptName || asset.departmentName || "",
       [asset.brand, asset.model].filter(Boolean).join(" - ") || "",
+      // asset.assetType?.assetName || "",
+      // asset.assetSubType?.name || "",
+      asset.department?.deptName || asset.departmentName || "",
+     
       asset.supplier?.name || "",
       asset.status || "", // Asset Status
       warrantyStatus
@@ -216,13 +229,22 @@ export default function AssetListingPage() {
 
   return (
     <>
-
-      
-             <ComponentContainerCard title={
-         <div className="d-flex justify-content-between align-items-center">
-           <span>Assets</span>
-                     <Button 
-             variant="light" 
+ <Row>
+        <Col xs={12}>
+        <Card>
+      <CardHeader className="border-bottom card-tabs d-flex flex-wrap align-items-center gap-2">
+        <div className="flex-grow-1">
+          <h4 className="header-title">Assets</h4>
+        </div>
+        <div className="d-flex flex-wrap flex-lg-nowrap gap-2">
+          {/* <div className="flex-shrink-0 d-flex align-items-center gap-2">
+            <div className="position-relative">
+              <input type="text" className="form-control ps-4" placeholder="Search Here..." />
+              <IconifyIcon icon="ti:search" className="ti position-absolute top-50 translate-middle-y start-0 ms-2" />
+            </div>
+          </div> */}
+         <Button 
+             variant="primary" 
              onClick={() => router.push('/assets/create')}
              className="d-flex align-items-center gap-2"
              size="sm"
@@ -231,7 +253,68 @@ export default function AssetListingPage() {
              Add Asset
            </Button>
         </div>
-      } description="">
+      </CardHeader>
+      </Card>
+        </Col>
+      </Row>  
+
+
+
+
+      
+      <Row>
+        <Col lg={12}>
+          
+        <Card>
+        <CardBody>
+        <Row>
+        <Col xs={12}>
+        {/* <Card> */}
+        <CardHeader >
+        <Accordion >
+          <AccordionItem eventKey="0">
+            <AccordionHeader >
+              <strong>Filters</strong>
+            </AccordionHeader>
+            <AccordionBody>
+            {/* <ComponentContainerCard title='Input Sizes' description={<> Set heights using classes like <code>.input-lg</code>, and set widths using grid column classes like <code>.col-lg-*</code>.</>}> */}
+            <Row>
+            <Col sm={4}>
+            <label htmlFor="example-input-small1" className="form-label">Serial No</label>
+          <input type="text" id="example-input-small1" name="example-input-small" className="form-control form-control-sm" placeholder=".input-sm" />
+        </Col>
+        <Col sm={4}>
+            <label htmlFor="example-input-small2" className="form-label">Supplier</label>
+          <input type="text" id="example-input-small2" name="example-input-small" className="form-control form-control-sm" placeholder=".input-sm" />
+        </Col>
+        <Col sm={4}>
+            <label htmlFor="example-input-small3" className="form-label ">Department</label>
+           
+            <ChoicesFormInput
+                        options={{ removeItemButton: true, maxItemCount: 3 }}
+                        allowInput
+                        className="form-control"
+                        data-choices
+                        data-choices-limit={3}
+                        data-choices-removeitem
+                        defaultValue="Task-1"
+                      />
+            
+                    
+                      </Col>
+          </Row>
+        
+        
+     
+    {/* </ComponentContainerCard> */}
+            </AccordionBody>
+          </AccordionItem>
+        </Accordion>
+        </CardHeader>
+        {/* </Card> */}
+        </Col>
+        </Row>
+            
         {loading && (
           <div className="text-center my-4">
             <div className="spinner-border" role="status">
@@ -247,15 +330,16 @@ export default function AssetListingPage() {
         )}
         
         {!loading && !error && filteredAssets.length > 0 && (
-          <div className="table-responsive">
+          
             <Grid
               data={gridData}
               columns={[
                 { name: "Asset Name", sort: false, search: true },
-                { name: "Asset Type", sort: false, search: true },
-                { name: "Asset Sub Type", sort: false, search: true },
-                { name: "Department", sort: false, search: true },
                 { name: "Model", sort: false, search: true },
+                // { name: "Asset Type", sort: false, search: true },
+                // { name: "Asset Sub Type", sort: false, search: true },
+                { name: "Department", sort: false, search: true },
+               
                 { name: "Supplier", sort: false, search: true },
                 { 
                   name: "Status", 
@@ -281,29 +365,25 @@ export default function AssetListingPage() {
                 }
               ]}
               // search={true}
+
               pagination={{
                 limit: 10
               }}
               sort={true}
-              className={{
-                container: "table table-striped table-hover",
-                table: "table",
-                thead: "table-light",
-                th: "border-0 text-bg-success bg-gradient",
-                td: "border-0",
-                search: "form-control",
-                pagination: "pagination pagination-sm"
-              }}
+              resizable={true}
+              
 
-              style={{
-                table: {
-                  width: "100%"
-                }
-              }}
+              
             />
-          </div>
+         
+
         )}
-      </ComponentContainerCard>
+      </CardBody>
+    </Card>
+ 
+      
+      </Col>
+      </Row>
     </>
   );
 }
