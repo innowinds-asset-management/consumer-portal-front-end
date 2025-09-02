@@ -598,7 +598,7 @@ export default function AssetDetailPage() {
                 size="sm"
                 onClick={handleUpdateStatusClick}
               >
-                Edit Status
+                Update Status
               </Button>
             </div>
           </div>
