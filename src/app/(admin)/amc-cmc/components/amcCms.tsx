@@ -74,6 +74,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({ type: null, text: '' });
 
   // Contract types state
   const [contractTypes, setContractTypes] = useState<ContractType[]>([]);
@@ -202,8 +203,9 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    setSuccess('');
+            setError('');
+        setSuccess('');
+        setMessage({ type: null, text: '' });
 
     try {
       if (onSubmit) {
@@ -236,6 +238,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
           await serviceContractService.createServiceContract(contractData);
           setSubmitted(true);
           setSuccess('Contract created successfully!');
+        setMessage({ type: 'success', text: 'Contract created successfully!' });
           
           // Reset form after successful submission
           setFormData({
@@ -268,7 +271,8 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
         }
       }
     } catch (err) {
-      setError('Failed to save contract. Please try again.');
+              setError('Failed to save contract. Please try again.');
+        setMessage({ type: 'error', text: 'Failed to save contract. Please try again.' });
       console.error('Error saving contract:', err);
     } finally {
       setLoading(false);
@@ -280,7 +284,8 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
   };
 
   return (
-    <Card className="border-0">
+    <>
+      <Card className="border-0">
       <CardBody>
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h5 className="mb-0">{isEdit ? 'Edit AMC/CMC Contract' : 'Create New AMC/CMC Contract'}</h5>
@@ -637,5 +642,15 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
         </Form>
       </CardBody>
     </Card>
+
+      {/* Message Display */}
+      {message.type && (
+        <div className={`alert alert-${message.type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`} 
+             style={{ top: '20px', right: '20px', zIndex: 9999, minWidth: '300px' }}>
+          {message.text}
+          <button type="button" className="btn-close" onClick={() => setMessage({ type: null, text: '' })}></button>
+        </div>
+      )}
+    </>
   );
 }
