@@ -134,9 +134,10 @@ export default function EditAssetPage() {
   };
 
   const onTypeChange = async (newTypeId: string) => {
-    setEditValues(prev => ({ ...prev, assetTypeId: newTypeId, assetSubTypeId: '' }));
+    setEditValues(prev => ({ ...prev, assetTypeId: newTypeId}));
     if (newTypeId) {
       const subs = await assetSubTypesService.getAssetSubTypesByAssetTypeId(newTypeId);
+      console.log('Asset sub types:', subs);
       setAssetSubTypes(subs);
     } else {
       setAssetSubTypes([]);
@@ -146,6 +147,8 @@ export default function EditAssetPage() {
   const renderField = (key: string, label: string, value: any, type: FieldType = 'text', options?: { value: string; label: string }[]) => {
     const isEditing = editingField === key;
     const currentValue = isEditing ? editValues[key] : value;
+
+    // console.log(key,'===>',value)
 
     let displayValue: any = value;
     if (key === 'status') {
@@ -185,13 +188,17 @@ export default function EditAssetPage() {
       } else {
         displayValue = t ? t.assetName : (value || 'Not specified');
       }
-    } else if (key === 'assetSubTypeId' && value) {
-      const st = assetSubTypes.find(x => x.id === value);
-      if (assetSubTypes.length === 0) {
-        displayValue = 'Loading sub types...';
-      } else {
-        displayValue = st ? st.name : (value || 'Not specified');
-      }
+    } 
+    else if (key === 'assetSubTypeId' && value) {
+      // console.log('value======>',value)
+      // const st = assetSubTypes.find(x => x.id === value);
+      // // console.log('st======>',st)
+      // if (assetSubTypes.length === 0) {
+      //   displayValue = 'Loading sub types...';
+      // } else {
+      //   // console.log('st====== inside else>',st)
+        displayValue = asset?.assetSubType?.name || 'Not specified';
+      // }
     }
 
     return (

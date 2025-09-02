@@ -617,10 +617,10 @@ export default function AssetDetailPage() {
                       <strong>Asset Name:</strong> {asset.assetName}
                     </div>
                     <div className="mb-3">
-                      <strong>Asset Type:</strong> {asset.assetType?.assetName || 'N/A'}
+                      <strong>Asset Type:</strong> {asset.assetType?.assetName || ''}
                     </div>
                     <div className="mb-3">
-                      <strong>Sub Type:</strong> {asset.assetSubType?.name || 'N/A'}
+                      <strong>Sub Type:</strong> {asset.assetSubType?.name || ''}
                     </div>
                     <div className="mb-3">
                       <strong>Brand:</strong> {asset.brand}
@@ -633,7 +633,7 @@ export default function AssetDetailPage() {
                         <strong>Sub Model:</strong> {asset.subModel}
                       </div>
                     )}
-                    <div className="mb-3">
+                                        <div className="mb-3">
                       <strong>Part Number:</strong> {asset.partNo}
                     </div>
                     <div className="mb-3">
@@ -659,30 +659,36 @@ export default function AssetDetailPage() {
                           {asset.status ? 
                             (() => {
                               const statusData = assetStatuses.find(s => s.statusCode === asset.status);
-                              return statusData ? statusData.displayName : 'N/A';
+                              return statusData ? statusData.displayName : '';
                             })() : 
-                            'N/A'
+                            ''
                           }
-                      </Badge>
+                        </Badge>
 
-                    </div>
-                    <div className="mb-3">
-                      <strong>Assigned To:</strong> {asset.assetAssignTo || 'N/A'}
-                    </div>
+                      </div>
+                      <div className="mb-3">
+                        <strong>Assigned To:</strong> {asset.assetAssignTo || ''}
+                      </div>
                   </Col>
                   <Col lg={6}>
                     {/* <h6 className="text-muted mb-3">Technical Details</h6> */}
                     <div className="mb-3">
-                      <strong>Serial No:</strong> {asset.consumerSerialNo}
+                      <strong>Supplier Name:</strong> {asset.supplier?.name || ''}
                     </div>
                     <div className="mb-3">
-                      <strong>Supplier Name:</strong> {asset.supplier?.name || 'N/A'}
+                      <strong>Installation Date:</strong> {asset.installationDate ? formatDate(asset.installationDate) : ''}
                     </div>
                     <div className="mb-3">
-                      <strong>Supplier Serial No:</strong> {asset.supplierSerialNo}
+                      <strong>Building Number:</strong> {asset.building || ''}
                     </div>
                     <div className="mb-3">
-                      <strong>Department:</strong> {asset.department?.deptName || 'N/A'}
+                      <strong>Floor Number:</strong> {asset.floorNumber || ''}
+                    </div>
+                    <div className="mb-3">
+                      <strong>Room Number:</strong> {asset.roomNumber || ''}
+                    </div>
+                    <div className="mb-3">
+                      <strong>Department:</strong> {asset.department?.deptName || ''}
                     </div>
                     <div className="mb-3">
                       <strong>Warranty Status:</strong>
@@ -703,19 +709,19 @@ export default function AssetDetailPage() {
                     {!isAppProduction && (
                     <>
                     <div className="mb-3">
-                      <strong>Last Service Date:</strong> {
-                        (() => {
-                          // Get the most recent service request based on updatedAt
-                          if (asset.serviceRequests && asset.serviceRequests.length > 0) {
-                            const sortedRequests = [...asset.serviceRequests].sort((a, b) => 
-                              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-                            );
-                            return formatDate(sortedRequests[0].updatedAt);
-                          }
-                          // Fallback to lastServiceDate if no service requests
-                          return asset.lastServiceDate ? formatDate(asset.lastServiceDate) : 'N/A';
-                        })()
-                      }
+                                              <strong>Last Service Date:</strong> {
+                          (() => {
+                            // Get the most recent service request based on updatedAt
+                            if (asset.serviceRequests && asset.serviceRequests.length > 0) {
+                              const sortedRequests = [...asset.serviceRequests].sort((a, b) => 
+                                new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+                              );
+                              return formatDate(sortedRequests[0].updatedAt);
+                            }
+                            // Fallback to lastServiceDate if no service requests
+                            return asset.lastServiceDate ? formatDate(asset.lastServiceDate) : '';
+                          })()
+                        }
                     </div>
                     </>
                     )}
@@ -725,7 +731,7 @@ export default function AssetDetailPage() {
                           <strong>Asset Condition:</strong> {
                             typeof asset.assetCondition === 'object' && asset.assetCondition?.displayName 
                               ? asset.assetCondition.displayName 
-                              : (typeof asset.assetCondition === 'string' ? asset.assetCondition : 'N/A')
+                              : (typeof asset.assetCondition === 'string' ? asset.assetCondition : '')
                           }
                         </div>
                         <div className="mb-3">
@@ -804,7 +810,7 @@ export default function AssetDetailPage() {
                               <tbody>
                                 <tr>
                                   <td><strong>Warranty Type</strong></td>
-                                  <td>{warranty.warrantyType?.typeName || 'N/A'}</td>
+                                  <td>{warranty.warrantyType?.typeName || ''}</td>
                                   <td> -
                                     {/* <Badge bg={warranty.isActive ? 'success' : 'danger'}>
                                       {warranty.isActive ? 'Active' : 'Inactive'}
@@ -823,17 +829,17 @@ export default function AssetDetailPage() {
                                 </tr>
                                 <tr>
                                   <td><strong>Coverage Description</strong></td>
-                                  <td>{warranty.coverageDescription || 'N/A'}</td>
+                                  <td>{warranty.coverageDescription || ''}</td>
                                   <td>-</td>
                                 </tr>
                                 <tr>
                                   <td><strong>Start Date</strong></td>
-                                  <td>{warranty.startDate ? formatDate(warranty.startDate) : 'N/A'}</td>
+                                  <td>{warranty.startDate ? formatDate(warranty.startDate) : ''}</td>
                                   <td>-</td>
                                 </tr>
                                 <tr>
                                   <td><strong>End Date</strong></td>
-                                  <td>{warranty.endDate ? formatDate(warranty.endDate) : 'N/A'}</td>
+                                  <td>{warranty.endDate ? formatDate(warranty.endDate) : ''}</td>
                                   <td>-</td>
                                 </tr>
                                 <tr>
@@ -1149,11 +1155,11 @@ export default function AssetDetailPage() {
                       <div key={warranty.warrantyId} className="col-12 mb-2">
                         <div className="d-flex justify-content-between align-items-center">
                           <div>
-                            <strong>Warranty #{index + 1}:</strong> {warranty.warrantyNumber || 'N/A'}
+                            <strong>Warranty #{index + 1}:</strong> {warranty.warrantyNumber || ''}
                             <br />
                             <small className="text-muted">
-                              Type: {warranty.warrantyType?.typeName || 'N/A'} | 
-                              Coverage: {warranty.coverageType || 'N/A'} | 
+                              Type: {warranty.warrantyType?.typeName || ''} | 
+                              Coverage: {warranty.coverageType || ''} | 
                               Period: {warranty.warrantyPeriod || 0} months
                             </small>
                           </div>

@@ -40,6 +40,9 @@ export interface Asset {
   createdAt?: string;
   updatedAt?: string;
   departmentId?: string | null;
+  building?: string;
+  floorNumber?: string;
+  roomNumber?: string;
   assetType?: AssetType;
   assetSubType?: AssetSubType;
   locations?: Location[];
