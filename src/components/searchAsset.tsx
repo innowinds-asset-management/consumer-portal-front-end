@@ -155,11 +155,7 @@ export default function SearchAsset({
             {asset.status}
           </span>
         )}
-        {asset.isAmc && (
-          <span className="badge bg-info ms-1">
-            AMC
-          </span>
-        )}
+        
       </div>
     </ListGroup.Item>
   );
