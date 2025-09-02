@@ -72,7 +72,6 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({ type: null, text: '' });
 
@@ -204,7 +203,6 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
     e.preventDefault();
     setLoading(true);
             setError('');
-        setSuccess('');
         setMessage({ type: null, text: '' });
 
     try {
@@ -237,8 +235,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
           
           await serviceContractService.createServiceContract(contractData);
           setSubmitted(true);
-          setSuccess('Contract created successfully!');
-        setMessage({ type: 'success', text: 'Contract created successfully!' });
+          setMessage({ type: 'success', text: 'Contract created successfully!' });
           
           // Reset form after successful submission
           setFormData({
@@ -292,11 +289,6 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
         </div>
 
         {error && <Alert variant="danger">{error}</Alert>}
-        {submitted && (
-          <Alert variant="success" className="mb-4">
-            Contract created successfully!
-          </Alert>
-        )}
 
         <Form onSubmit={handleSubmit}>
           <Row>
