@@ -7,8 +7,6 @@ import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import ServiceRequestTab from '@/components/ServiceRequestTab'
 import { Card, CardBody, Col, Nav, NavItem, NavLink, Row, TabContainer, TabContent, TabPane, Badge, Table, Alert, Button, Modal, Form } from 'react-bootstrap'
 import { assetsService, Asset } from '@/services/api/assets'
-import { assetTypesService, AssetType } from '@/services/api/assetTypes'
-import { assetSubTypesService, AssetSubType } from '@/services/api/assetSubTypes'
 import { departmentService, Department } from '@/services/api/departments'
 import { warrantyService, Warranty } from '@/services/api/warranty'
 import { warrantyTypeService, WarrantyType } from '@/services/api/warrantyTypes'
@@ -26,11 +24,7 @@ export default function AssetDetailPage() {
   const assetId = searchParams.get('aid');
 
   const [asset, setAsset] = useState<Asset | null>(null);
-  const [assetType, setAssetType] = useState<AssetType | null>(null);
-  const [assetSubType, setAssetSubType] = useState<AssetSubType | null>(null);
   const [warranties, setWarranties] = useState<Warranty[]>([]);
-  const [assetLocation, setAssetLocation] = useState<{ locations: Location[] } | null>(null);
-  const [assetDepartment, setDepartmnet] = useState<{ department: Department } | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingWarranties, setLoadingWarranties] = useState(false);
   const [warrantiesLoaded, setWarrantiesLoaded] = useState(false);
@@ -83,16 +77,6 @@ export default function AssetDetailPage() {
         const assetData = await assetsService.getAssetById(assetId);
 
         setAsset(assetData);
-
-        // Set asset type and sub-type from response data
-        setAssetType(assetData.assetType || null);
-        setAssetSubType(assetData.assetSubType || null);
-        //fetch location details
-        const locationData = { locations: assetData.locations || [] };
-        setAssetLocation(locationData);
-        //set department details
-        const departmentData = { department: assetData.department || null };
-        setDepartmnet(departmentData);
 
         // Set warranties from asset response data for immediate warranty status calculation
         setWarranties((assetData as any).warranties || []);
@@ -633,10 +617,10 @@ export default function AssetDetailPage() {
                       <strong>Asset Name:</strong> {asset.assetName}
                     </div>
                     <div className="mb-3">
-                      <strong>Asset Type:</strong> {assetType?.assetName || 'N/A'}
+                      <strong>Asset Type:</strong> {asset.assetType?.assetName || 'N/A'}
                     </div>
                     <div className="mb-3">
-                      <strong>Sub Type:</strong> {assetSubType?.name || 'N/A'}
+                      <strong>Sub Type:</strong> {asset.assetSubType?.name || 'N/A'}
                     </div>
                     <div className="mb-3">
                       <strong>Brand:</strong> {asset.brand}
@@ -844,12 +828,12 @@ export default function AssetDetailPage() {
                                 </tr>
                                 <tr>
                                   <td><strong>Start Date</strong></td>
-                                  <td>{formatDate(warranty.startDate)}</td>
+                                  <td>{warranty.startDate ? formatDate(warranty.startDate) : 'N/A'}</td>
                                   <td>-</td>
                                 </tr>
                                 <tr>
                                   <td><strong>End Date</strong></td>
-                                  <td>{formatDate(warranty.endDate)}</td>
+                                  <td>{warranty.endDate ? formatDate(warranty.endDate) : 'N/A'}</td>
                                   <td>-</td>
                                 </tr>
                                 <tr>
@@ -954,7 +938,7 @@ export default function AssetDetailPage() {
                     <Card className="border-0">
                       <CardBody>
                         <h6 className="text-muted mb-3">Location Information</h6>
-                        {!assetLocation?.locations || assetLocation.locations.length === 0 ? (
+                        {!asset.locations || asset.locations.length === 0 ? (
                           <div className="text-center py-4">
                             <p className="text-muted">No location information available</p>
                           </div>
@@ -971,9 +955,9 @@ export default function AssetDetailPage() {
                               </tr>
                             </thead>
                             <tbody>
-                              {assetLocation.locations.map((location: Location) => (
+                              {asset.locations.map((location: Location) => (
                                 <tr key={location.id}>
-                                  <td>{location.departmentId ? (assetDepartment?.department?.deptName || '') : ''}</td>
+                                  <td>{location.departmentId ? (asset.department?.deptName || '') : ''}</td>
                                   <td>{location.building}</td>
                                   <td>{location.floorNumber}</td>
                                   <td>{location.roomNumber}</td>
@@ -991,7 +975,7 @@ export default function AssetDetailPage() {
 
                         <div className="text-center mt-3">
                           <small className="text-muted">
-                            Showing {assetLocation?.locations?.length || 0} location records
+                            Showing {asset.locations?.length || 0} location records
                           </small>
                         </div>
                       </CardBody>

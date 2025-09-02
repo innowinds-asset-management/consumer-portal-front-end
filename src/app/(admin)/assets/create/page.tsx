@@ -12,7 +12,7 @@ import { STORAGE_KEYS } from "@/utils/constants";
 import { supplierService, Supplier } from '@/services/api/suppliers'
 import { warrantyTypeService, WarrantyType } from '@/services/api/warrantyTypes'
 import { assetWarrantyService, CreateAssetWarrantyRequest } from '@/services/api/assetWarranty'
-import { assetStatusService, AssetStatus } from '@/services/api/assetStatus'
+
 import CreateDepartmentModal from '@/components/CreateDepartmentModal'
 
 // Form data interface
@@ -84,12 +84,10 @@ export default function AssetPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [warrantyTypes, setWarrantyTypes] = useState<WarrantyType[]>([]);
-  const [assetStatuses, setAssetStatuses] = useState<AssetStatus[]>([]);
   const [loadingAssetTypes, setLoadingAssetTypes] = useState(true);
   const [loadingDepartments, setLoadingDepartments] = useState(true);
   const [loadingSuppliers, setLoadingSuppliers] = useState(true);
   const [loadingWarrantyTypes, setLoadingWarrantyTypes] = useState(true);
-     const [loadingAssetStatuses, setLoadingAssetStatuses] = useState(true);
    const [assetTypesError, setAssetTypesError] = useState("");
    const [assetSubTypesError, setAssetSubTypesError] = useState("");
    const [departmentsError, setDepartmentsError] = useState("");
@@ -197,28 +195,10 @@ export default function AssetPage() {
       }
     };
 
-    const fetchAssetStatuses = async () => {
-      try {
-        setLoadingAssetStatuses(true);
-        const response = await assetStatusService.getAssetStatuses();
-        
-        if (response.success) {
-          setAssetStatuses(response.data);
-        } else {
-          console.error('Failed to fetch asset statuses:', response.error);
-        }
-      } catch (error) {
-        console.error('Error fetching asset statuses:', error);
-      } finally {
-        setLoadingAssetStatuses(false);
-      }
-    };
-
     fetchAssetTypes();
     fetchDepartments();
     fetchSuppliers();
     fetchWarrantyTypes();
-    fetchAssetStatuses();
   }, []);
 
   // Fetch asset sub-types when asset type changes
@@ -260,8 +240,24 @@ export default function AssetPage() {
   const calculateWarrantyEndDate = (startDate: string, durationMonths: number): string => {
     if (!startDate || durationMonths <= 0) return "";
     const start = new Date(startDate);
-    const end = new Date(start.getTime() + (durationMonths * 30 * 24 * 60 * 60 * 1000));
+    const end = new Date(start);
+    end.setMonth(end.getMonth() + durationMonths);
     return end.toISOString().split('T')[0];
+  };
+
+  // Auto-calculate start and end dates based on period from today
+  const calculateDatesFromPeriod = (period: number) => {
+    if (period > 0) {
+      const today = new Date();
+      const startDate = today.toISOString().split('T')[0];
+      const endDate = new Date(today);
+      endDate.setMonth(endDate.getMonth() + period);
+      return {
+        startDate: startDate,
+        endDate: endDate.toISOString().split('T')[0]
+      };
+    }
+    return { startDate: "", endDate: "" };
   };
 
   // Calculate warranty period in months based on start and end dates
@@ -269,26 +265,9 @@ export default function AssetPage() {
     if (!startDate || !endDate) return 0;
     const start = new Date(startDate);
     const end = new Date(endDate);
-    
-    // Calculate the difference in years and months
-    const startYear = start.getFullYear();
-    const startMonth = start.getMonth();
-    const endYear = end.getFullYear();
-    const endMonth = end.getMonth();
-    
-    // Calculate total months difference
-    const totalMonths = (endYear - startYear) * 12 + (endMonth - startMonth);
-    
-    // Adjust for day of month
-    const startDay = start.getDate();
-    const endDay = end.getDate();
-    
-    // If end day is before start day, subtract 1 month
-    if (endDay < startDay) {
-      return Math.max(0, totalMonths - 1);
-    }
-    
-    return Math.max(0, totalMonths);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffMonths = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 30.44)); // Average days per month
+    return diffMonths;
   };
 
   // Handle form field changes
@@ -300,15 +279,39 @@ export default function AssetPage() {
       if (field === 'warrantyStartDate' || field === 'warrantyPeriod') {
         const startDate = field === 'warrantyStartDate' ? value as string : prev.warrantyStartDate;
         const duration = field === 'warrantyPeriod' ? value as number : prev.warrantyPeriod;
-        updatedData.warrantyEndDate = calculateWarrantyEndDate(startDate, duration);
+        
+        if (field === 'warrantyPeriod' && duration > 0) {
+          if (startDate) {
+            // If start date exists, calculate end date based on start date + period
+            updatedData.warrantyEndDate = calculateWarrantyEndDate(startDate, duration);
+          } else {
+            // If no start date exists, calculate both start and end dates from today
+            const calculatedDates = calculateDatesFromPeriod(duration);
+            updatedData.warrantyStartDate = calculatedDates.startDate;
+            updatedData.warrantyEndDate = calculatedDates.endDate;
+          }
+        } else if (field === 'warrantyPeriod' && duration <= 0) {
+          // If period is 0 or empty, clear the dates
+          updatedData.warrantyStartDate = "";
+          updatedData.warrantyEndDate = "";
+        } else if (field === 'warrantyStartDate' && startDate && prev.warrantyPeriod > 0) {
+          // Calculate end date based on new start date + existing period
+          updatedData.warrantyEndDate = calculateWarrantyEndDate(startDate, prev.warrantyPeriod);
+        }
       }
       
       // Auto-calculate warranty period when warranty start date or end date changes
       if (field === 'warrantyStartDate' || field === 'warrantyEndDate') {
         const startDate = field === 'warrantyStartDate' ? value as string : prev.warrantyStartDate;
         const endDate = field === 'warrantyEndDate' ? value as string : prev.warrantyEndDate;
-        if (startDate && endDate) {
-          updatedData.warrantyPeriod = calculateWarrantyPeriod(startDate, endDate);
+        
+        if (field === 'warrantyStartDate' && !value) {
+          // If start date is cleared, also clear end date
+          updatedData.warrantyEndDate = "";
+          updatedData.warrantyPeriod = 0;
+        } else if (startDate && endDate) {
+          const calculatedPeriod = calculateWarrantyPeriod(startDate, endDate);
+          updatedData.warrantyPeriod = calculatedPeriod;
         }
       }
       
