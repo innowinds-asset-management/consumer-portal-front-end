@@ -369,16 +369,8 @@ export default function AssetPage() {
       
       
              // Create the asset warranty request with nested asset and warranty objects
-               // Check if warranty fields have actual values
-        const hasWarrantyData = formData.warrantyType || 
-          (formData.warrantyStartDate && formData.warrantyStartDate.trim() !== '') || 
-          (formData.warrantyEndDate && formData.warrantyEndDate.trim() !== '') ||
-          formData.warrantyPeriod > 0 ||
-          (formData.coverageType && formData.coverageType.trim() !== '') ||
-          (formData.coverageDescription && formData.coverageDescription.trim() !== '') ||
-          (formData.termsConditions && formData.termsConditions.trim() !== '') ||
-          (formData.included && formData.included.trim() !== '') ||
-          (formData.excluded && formData.excluded.trim() !== '');
+               // Check if warranty type is selected (simple truthy check)
+        const hasWarrantyData = Boolean(formData.warrantyType);
 
         const assetWarrantyData: CreateAssetWarrantyRequest = {
           asset: {
@@ -408,8 +400,9 @@ export default function AssetPage() {
           },
           ...(hasWarrantyData && {
             warranty: {
-              // Only include warranty fields if they have values
-              ...(formData.warrantyType && formData.warrantyType.toString().trim() !== '' && { warrantyTypeId: parseInt(String(formData.warrantyType)) }),
+              // Always include warrantyTypeId when warranty type is selected
+              warrantyTypeId: parseInt(String(formData.warrantyType)),
+              // Include other fields if they have values
               ...(formData.warrantyStartDate && formData.warrantyStartDate.trim() !== '' && { startDate: formData.warrantyStartDate }),
               ...(formData.warrantyEndDate && formData.warrantyEndDate.trim() !== '' && { endDate: formData.warrantyEndDate }),
               ...(formData.warrantyPeriod > 0 && { warrantyPeriod: formData.warrantyPeriod }),
@@ -430,6 +423,12 @@ export default function AssetPage() {
               // Log the request data for debugging
         console.log("Form data:", formData);
         console.log("Has warranty data:", hasWarrantyData);
+        console.log("Warranty type selected:", formData.warrantyType);
+        console.log("Warranty object being created:", hasWarrantyData ? {
+          warrantyTypeId: parseInt(String(formData.warrantyType)),
+          isActive: true,
+          autoRenewal: false
+        } : null);
         console.log("Sending asset warranty creation request:", JSON.stringify(assetWarrantyData, null, 2));
       
       console.log("About to make API call to assetWarrantyService.createAssetWarranty");
