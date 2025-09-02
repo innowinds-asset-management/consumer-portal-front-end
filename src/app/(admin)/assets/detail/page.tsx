@@ -576,7 +576,7 @@ export default function AssetDetailPage() {
       <ComponentContainerCard
         title={
           <div className="d-flex justify-content-between align-items-center ">
-            <span>{`${asset.assetName}(${asset.consumerSerialNo})`}</span>
+            <span>{`${asset.assetName}`}</span>
             <div className="d-flex gap-2">
               <Button 
                 variant="primary" 
