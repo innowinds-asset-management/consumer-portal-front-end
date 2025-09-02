@@ -779,49 +779,48 @@ export default function AssetPage() {
 
                     {/* Row 4: Department, Building Number, Floor Number */}
                     <Row>
-                                             <Col lg={4}>
-                         <div className="mb-3">
-                           <Form.Label htmlFor="departmentId">Department *</Form.Label>
-                           <div className="d-flex">
-                             <Form.Select
-                               id="departmentId"
-                               value={formData.departmentId}
-                               onChange={(e) => handleFieldChange("departmentId", e.target.value)}
-                               isInvalid={!!errors.departmentId}
-                               disabled={loadingDepartments}
-                               className="me-2"
-                             >
-                               <option value="">
-                                 {loadingDepartments ? "Loading departments..." : "Select department"}
-                               </option>
-                               {departments.map((department) => (
-                                 <option key={department.deptId} value={department.deptId}>
-                                   {department.deptName}
-                                 </option>
-                               ))}
-                             </Form.Select>
-                             <Button
-                               variant="outline-primary"
-                               size="sm"
-                               onClick={() => setShowCreateDepartmentModal(true)}
-                               className="d-flex align-items-center"
-                               style={{ minWidth: '40px' }}
-                             >
-                               <IconifyIcon icon="tabler:plus" />
-                             </Button>
-                           </div>
-                           {loadingDepartments && (
-                             <div className="mt-2">
-                               <small className="text-muted">Loading departments...</small>
-                             </div>
-                           )}
-                           {errors.departmentId && (
-                             <Form.Control.Feedback type="invalid">
-                               {errors.departmentId}
-                             </Form.Control.Feedback>
-                           )}
-                         </div>
-                       </Col>
+                                                                     <Col lg={4}>
+                          <div className="mb-3">
+                            <div className="d-flex align-items-center mb-2">
+                              <Form.Label htmlFor="departmentId" className="mb-0 me-2">Department *</Form.Label>
+                              <Button
+                                variant="outline-primary"
+                                size="sm"
+                                onClick={() => setShowCreateDepartmentModal(true)}
+                                className="d-flex align-items-center p-1"
+                                style={{ minWidth: '24px', height: '24px' }}
+                              >
+                                <IconifyIcon icon="tabler:plus" style={{ fontSize: '12px' }} />
+                              </Button>
+                            </div>
+                            <Form.Select
+                              id="departmentId"
+                              value={formData.departmentId}
+                              onChange={(e) => handleFieldChange("departmentId", e.target.value)}
+                              isInvalid={!!errors.departmentId}
+                              disabled={loadingDepartments}
+                            >
+                              <option value="">
+                                {loadingDepartments ? "Loading departments..." : "Select department"}
+                              </option>
+                              {departments.map((department) => (
+                                <option key={department.deptId} value={department.deptId}>
+                                  {department.deptName}
+                                </option>
+                              ))}
+                            </Form.Select>
+                            {loadingDepartments && (
+                              <div className="mt-2">
+                                <small className="text-muted">Loading departments...</small>
+                              </div>
+                            )}
+                            {errors.departmentId && (
+                              <Form.Control.Feedback type="invalid">
+                                {errors.departmentId}
+                              </Form.Control.Feedback>
+                            )}
+                          </div>
+                        </Col>
                       
                       <Col lg={4}>
                                                  <div className="mb-3">
