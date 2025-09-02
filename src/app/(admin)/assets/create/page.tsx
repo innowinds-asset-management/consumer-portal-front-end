@@ -627,24 +627,25 @@ export default function AssetPage() {
                             isSearchable={true}
                             noOptionsMessage={() => "No sub asset types found"}
                             loadingMessage={() => "Loading..."}
-                                                         onInputChange={(inputValue: string) => {
-                               if (inputValue && inputValue.length >= 2) {
-                                 searchAssetSubTypes(inputValue).then(searchResults => {
-                                   setAssetSubTypes(searchResults);
-                                 }).catch(err => {
-                                   console.error('Error searching asset sub-types:', err);
-                                 });
-                               } else if (inputValue === '') {
-                                 // Reset to initial list when search is cleared
-                                 if (formData.assetType) {
-                                   assetSubTypesService.getAssetSubTypesByAssetTypeId(formData.assetType).then(data => {
-                                     setAssetSubTypes(data);
-                                   }).catch(err => {
-                                     console.error('Error fetching asset sub-types:', err);
-                                   });
-                                 }
-                               }
-                             }}
+                            onInputChange={(inputValue: string, { action }) => {
+                              // Only update options when user is typing, not when selecting
+                              if (action === 'input-change' && inputValue && inputValue.length >= 2) {
+                                searchAssetSubTypes(inputValue).then(searchResults => {
+                                  setAssetSubTypes(searchResults);
+                                }).catch(err => {
+                                  console.error('Error searching asset sub-types:', err);
+                                });
+                              } else if (action === 'input-change' && inputValue === '') {
+                                // Reset to initial list when search is cleared
+                                if (formData.assetType) {
+                                  assetSubTypesService.getAssetSubTypesByAssetTypeId(formData.assetType).then(data => {
+                                    setAssetSubTypes(data);
+                                  }).catch(err => {
+                                    console.error('Error fetching asset sub-types:', err);
+                                  });
+                                }
+                              }
+                            }}
                             filterOption={() => true} // Disable client-side filtering since we're using server-side search
                           />
                           {formData.assetType && assetSubTypes.length === 0 && (
