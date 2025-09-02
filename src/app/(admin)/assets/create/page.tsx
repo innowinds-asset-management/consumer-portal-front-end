@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
 
 import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
@@ -12,6 +13,7 @@ import { STORAGE_KEYS } from "@/utils/constants";
 import { supplierService, Supplier } from '@/services/api/suppliers'
 import { warrantyTypeService, WarrantyType } from '@/services/api/warrantyTypes'
 import { assetWarrantyService, CreateAssetWarrantyRequest } from '@/services/api/assetWarranty'
+import { toast } from 'react-toastify';
 
 import CreateDepartmentModal from '@/components/CreateDepartmentModal'
 
@@ -76,7 +78,7 @@ interface FormErrors {
 }
 
 export default function AssetPage() {
-  const [submitted, setSubmitted] = useState(false);
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [assetTypes, setAssetTypes] = useState<AssetType[]>([]);
@@ -442,38 +444,21 @@ export default function AssetPage() {
       console.log("Asset created successfully:", result);
     
       console.log("Form submitted:", formData);
-      setSubmitted(true);
       
-             // Reset form
-       setFormData({
-         name: "",
-         assetType: "",
-         subAssetType: "",
-         brand: "",
-         model: "",
-         subModel: "",
-         installationDate: "",
-         installStatus: "",
-         status: "",
-         buildingNumber: "",
-         departmentId: "",
-         floorNumber: "",
-         roomNumber: "",
-         supplierId: "",
-         warrantyType: "",
-         warrantyStartDate: "",
-         warrantyEndDate: "",
-         warrantyPeriod: 0,
-         coverageType: "",
-         coverageDescription: "",
-         termsConditions: "",
-         included: "",
-         excluded: "",
-       });
-      setErrors({});
+      // Show success notification
+      toast.success('Asset created successfully!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       
-      // Reset submitted state after 3 seconds
-      setTimeout(() => setSubmitted(false), 3000);
+      // Redirect to assets listing page after successful creation
+      setTimeout(() => {
+        router.push('/assets');
+      }, 1500);
     } catch (err) {
       console.error("Error creating asset:", err);
       setError("Failed to submit form. Please try again.");
@@ -546,19 +531,12 @@ export default function AssetPage() {
                 </div>
               </div>
 
-              {submitted && (
-                <Alert variant="success" className="mb-4">
-                  <IconifyIcon icon="tabler:check-circle" className="me-2" />
-                  Asset added successfully!
-                </Alert>
-              )}
-              
-              {error && (
-                <Alert variant="danger" className="mb-4">
-                  <IconifyIcon icon="tabler:alert-circle" className="me-2" />
-                  {error}
-                </Alert>
-              )}
+                             {error && (
+                 <Alert variant="danger" className="mb-4">
+                   <IconifyIcon icon="tabler:alert-circle" className="me-2" />
+                   {error}
+                 </Alert>
+               )}
 
               {(assetTypesError || assetSubTypesError || suppliersError || warrantyTypesError) && (
                 <Alert variant="warning" className="mb-4">
