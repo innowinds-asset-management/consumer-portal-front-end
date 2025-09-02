@@ -1296,7 +1296,7 @@ export default function AssetDetailPage() {
           <Button 
             variant="success" 
             onClick={handleInitiateActivation}
-            disabled={!selectedAssetStatus || !selectedDepartment || !selectedWarrantyType || !selectedCoverageType || !warrantyStartDate || !warrantyEndDate || loadingAssetStatuses || loadingDepartments || loadingWarrantyTypes || loadingAssetWarranties}
+            disabled={!selectedAssetStatus || !selectedDepartment || !selectedWarrantyType || !selectedCoverageType || ((!warrantyStartDate || !warrantyEndDate) && !warrantyPeriod) || loadingAssetStatuses || loadingDepartments || loadingWarrantyTypes || loadingAssetWarranties}
           >
             Update Asset & Warranty
           </Button>
