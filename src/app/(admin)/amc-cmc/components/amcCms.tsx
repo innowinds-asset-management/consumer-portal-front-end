@@ -448,13 +448,8 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                   <div className="mt-2">
                     <small className="text-danger">{contractTypesError}</small>
                   </div>
-                )}
-                {/* Debug info */}
-                <div className="mt-1">
-                  <small className="text-muted">
-                    Debug: {contractTypes.length} contract types loaded
-                  </small>
-                </div>
+                )}              
+                
               </Form.Group>
             </Col>
 
