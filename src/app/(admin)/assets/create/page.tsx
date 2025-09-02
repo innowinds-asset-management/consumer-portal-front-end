@@ -392,9 +392,9 @@ export default function AssetPage() {
             ...(formData.subModel && formData.subModel.trim() !== '' && { subModel: formData.subModel }),
             ...(formData.model && formData.model.trim() !== '' && { partNo: formData.model }), // Using model as part number
             ...(formData.supplierId && suppliers.find(s => s.id === formData.supplierId)?.code && { supplierCode: suppliers.find(s => s.id === formData.supplierId)?.code }),
-            ...(formData.name && { consumerSerialNo: formData.name }), // Using asset name as consumer serial
+            // ...(formData.name && { consumerSerialNo: formData.name }), // Using asset name as consumer serial
             ...(formData.supplierId && formData.supplierId.trim() !== '' && { supplierId: formData.supplierId }),
-            ...(formData.model && formData.model.trim() !== '' && { supplierSerialNo: formData.model }), // Using model as serial number
+            // ...(formData.model && formData.model.trim() !== '' && { supplierSerialNo: formData.model }), // Using model as serial number
             ...(formData.buildingNumber && formData.buildingNumber.trim() !== '' && { building: formData.buildingNumber }),
             ...(formData.floorNumber && formData.floorNumber.trim() !== '' && { floorNumber: formData.floorNumber }),
             ...(formData.roomNumber && formData.roomNumber.trim() !== '' && { roomNumber: formData.roomNumber }),
