@@ -29,8 +29,7 @@ const DashboardPage = () => {
       </Row>
 
 {!isAppProduction && (
-      <>
-      Service Request Management Section
+      <>      
       <Row className="mb-4">
         <Col>
           <Card>
