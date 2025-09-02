@@ -14,6 +14,7 @@ import { supplierService, Supplier } from '@/services/api/suppliers'
 import { warrantyTypeService, WarrantyType } from '@/services/api/warrantyTypes'
 import { assetWarrantyService, CreateAssetWarrantyRequest } from '@/services/api/assetWarranty'
 import { toast } from 'react-toastify';
+import Select from 'react-select';
 
 import CreateDepartmentModal from '@/components/CreateDepartmentModal'
 
@@ -224,6 +225,21 @@ export default function AssetPage() {
 
     fetchAssetSubTypes();
   }, [formData.assetType]);
+
+  // Search asset sub-types function
+  const searchAssetSubTypes = async (searchTerm: string) => {
+    if (!formData.assetType || !searchTerm.trim()) {
+      return [];
+    }
+
+    try {
+      const results = await assetSubTypesService.searchAssetSubTypesByAssetTypeId(formData.assetType, searchTerm);
+      return results;
+    } catch (err) {
+      console.error('Error searching asset sub-types:', err);
+      return [];
+    }
+  };
 
   // Auto-generate asset name when asset type or sub type changes
   useEffect(() => {
@@ -590,22 +606,47 @@ export default function AssetPage() {
                       <Col lg={4}>
                         <div className="mb-3">
                           <Form.Label htmlFor="subAssetType">Sub Asset Type *</Form.Label>
-                          <Form.Select 
+                          <Select
                             id="subAssetType"
-                            value={formData.subAssetType}
-                            onChange={(e) => handleFieldChange("subAssetType", e.target.value)}
-                            isInvalid={!!errors.subAssetType}
-                            disabled={!formData.assetType || loadingAssetTypes}
-                          >
-                            <option value="">
-                              Select sub asset type
-                            </option>
-                            {assetSubTypes.map((assetSubType) => (
-                              <option key={assetSubType.id} value={assetSubType.id}>
-                                {assetSubType.name} ({assetSubType.code})
-                              </option>
-                            ))}
-                          </Form.Select>
+                            className="select2"
+                            classNamePrefix="select2"
+                            value={assetSubTypes.find(ast => ast.id === formData.subAssetType) ? {
+                              value: formData.subAssetType,
+                              label: `${assetSubTypes.find(ast => ast.id === formData.subAssetType)?.name} (${assetSubTypes.find(ast => ast.id === formData.subAssetType)?.code})`
+                            } : null}
+                            onChange={(selectedOption: any) => 
+                              handleFieldChange("subAssetType", selectedOption ? selectedOption.value : "")
+                            }
+                            options={assetSubTypes.map(ast => ({
+                              value: ast.id,
+                              label: `${ast.name} (${ast.code})`
+                            }))}
+                            placeholder="Type to search sub asset types..."
+                            isDisabled={!formData.assetType || loadingAssetTypes}
+                            isClearable={true}
+                            isSearchable={true}
+                            noOptionsMessage={() => "No sub asset types found"}
+                            loadingMessage={() => "Loading..."}
+                                                         onInputChange={(inputValue: string) => {
+                               if (inputValue && inputValue.length >= 2) {
+                                 searchAssetSubTypes(inputValue).then(searchResults => {
+                                   setAssetSubTypes(searchResults);
+                                 }).catch(err => {
+                                   console.error('Error searching asset sub-types:', err);
+                                 });
+                               } else if (inputValue === '') {
+                                 // Reset to initial list when search is cleared
+                                 if (formData.assetType) {
+                                   assetSubTypesService.getAssetSubTypesByAssetTypeId(formData.assetType).then(data => {
+                                     setAssetSubTypes(data);
+                                   }).catch(err => {
+                                     console.error('Error fetching asset sub-types:', err);
+                                   });
+                                 }
+                               }
+                             }}
+                            filterOption={() => true} // Disable client-side filtering since we're using server-side search
+                          />
                           {formData.assetType && assetSubTypes.length === 0 && (
                             <div className="mt-2">
                               <small className="text-muted">No sub asset types found for this asset type</small>
@@ -630,13 +671,13 @@ export default function AssetPage() {
                              onChange={(e) => handleFieldChange("name", e.target.value)}
                              isInvalid={!!errors.name}
                            />
-                           {formData.assetType && formData.subAssetType && (
+                           {/* {formData.assetType && formData.subAssetType && (
                              <div className="mt-2">
                                <small className="text-muted">
                                  Auto-generated from selected asset type and sub type. You can edit this field.
                                </small>
                              </div>
-                           )}
+                           )} */}
                            {errors.name && (
                              <Form.Control.Feedback type="invalid">
                                {errors.name}
