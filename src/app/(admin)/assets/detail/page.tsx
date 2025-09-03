@@ -768,12 +768,15 @@ export default function AssetDetailPage() {
                 </NavLink>
               </NavItem>
             )}
+            {
+              !isAppProduction && (
             <NavItem as="li" role="presentation">
               <NavLink eventKey="amcCmc">
                 <IconifyIcon icon="tabler:file-contract" className="fs-18 me-1" />
                 AMC/CMC
               </NavLink>
             </NavItem>
+            )}
           </Nav>
 
           <TabContent>
