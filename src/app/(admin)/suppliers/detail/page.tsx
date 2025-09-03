@@ -83,7 +83,7 @@ export default function SupplierDetailPage() {
   return (
     <>
       <ComponentContainerCard
-        title={`${supplier.name} (${supplier.code})`}
+        title={`${supplier.name}`}
       >
         {/* Overview Section - Above Tabs */}
         <Row className="mb-4">

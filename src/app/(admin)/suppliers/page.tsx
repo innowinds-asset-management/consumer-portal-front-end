@@ -3,13 +3,17 @@
 import React, { useEffect, useState, useRef } from "react";
 
 import ComponentContainerCard from "@/components/ComponentContainerCard";
-import { Alert, Button } from "react-bootstrap";
+import { Alert, Button, Card, CardBody, CardHeader } from "react-bootstrap";
 import { supplierService, ConsumerSupplierWithStats } from "@/services/api/suppliers";
 import { Grid } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
 import { useRouter } from "next/navigation";
 import { STORAGE_KEYS } from "@/utils/constants";
 import CreateSupplierModal from "@/components/CreateSupplierModal";
+import { Col, Row } from 'react-bootstrap'
+import IconifyIcon from "@/components/wrappers/IconifyIcon";
+import Link from "next/link";
+import { formatDate } from "@/utils/date";
 
 interface SupplierListItem {
     id: string;
@@ -29,8 +33,6 @@ export default function SupplierListingPage() {
     const [error, setError] = useState<string>("");
     const [showCreateModal, setShowCreateModal] = useState(false);
     const isAppProduction = process.env.NEXT_PUBLIC_APP_ENV === 'production';
-
-
 
     useEffect(() => {
         const fetchSuppliers = async () => {
@@ -61,14 +63,13 @@ export default function SupplierListingPage() {
         fetchSuppliers();
     }, []);
 
-    // Add click handlers to supplier number, asset count and service request count columns
+    // Add click handlers to supplier names after grid is rendered
     useEffect(() => {
         if (!loading && suppliers.length > 0) {
             const addClickHandlers = () => {
-                // Add click handlers for Supplier Number column (1st column, index 0)
-                const supplierNumberCells = document.querySelectorAll('td:nth-child(1)');
-                if (supplierNumberCells.length > 0) {
-                    supplierNumberCells.forEach((cell, index) => {
+                const supplierNameCells = document.querySelectorAll('td:nth-child(1)');
+                if (supplierNameCells.length > 0) {
+                    supplierNameCells.forEach((cell, index) => {
                         if (index < suppliers.length) {
                             const supplier = suppliers[index];
                             (cell as HTMLElement).style.cursor = 'pointer';
@@ -81,7 +82,7 @@ export default function SupplierListingPage() {
                     });
                 }
 
-                // Add click handlers for Number of Assets column (2nd column, index 1)
+                // Add click handlers for Number of Assets column (3rd column, index 2)
                 const assetCountCells = document.querySelectorAll('td:nth-child(3)');
                 if (assetCountCells.length > 0) {
                     assetCountCells.forEach((cell, index) => {
@@ -99,8 +100,8 @@ export default function SupplierListingPage() {
 
                 // Add click handlers for Number of Open SRs column
                 if (!isAppProduction) {
-                    // In non-production, Open SRs is the 3rd column (index 2)
-                    const srCountCells = document.querySelectorAll('td:nth-child(3)');
+                    // In non-production, Open SRs is the 4th column (index 3)
+                    const srCountCells = document.querySelectorAll('td:nth-child(4)');
                     if (srCountCells.length > 0) {
                         srCountCells.forEach((cell, index) => {
                             if (index < suppliers.length) {
@@ -116,6 +117,7 @@ export default function SupplierListingPage() {
                     }
                 }
             };
+            
             // Try immediately
             addClickHandlers();
             // Also try after a delay to ensure GridJS has rendered
@@ -125,6 +127,7 @@ export default function SupplierListingPage() {
             return () => clearTimeout(timeoutId);
         }
     }, [loading, suppliers, router, isAppProduction]);
+
 
     // Function to refresh suppliers list
     const refreshSuppliers = () => {
@@ -156,108 +159,105 @@ export default function SupplierListingPage() {
         fetchSuppliers();
     };
 
-    // Format date for display
-    const formatDate = (dateString: string) => {
-        if (!dateString) return "N/A";
-        return new Date(dateString).toLocaleDateString();
-    };
-
+    // Prepare data for GridJS
     const gridData = suppliers.map((supplier) => {
         const baseData = [
-            supplier.id,
-            supplier.name,
-            supplier.assetCount,
+            supplier.id || "",
+            supplier.name || "",
+            supplier.assetCount || 0,
         ];
-
+        
         if (!isAppProduction) {
-            baseData.push(supplier.openServiceRequestCount);
+            baseData.push(supplier.openServiceRequestCount || 0);
         }
-
-        baseData.push(
-            formatDate(supplier.registeredFrom),
-            supplier.contactName || "",
-            supplier.contactPhone || ""
-        );
-
+        
+        baseData.push(formatDate(supplier.registeredFrom));
         return baseData;
     });
 
     return (
         <>
-
-
-            <ComponentContainerCard title={
-                <div className="d-flex justify-content-between align-items-center">
-                    <span>Suppliers</span>
-                    <Button
-                        variant="primary"
-                        onClick={() => setShowCreateModal(true)}
-                        className="d-flex align-items-center gap-2"
-                        size="sm"
-                    >
-                        <i className="ri-add-line"></i>
-                        Add Supplier
-                    </Button>
+        <Row>
+            <Col xs={12}>
+            <Card>
+          <CardHeader className="border-bottom card-tabs d-flex flex-wrap align-items-center gap-2">
+            <div className="flex-grow-1">
+              <h4 className="header-title">Suppliers</h4>
+            </div>
+            <div className="d-flex flex-wrap flex-lg-nowrap gap-2">
+              {/* <div className="flex-shrink-0 d-flex align-items-center gap-2">
+                <div className="position-relative">
+                  <input type="text" className="form-control ps-4" placeholder="Search Here..." />
+                  <IconifyIcon icon="ti:search" className="ti position-absolute top-50 translate-middle-y start-0 ms-2" />
                 </div>
-            } description="">
-                {loading && (
-                    <div className="text-center my-4">
-                        <div className="spinner-border" role="status">
-                            <span className="visually-hidden">Loading...</span>
-                        </div>
+              </div> */}
+             <Button 
+                variant="primary" 
+                onClick={() => setShowCreateModal(true)}
+                className="d-flex align-items-center gap-2"
+                size="sm"
+              >
+                <i className="ri-add-line"></i>
+                Add Supplier
+              </Button>
+            </div>
+          </CardHeader>
+          </Card>
+            </Col>
+          </Row>
+          <Row>
+            <Col lg={12}>
+              
+            <Card>
+            <CardBody>
+            {loading && (
+                  <div className="text-center my-4">
+                    <div className="spinner-border" role="status">
+                      <span className="visually-hidden">Loading...</span>
                     </div>
+                  </div>
                 )}
-
-                {error && <Alert variant="danger">{error}</Alert>}
-
-                {!loading && !error && suppliers.length === 0 && (
-                    <div className="text-center text-muted my-4">No suppliers found.</div>
+            
+            
+            {error && <Alert variant="danger">{error}</Alert>}
+            
+            {!loading && !error && suppliers.length === 0 && (
+                  <div className="text-center text-muted my-4">No suppliers found.</div>
                 )}
-
-                {!loading && !error && suppliers.length > 0 && (
-                    <div className="table-responsive">
-                        <Grid
-                            data={gridData}
-                            columns={[
-                                { name: "Supplier No", sort: true, search: true, },
-                                { name: "Name", sort: false, search: true, },
-                                { name: "Number of Assets", sort: true, search: true },
-                                ...(isAppProduction ? [] : [{ name: "Number of Open SRs", sort: true, search: true }]),
-                                { name: "Registered From", sort: true, search: true },
-                                { name: "Contact Name", sort: true, search: true },
-                                { name: "Contact Phone", sort: true, search: true },
-                            ]}
-                            search={false}
-                            pagination={{
-                                limit: 10
-                            }}
-                            sort={true}
-                            className={{
-                                container: "table table-striped table-hover",
-                                table: "table",
-                                thead: "table-light",
-                                th: "border-0  text-bg-primary bg-gradient",
-                                td: "border-0",
-                                search: "form-control",
-                                pagination: "pagination pagination-sm"
-                            }}
-                            style={{
-                                table: {
-                                    width: "100%"
-                                }
-                            }}
+            {/* <CardTitle as={'h4'} className="mb-3 anchor" id="general"></CardTitle> */}
+            {!loading && !error && suppliers.length > 0 && (
+            <Grid
+                          data={gridData}
+                          columns={[
+                            { name: "Supplier ID", sort: false, search: true },
+                            { name: "Supplier Name", sort: false, search: true },
+                            { name: "Number of Assets", sort: true, search: true },
+                            ...(isAppProduction ? [] : [{ name: "Number of Open SRs", sort: true, search: true }]),
+                            { name: "Created Date", sort: true, search: true }
+                          ]}
+                          pagination={{
+                            limit: 100
+                          }}
+                          sort={true}
+                          search={true}
+                          resizable={true}
+                          // height ="300px"
                         />
-                    </div>
-                )}
-            </ComponentContainerCard>
-
+            
+                      )}
+            </CardBody>
+          </Card>
+       
+            
+            </Col>
+            </Row>
             {/* Create Supplier Modal */}
             <CreateSupplierModal
-                show={showCreateModal}
-                onHide={() => setShowCreateModal(false)}
-                onSuccess={refreshSuppliers}
-                existingSuppliers={suppliers.map(s => ({ name: s.name }))}
+              show={showCreateModal}
+              onHide={() => setShowCreateModal(false)}
+              onSuccess={refreshSuppliers}
+              existingSuppliers={suppliers.map(s => ({ name: s.name }))}
             />
-        </>
+          </>
     );
 }
