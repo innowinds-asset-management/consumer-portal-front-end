@@ -52,7 +52,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
     contractTypeId: initialData?.contractTypeId ?? undefined,
     startDate: '',
     endDate: '',
-    paymentTerms: '',
+    paymentTerms: 'ONE_TIME', // Default to One Time payment terms
     contractType: '', // For contract type dropdown
     coverageType: 'COMPREHENSIVE', // For coverage type dropdown
     serviceFrequency: '',
@@ -176,6 +176,55 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
     console.log('Contract types state updated:', contractTypes); // Debug
   }, [contractTypes]);
 
+  // Set default status when statuses are loaded
+  useEffect(() => {
+    if (serviceContractStatuses.length > 0 && !isEdit) {
+      // Find the Draft status (assuming it has statusId: 4 or name contains "Draft")
+      const draftStatus = serviceContractStatuses.find(status => 
+        status.statusId === 4 || status.name.toLowerCase().includes('draft')
+      );
+      
+      if (draftStatus) {
+        setFormData(prev => ({
+          ...prev,
+          status: draftStatus.statusId
+        }));
+      }
+    }
+  }, [serviceContractStatuses, isEdit]);
+
+  // Set default payment terms when payment terms are loaded
+  useEffect(() => {
+    if (paymentTerms.length > 0 && !isEdit) {
+      // Find the One Time payment terms (assuming it has paymentCode: 'ONE_TIME' or displayName contains "One Time")
+      const oneTimePayment = paymentTerms.find(term => 
+        term.paymentCode === 'ONE_TIME' || term.displayName.toLowerCase().includes('one time')
+      );
+      
+      if (oneTimePayment) {
+        setFormData(prev => ({
+          ...prev,
+          paymentTerms: oneTimePayment.paymentCode
+        }));
+      }
+    }
+  }, [paymentTerms, isEdit]);
+
+  // Handle asset selection changes and update contract name accordingly
+  useEffect(() => {
+    if (selectedAsset) {
+      // Asset is selected, contract name is already set in handleAssetSelect
+      return;
+    } else {
+      // Asset is cleared, clear the contract name and asset ID
+      setFormData(prev => ({
+        ...prev,
+        assetId: '',
+        contractName: ''
+      }));
+    }
+  }, [selectedAsset]);
+
   const handleInputChange = (field: keyof AmcCmcFormData, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -185,9 +234,20 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
 
   const handleAssetSelect = (asset: any) => {
     setSelectedAsset(asset);
+    
+    // Auto-populate Contract Name with asset name and serial number
+    let contractName = '';
+    if (asset?.assetName) {
+      contractName = asset.assetName;
+      if (asset?.consumerSerialNo) {
+        contractName += ` - ${asset.consumerSerialNo}`;
+      }
+    }
+    
     setFormData(prev => ({
       ...prev,
-      assetId: asset?.id
+      assetId: asset?.id || '',
+      contractName: contractName
     }));
   };
 
@@ -237,16 +297,16 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
           setSubmitted(true);
           setMessage({ type: 'success', text: 'Contract created successfully!' });
           
-          // Reset form after successful submission
+          // Reset form after successful submission - clear all fields to initial state
           setFormData({
             contractName: '',
             contractTypeId: undefined,
             startDate: '',
             endDate: '',
-            paymentTerms: 'YEARLY',
+            paymentTerms: 'ONE_TIME', // Reset to default One Time
             contractType: '',
             coverageType: 'COMPREHENSIVE',
-            serviceFrequency: 'QUARTERLY',
+            serviceFrequency: '',
             includes: '',
             excludes: '',
             preventiveMaintenanceIncluded: true,
@@ -255,11 +315,11 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
             createdBy: '',
             status: 4,
             amount: undefined,
-            serviceSupplierId: formData.serviceSupplierId, // Keep selected supplier
-            assetId: formData.assetId, // Keep selected asset
+            serviceSupplierId: '', // Clear selected supplier
+            assetId: '', // Clear selected asset
           });
           
-          // Reset selected components
+          // Reset selected components to clear the UI dropdowns
           setSelectedAsset(null);
           setSelectedSupplier(null);
           
@@ -453,13 +513,13 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
             {/* Coverage Type */}
             <Col md={6}>
               <Form.Group className="mb-3">
-                <Form.Label>Coverage Type *</Form.Label>
+                <Form.Label>Coverage *</Form.Label>
                 <Form.Select
                   value={formData.coverageType}
                   onChange={(e) => handleInputChange('coverageType', e.target.value)}
                   required
                 >
-                  <option value="">Select coverage type</option>
+                  <option value="">Select coverage</option>
                   <option value="COMPREHENSIVE">Comprehensive</option>
                   <option value="PARTS_ONLY">Parts Only</option>
                   <option value="LABOR_ONLY">Labor Only</option>
@@ -498,7 +558,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
               <Form.Group className="mb-3">
                 <Form.Label>Status *</Form.Label>
                 <Form.Select
-                  value={formData.status.toString()}
+                  value={formData.status ? formData.status.toString() : ""}
                   onChange={(e) => handleInputChange('status', e.target.value)}
                   required
                   disabled={loadingStatuses}
