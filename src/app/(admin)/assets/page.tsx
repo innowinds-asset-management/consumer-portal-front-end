@@ -15,7 +15,7 @@ import {  Card, CardBody, CardHeader } from "react-bootstrap";
 import ChoicesFormInput from "@/components/form/ChoicesFormInput";
 import Select from 'react-select'
 import { options } from '@/components/form/data'
-import MultipleSelect from "@/components/form/MultipleSelect";
+// import MultipleSelect from "@/components/form/MultipleSelect";
 
 interface Asset {
   id: string;
@@ -40,6 +40,7 @@ interface Asset {
   assetType?: { assetName?: string };
   assetSubType?: { name?: string };
   department?: { deptName?: string };
+  assetStatus?: { statusCode?: string, displayName?: string };
   [key: string]: any;
 }
 
@@ -81,7 +82,8 @@ export default function AssetListingPage() {
         
         console.log('Fetching assets with params:', queryParams);
         const data = await assetsService.getAssets(queryParams);
-        const allAssets = Array.isArray(data) ? data : [];       
+        const allAssets = Array.isArray(data) ? data : []; 
+        // console.log('allAssets========>',allAssets);      
         setAssets(allAssets);
         setFilteredAssets(allAssets); // API already returns filtered results
       } catch (err) {
@@ -112,6 +114,44 @@ export default function AssetListingPage() {
             }
           });
         }
+
+        // Add click handlers for Department column (4th column, index 3)
+        const departmentCells = document.querySelectorAll('td:nth-child(3)');
+        if (departmentCells.length > 0) {
+          departmentCells.forEach((cell, index) => {
+            if (index < filteredAssets.length) {
+              const asset = filteredAssets[index];
+              const deptId = (asset as any).departmentId || (asset.department as any)?.deptId;
+              if (deptId) {
+                (cell as HTMLElement).style.cursor = 'pointer';
+                (cell as HTMLElement).style.color = '#0d6efd';
+                (cell as HTMLElement).style.textDecoration = 'underline';
+                cell.addEventListener('click', () => {
+                  router.push(`/departments/detail?did=${deptId}`);
+                });
+              }
+            }
+          });
+        }
+
+        // Add click handlers for Supplier column (5th column, index 4)
+        const supplierCells = document.querySelectorAll('td:nth-child(4)');
+        if (supplierCells.length > 0) {
+          supplierCells.forEach((cell, index) => {
+            if (index < filteredAssets.length) {
+              const asset = filteredAssets[index];
+              const supplierId = (asset as any).supplierId || (asset.supplier as any)?.id;
+              if (supplierId) {
+                (cell as HTMLElement).style.cursor = 'pointer';
+                (cell as HTMLElement).style.color = '#0d6efd';
+                (cell as HTMLElement).style.textDecoration = 'underline';
+                cell.addEventListener('click', () => {
+                  router.push(`/suppliers/detail?sid=${supplierId}`);
+                });
+              }
+            }
+          });
+        }
       };
       // Try immediately
       addClickHandlers();
@@ -123,11 +163,6 @@ export default function AssetListingPage() {
     }
   }, [loading, filteredAssets, router]);
 
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "";
-    return dateString.split("T")[0];
-  };
 
   // Compute warranty status from warranties array
   const getWarrantyStatus = (warranties: any[]): string => {
@@ -174,42 +209,7 @@ export default function AssetListingPage() {
     return "N/A";
   };
 
-  // Get asset status display name based on status code
-  const getAssetStatusDisplay = (statusCode: string): string => {
-    if (!statusCode) return "N/A";    
-    switch (statusCode) {
-      case 'active':
-        return 'Active';
-      case 'installation_pending':
-        return 'Installation Pending';
-      case 'installed':
-        return 'Installed';
-      case 'received':        
-        return 'Received';
-      case 'retired':
-        return 'Retired';
-      default:
-        return statusCode.charAt(0).toUpperCase() + statusCode.slice(1).replace('_', ' ');
-    }
-  };
-
-  // Get asset status badge class
-  const getAssetStatusBadgeClass = (statusCode: string): string => {
-    if (!statusCode || statusCode === 'null') return 'bg-warning';
-    
-    switch (statusCode) {
-      case 'active':
-        return 'bg-success';
-      case 'installation_pending':
-      case 'installed':
-      case 'received':
-        return 'bg-primary';
-      case 'retired':
-        return 'bg-secondary';
-      default:
-        return 'bg-warning';
-    }
-  };
+ 
 
   // Prepare data for GridJS (in requested column order)
   const gridData = filteredAssets.map((asset) => {
@@ -222,7 +222,7 @@ export default function AssetListingPage() {
       asset.department?.deptName || asset.departmentName || "",
      
       asset.supplier?.name || "",
-      asset.status || "", // Asset Status
+      asset.assetStatus?.displayName || "", // Asset Status
       warrantyStatus
     ];
   });
@@ -267,9 +267,9 @@ export default function AssetListingPage() {
           
         <Card>
         <CardBody>
+        {/* Filter Section - Hidden
         <Row>
         <Col xs={12}>
-        {/* <Card> */}
         <CardHeader >
         <Accordion >
           <AccordionItem eventKey="0">
@@ -277,7 +277,6 @@ export default function AssetListingPage() {
               <strong>Filters</strong>
             </AccordionHeader>
             <AccordionBody>
-            {/* <ComponentContainerCard title='Input Sizes' description={<> Set heights using classes like <code>.input-lg</code>, and set widths using grid column classes like <code>.col-lg-*</code>.</>}> */}
             <Row>
             <Col sm={4}>
             <label htmlFor="example-input-small1" className="form-label">Serial No</label>
@@ -303,17 +302,13 @@ export default function AssetListingPage() {
                     
                       </Col>
           </Row>
-        
-        
-     
-    {/* </ComponentContainerCard> */}
             </AccordionBody>
           </AccordionItem>
         </Accordion>
         </CardHeader>
-        {/* </Card> */}
         </Col>
         </Row>
+        */}
             
         {loading && (
           <div className="text-center my-4">
@@ -344,15 +339,7 @@ export default function AssetListingPage() {
                 { 
                   name: "Status", 
                   sort: false, 
-                  search: true,
-                  formatter: (cell: any) => {                   
-                    const statusCode = cell;   
-                    if (!statusCode || statusCode === 'null' || statusCode === '') {
-                      return 'N/A';
-                    }
-                    const displayName = getAssetStatusDisplay(statusCode);
-                    return displayName;
-                  }
+                  search: true
                 },
                 { 
                   name: "Warranty Status", 
@@ -364,10 +351,10 @@ export default function AssetListingPage() {
                   }
                 }
               ]}
-              // search={true}
+              search={true}
 
               pagination={{
-                limit: 10
+                limit: 100
               }}
               sort={true}
               resizable={true}
