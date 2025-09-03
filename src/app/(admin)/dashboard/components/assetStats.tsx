@@ -139,13 +139,13 @@ const AssetStats = () => {
                     Active Assets
                   </h2>
                   <h2 className="mt-2 mb-1 fw-bold fs-1 text-white">{assetCounts?.active || 0}</h2>
-                  {/* <p className="mb-0 fw-bold text-white">
+                  <p className="mb-0 fw-bold text-white">
                     <span className="text-white me-1">
                       <IconifyIcon icon="ri:arrow-up-line" style={{ marginBottom: '5px', marginRight: '5px' }} />
                       Operational
                     </span>
                     <span className="text-nowrap">Currently in use</span>
-                  </p> */}
+                  </p>
                 </div>
                 <div className="avatar-lg flex-shrink-0">
                   <span className="avatar-title bg-white text-success rounded fs-28">
@@ -182,13 +182,13 @@ const AssetStats = () => {
                     Retired Assets
                   </h2>
                   <h2 className="mt-2 mb-1 fw-bold fs-1 text-white">{assetCounts?.retired || 0}</h2>
-                  {/* <p className="mb-0 fw-bold text-white">
+                  <p className="mb-0 fw-bold text-white">
                     <span className="text-white me-1">
                       <IconifyIcon icon="ri:archive-line" style={{ marginBottom: '5px', marginRight: '5px' }} />
                       Decommissioned
                     </span>
                     <span className="text-nowrap">No longer in use</span>
-                  </p> */}
+                  </p>
                 </div>
                 <div className="avatar-lg flex-shrink-0">
                   <span className="avatar-title bg-white text-secondary rounded fs-28">
@@ -225,13 +225,13 @@ const AssetStats = () => {
                     Pre-Active Assets
                   </h2>
                   <h2 className="mt-2 mb-1 fw-bold fs-1 text-white">{assetCounts?.preActive || 0}</h2>
-                  {/* <p className="mb-0 fw-bold text-white">
+                  <p className="mb-0 fw-bold text-white">
                     <span className="text-white me-1">
                       <IconifyIcon icon="ri:time-line" style={{ marginBottom: '5px', marginRight: '5px' }} />
                       Pending
                     </span>
                     <span className="text-nowrap">Installation pending</span>
-                  </p> */}
+                  </p>
                 </div>
                 <div className="avatar-lg flex-shrink-0">
                   <span className="avatar-title bg-primary-subtle text-primary rounded fs-28">
