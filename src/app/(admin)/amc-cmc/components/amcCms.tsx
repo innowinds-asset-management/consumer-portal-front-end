@@ -8,6 +8,8 @@ import { contractTypesService, ContractType } from '@/services/api/contractTypes
 import { serviceContractStatusService, ServiceContractStatus } from '@/services/api/serviceContractStatus';
 import { serviceFrequencyService, ServiceFrequency } from '@/services/api/serviceFrequency';
 import { paymentTermsService, PaymentTerms } from '@/services/api/paymentTerms';
+import { assetsService, Asset } from '@/services/api/assets';
+import { supplierService, Supplier } from '@/services/api/suppliers';
 import SearchAsset from '@/components/searchAsset';
 import SearchableSupplier from '@/components/searchableSupplier';
 
@@ -74,6 +76,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({ type: null, text: '' });
+  const [validationErrors, setValidationErrors] = useState<{ [key: string]: boolean }>({});
 
   // Contract types state
   const [contractTypes, setContractTypes] = useState<ContractType[]>([]);
@@ -102,11 +105,51 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
   useEffect(() => {
     if (supplierId) {
       setFormData(prev => ({ ...prev, serviceSupplierId: supplierId }));
+      // Automatically fetch and select the supplier when supplierId is present in URL
+      fetchAndSelectSupplier(supplierId);
     }
     if (assetId) {
       setFormData(prev => ({ ...prev, assetId: assetId }));
+      // Automatically fetch and select the asset when assetId is present in URL
+      fetchAndSelectAsset(assetId);
     }
   }, [supplierId, assetId]);
+
+  // Function to fetch and select asset by ID
+  const fetchAndSelectAsset = async (id: string) => {
+    try {
+      const assetData = await assetsService.getAssetById(id);
+      
+      if (assetData) {
+        setSelectedAsset(assetData);
+        // Auto-populate contract name with asset name and serial number
+        const contractName = assetData.consumerSerialNo 
+          ? `${assetData.assetName} - ${assetData.consumerSerialNo}`
+          : assetData.assetName;
+        
+        setFormData(prev => ({
+          ...prev,
+          contractName: contractName
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching asset:', error);
+      // Don't show error to user as this is just auto-selection
+    }
+  };
+
+  // Function to fetch and select supplier by ID
+  const fetchAndSelectSupplier = async (id: string) => {
+    try {
+      const supplierData = await supplierService.getSupplierDetailsById(id);      
+      if (supplierData) {
+        setSelectedSupplier(supplierData);
+      }
+    } catch (error) {
+      console.error('Error fetching supplier:', error);
+      // Don't show error to user as this is just auto-selection
+    }
+  };
 
   // Load contract types and service contract statuses on component mount
   useEffect(() => {
@@ -225,11 +268,24 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
     }
   }, [selectedAsset]);
 
+  // Debug: Monitor validation errors changes
+  useEffect(() => {
+    console.log('Validation errors state changed:', validationErrors);
+  }, [validationErrors]);
+
   const handleInputChange = (field: keyof AmcCmcFormData, value: any) => {
     setFormData(prev => ({
       ...prev,
       [field]: field === 'status' ? Number(value) : value
     }));
+    
+    // Clear validation error for this field when user starts typing/selecting
+    if (validationErrors[field]) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [field]: false
+      }));
+    }
   };
 
   const handleAssetSelect = (asset: any) => {
@@ -249,6 +305,14 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
       assetId: asset?.id || '',
       contractName: contractName
     }));
+    
+    // Clear validation error for asset selection
+    if (validationErrors.assetId) {
+      setValidationErrors(prev => ({
+        ...prev,
+        assetId: false
+      }));
+    }
   };
 
   const handleSupplierSelect = (supplier: any) => {
@@ -257,13 +321,55 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
       ...prev,
       serviceSupplierId: supplier?.id
     }));
+    
+    // Clear validation error for supplier selection
+    if (validationErrors.serviceSupplierId) {
+      setValidationErrors(prev => ({
+        ...prev,
+        serviceSupplierId: false
+      }));
+    }
+  };
+
+  // Validation function to check mandatory fields
+  const validateForm = () => {
+    const errors: { [key: string]: boolean } = {};
+    
+    // Check mandatory fields
+    if (!formData.serviceSupplierId) errors.serviceSupplierId = true;
+    if (!formData.assetId) errors.assetId = true;
+    if (!formData.contractName?.trim()) errors.contractName = true;
+    if (!formData.startDate) errors.startDate = true;
+    if (!formData.endDate) errors.endDate = true;
+    if (!formData.contractType) errors.contractType = true;
+    if (!formData.coverageType) errors.coverageType = true;
+    if (!formData.serviceFrequency) errors.serviceFrequency = true;
+    if (!formData.paymentTerms) errors.paymentTerms = true;
+    
+    console.log('Validation errors:', errors); // Debug
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Function to check if a field has validation error
+  const hasValidationError = (fieldName: string) => {
+    const hasError = validationErrors[fieldName] === true;
+    console.log(`Field ${fieldName} has error:`, hasError); // Debug
+    return hasError;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form before submission
+    if (!validateForm()) {
+      setError('Please fill in all mandatory fields');
+      return;
+    }
+    
     setLoading(true);
-            setError('');
-        setMessage({ type: null, text: '' });
+    setError('');
+    setMessage({ type: null, text: '' });
 
     try {
       if (onSubmit) {
@@ -367,7 +473,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                   placeholder="Search for suppliers..."
                   label="Select Service Supplier"
                   required={true}
-                  error={formData.serviceSupplierId ? '' : 'Please select a service supplier'}
+                  error={hasValidationError('serviceSupplierId') ? 'Please select a service supplier' : ''}
                 />
               </div>
             </Col>
@@ -387,7 +493,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                   placeholder="Search for assets..."
                   label="Select Asset"
                   required={true}
-                  error={formData.assetId ? '' : 'Please select an asset'}
+                  error={hasValidationError('assetId') ? 'Please select an asset' : ''}
                 />
               </div>
             </Col>
@@ -402,7 +508,12 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                   onChange={(e) => handleInputChange('contractName', e.target.value)}
                   required
                   placeholder="Enter contract name"
+                  className={validationErrors.contractName ? 'is-invalid' : ''}
+                  style={validationErrors.contractName ? { borderColor: '#dc3545', borderWidth: '2px' } : {}}
                 />
+                {validationErrors.contractName && (
+                  <div className="invalid-feedback">Contract name is required</div>
+                )}
               </Form.Group>
             </Col>
 
@@ -429,7 +540,12 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                   value={formData.startDate}
                   onChange={(e) => handleInputChange('startDate', e.target.value)}
                   required
+                  className={validationErrors.startDate ? 'is-invalid' : ''}
+                  style={validationErrors.startDate ? { borderColor: '#dc3545', borderWidth: '2px' } : {}}
                 />
+                {validationErrors.startDate && (
+                  <div className="invalid-feedback">Start date is required</div>
+                )}
               </Form.Group>
             </Col>
 
@@ -442,7 +558,12 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                   value={formData.endDate}
                   onChange={(e) => handleInputChange('endDate', e.target.value)}
                   required
+                  className={validationErrors.endDate ? 'is-invalid' : ''}
+                  style={validationErrors.endDate ? { borderColor: '#dc3545', borderWidth: '2px' } : {}}
                 />
+                {validationErrors.endDate && (
+                  <div className="invalid-feedback">End date is required</div>
+                )}
               </Form.Group>
             </Col>
 
@@ -455,6 +576,8 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                   onChange={(e) => handleInputChange('paymentTerms', e.target.value)}
                   required
                   disabled={loadingPaymentTerms}
+                  className={validationErrors.paymentTerms ? 'is-invalid' : ''}
+                  style={validationErrors.paymentTerms ? { borderColor: '#dc3545', borderWidth: '2px' } : {}}
                 >
                   <option value="">
                     {loadingPaymentTerms ? 'Loading payment terms...' : 'Select payment terms'}
@@ -465,6 +588,9 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                     </option>
                   ))}
                 </Form.Select>
+                {validationErrors.paymentTerms && (
+                  <div className="invalid-feedback">Payment terms are required</div>
+                )}
                 {paymentTermsError && (
                   <div className="text-danger small mt-1">{paymentTermsError}</div>
                 )}
@@ -480,6 +606,8 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                   onChange={(e) => handleInputChange('contractType', e.target.value)}
                   required
                   disabled={loadingContractTypes}
+                  className={validationErrors.contractType ? 'is-invalid' : ''}
+                  style={validationErrors.contractType ? { borderColor: '#dc3545', borderWidth: '2px' } : {}}
                 >
                   <option value="">
                     {loadingContractTypes ? "Loading contract types..." : "Select contract type"}
@@ -496,6 +624,9 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                     )
                   )}
                 </Form.Select>
+                {validationErrors.contractType && (
+                  <div className="invalid-feedback">Contract type is required</div>
+                )}
                 {loadingContractTypes && (
                   <div className="mt-2">
                     <small className="text-muted">Loading contract types...</small>
@@ -518,6 +649,8 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                   value={formData.coverageType}
                   onChange={(e) => handleInputChange('coverageType', e.target.value)}
                   required
+                  className={validationErrors.coverageType ? 'is-invalid' : ''}
+                  style={validationErrors.coverageType ? { borderColor: '#dc3545', borderWidth: '2px' } : {}}
                 >
                   <option value="">Select coverage</option>
                   <option value="COMPREHENSIVE">Comprehensive</option>
@@ -525,6 +658,9 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                   <option value="LABOR_ONLY">Labor Only</option>
                   <option value="PREVENTIVE_ONLY">Preventive Only</option>
                 </Form.Select>
+                {validationErrors.coverageType && (
+                  <div className="invalid-feedback">Coverage type is required</div>
+                )}
               </Form.Group>
             </Col>
 
@@ -537,6 +673,8 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                   onChange={(e) => handleInputChange('serviceFrequency', e.target.value)}
                   required
                   disabled={loadingFrequencies}
+                  className={validationErrors.serviceFrequency ? 'is-invalid' : ''}
+                  style={validationErrors.serviceFrequency ? { borderColor: '#dc3545', borderWidth: '2px' } : {}}
                 >
                   <option value="">
                     {loadingFrequencies ? 'Loading frequencies...' : 'Select service frequency'}
@@ -547,6 +685,9 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                     </option>
                   ))}
                 </Form.Select>
+                {validationErrors.serviceFrequency && (
+                  <div className="invalid-feedback">Service frequency is required</div>
+                )}
                 {frequenciesError && (
                   <div className="text-danger small mt-1">{frequenciesError}</div>
                 )}
@@ -562,6 +703,8 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                   onChange={(e) => handleInputChange('status', e.target.value)}
                   required
                   disabled={loadingStatuses}
+                  className={validationErrors.status ? 'is-invalid' : ''}
+                  style={validationErrors.status ? { borderColor: '#dc3545', borderWidth: '2px' } : {}}
                 >
                   <option value="">
                     {loadingStatuses ? "Loading statuses..." : "Select status"}
@@ -578,6 +721,9 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
                     )
                   )}
                 </Form.Select>
+                {validationErrors.status && (
+                  <div className="invalid-feedback">Status is required</div>
+                )}
                 {loadingStatuses && (
                   <div className="mt-2">
                     <small className="text-muted">Loading statuses...</small>

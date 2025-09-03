@@ -86,6 +86,15 @@ export default function SearchableSupplier({
     setFilteredSuppliers(filtered.slice(0, 10)); // Limit to 10 results
   }, [searchTerm, suppliers]);
 
+  // Sync searchTerm with selectedSupplier prop
+  useEffect(() => {
+    if (selectedSupplier) {
+      setSearchTerm(selectedSupplier.name);
+    } else {
+      setSearchTerm('');
+    }
+  }, [selectedSupplier]);
+
   useEffect(() => {
     // Handle click outside to close dropdown
     const handleClickOutside = (event: MouseEvent) => {

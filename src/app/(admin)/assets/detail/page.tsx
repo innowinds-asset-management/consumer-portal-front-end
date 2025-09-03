@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import ServiceRequestTab from '@/components/ServiceRequestTab'
+import AmcCmcTab from '@/components/AmcCmcTab'
 import { Card, CardBody, Col, Nav, NavItem, NavLink, Row, TabContainer, TabContent, TabPane, Badge, Table, Alert, Button, Modal, Form } from 'react-bootstrap'
 import { assetsService, Asset } from '@/services/api/assets'
 import { departmentService, Department } from '@/services/api/departments'
@@ -773,6 +774,12 @@ export default function AssetDetailPage() {
                 </NavLink>
               </NavItem>
             )}
+            <NavItem as="li" role="presentation">
+              <NavLink eventKey="amcCmc">
+                <IconifyIcon icon="tabler:file-contract" className="fs-18 me-1" />
+                AMC/CMC
+              </NavLink>
+            </NavItem>
           </Nav>
 
           <TabContent>
@@ -936,6 +943,8 @@ export default function AssetDetailPage() {
               </Row>
             </TabPane>
 
+
+
             {/* Department Tab */}
             {!isAppProduction && (
               <TabPane eventKey="department" id="department">
@@ -1001,6 +1010,18 @@ export default function AssetDetailPage() {
                   title="Service History"
                 />
               </TabPane>
+            )}
+
+            {/* AMC/CMC Tab */}
+            {!isAppProduction && (
+            <TabPane eventKey="amcCmc" id="amcCmc">
+              <AmcCmcTab 
+                supplierId={asset?.supplierId}
+                assetId={assetId!} 
+                showCreateButton={true}
+                title="AMC/CMC Contracts"
+              />
+            </TabPane>
             )}
           </TabContent>
         </TabContainer>

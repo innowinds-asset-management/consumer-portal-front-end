@@ -67,6 +67,7 @@ export default function SearchAsset({
 
     const filtered = assets.filter(asset =>
       asset.assetName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      asset.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       asset.partNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       asset.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       asset.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -78,6 +79,15 @@ export default function SearchAsset({
 
     setFilteredAssets(filtered.slice(0, 10)); // Limit to 10 results
   }, [searchTerm, assets]);
+
+  // Sync searchTerm with selectedAsset prop
+  useEffect(() => {
+    if (selectedAsset) {
+      setSearchTerm(selectedAsset.assetName);
+    } else {
+      setSearchTerm('');
+    }
+  }, [selectedAsset]);
 
   useEffect(() => {
     // Handle click outside to close dropdown
@@ -133,7 +143,8 @@ export default function SearchAsset({
       <div className="flex-grow-1">
         <div className="fw-semibold text-primary">{asset.assetName}</div>
         <div className="small text-muted">
-          {asset.partNo && <span className="me-2">Part No: {asset.partNo}</span>}
+          <span className="me-2">ID: {asset.id}</span>
+          {asset.partNo && <span className="me-2">• Part No: {asset.partNo}</span>}
           {asset.brand && <span className="me-2">• Brand: {asset.brand}</span>}
           {asset.model && <span className="me-2">• Model: {asset.model}</span>}
           {asset.consumerSerialNo && <span className="me-2">• Serial No: {asset.consumerSerialNo}</span>}

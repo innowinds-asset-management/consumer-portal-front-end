@@ -9,10 +9,7 @@ import AmcCmcTab from '@/components/AmcCmcTab'
 import { Card, CardBody, Col, Nav, NavItem, NavLink, Row, TabContainer, TabContent, TabPane, Badge, Table, Alert, Button } from 'react-bootstrap'
 import { supplierService, SupplierDetails } from '@/services/api/suppliers'
 import { useSearchParams } from 'next/navigation'
-import { useRouter } from 'next/navigation';
 import { formatDate } from "@/utils/date";
-import { STORAGE_KEYS } from "@/utils/constants";
-
 
 
 export default function SupplierDetailPage() {
@@ -152,8 +149,8 @@ export default function SupplierDetailPage() {
             )}
             {!isAppProduction && (
               <NavItem as="li" role="presentation">
-                <NavLink eventKey="amc">
-                  <IconifyIcon icon="tabler:shield-check" className="fs-18 me-1" />
+                <NavLink eventKey="amcCmc">
+                  <IconifyIcon icon="tabler:file-contract" className="fs-18 me-1" />
                   AMC/CMC
                 </NavLink>
               </NavItem>
@@ -185,11 +182,11 @@ export default function SupplierDetailPage() {
 
             {/* AMC/CMC Tab */}
             {!isAppProduction && (
-              <TabPane eventKey="amc" id="amc">
+              <TabPane eventKey="amcCmc" id="amcCmc">
                 <AmcCmcTab 
                   supplierId={supplierId!} 
                   supplier={supplier}
-                  showCreateButton={false}
+                  showCreateButton={true}
                   title="AMC/CMC Contracts"
                 />
               </TabPane>

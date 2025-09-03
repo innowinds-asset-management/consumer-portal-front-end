@@ -9,6 +9,7 @@ import { serviceContractService, ServiceContract } from "@/services/api/serviceC
 
 interface AmcCmcTabProps {
   supplierId?: string;
+  assetId?: string;
   supplier?: any; // Supplier object for context
   showCreateButton?: boolean;
   title?: string;
@@ -19,6 +20,7 @@ interface AmcCmcTabProps {
 
 export default function AmcCmcTab({ 
   supplierId, 
+  assetId,
   supplier, 
   showCreateButton = true, 
   title = "AMC/CMC Contracts",
@@ -33,6 +35,11 @@ export default function AmcCmcTab({
 
   // Get supplier ID from URL params or props
   const currentSupplierId = supplierId || searchParams.get('sid') || supplier?.id;
+  
+  // Filter contracts by asset if assetId is provided
+  const filteredContracts = assetId 
+    ? contracts.filter(contract => contract.assetId === assetId)
+    : contracts;
 
   useEffect(() => {
     const fetchContracts = async () => {
@@ -56,9 +63,14 @@ export default function AmcCmcTab({
   }, [currentSupplierId]);
 
   const handleCreateContract = () => {
-    if (supplier) {
+    if (assetId) {
+      // If assetId exists, redirect to create page with assetId
+      router.push(`/amc-cmc/create?aid=${assetId}`);
+    } else if (supplier) {
+      // If supplier exists, redirect to create page with supplierId
       router.push(`/amc-cmc/create?sid=${supplier.id}`);
     } else {
+      // Default redirect
       router.push('/amc-cmc/create');
     }
   };
@@ -105,7 +117,7 @@ export default function AmcCmcTab({
                     className="d-flex align-items-center gap-2"
                   >
                     <IconifyIcon icon="tabler:plus" className="fs-16" />
-                    Add Contract
+                    Create AMC/CMC
                   </Button>
                 )}
               </div>
@@ -119,7 +131,7 @@ export default function AmcCmcTab({
                 </div>
               ) : error ? (
                 <Alert variant="danger">{error}</Alert>
-              ) : contracts.length === 0 ? (
+              ) : filteredContracts.length === 0 ? (
                 <div className="text-center py-4">
                   <p className="text-muted">No AMC/CMC contracts found</p>
                 </div>
@@ -139,7 +151,7 @@ export default function AmcCmcTab({
                       </tr>
                     </thead>
                     <tbody>
-                      {contracts.map((contract: ServiceContract) => (
+                      {filteredContracts.map((contract: ServiceContract) => (
                         <tr key={contract.contractId}>
                           <td>{contract.contractNumber}</td>
                           <td>{contract.contractName}</td>
@@ -173,10 +185,10 @@ export default function AmcCmcTab({
                   </Table>
                 </div>
               )}
-              {contracts.length > 0 && (
+              {filteredContracts.length > 0 && (
                 <div className="text-center mt-3">
                   <small className="text-muted">
-                    Showing {contracts.length} contract{contracts.length !== 1 ? 's' : ''}
+                    Showing {filteredContracts.length} contract{filteredContracts.length !== 1 ? 's' : ''}
                   </small>
                 </div>
               )}              
