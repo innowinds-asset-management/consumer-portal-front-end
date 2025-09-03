@@ -82,7 +82,7 @@ export default function DepartmentDetailPage() {
   return (
     <>
       <ComponentContainerCard
-        title={`${department.deptName} (${department.deptId})`}
+        title={`${department.deptName}`}
       >
         {/* Overview Section - Above Tabs */}
         <Row className="mb-4">

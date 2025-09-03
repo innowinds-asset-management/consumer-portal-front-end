@@ -15,6 +15,7 @@ import { assetStatusService, AssetStatus } from '@/services/api/assetStatus'
 import { Location } from '@/services/api/assets'
 import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation';
+import { formatDate } from "@/utils/date";
 
 
 
@@ -480,13 +481,6 @@ export default function AssetDetailPage() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
 
   // Compute warranty status from warranties array
   const getWarrantyStatus = (warranties: any[]): string => {

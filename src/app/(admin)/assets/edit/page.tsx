@@ -107,6 +107,18 @@ export default function EditAssetPage() {
         payload.isAmc = raw === true || raw === 'true' || raw === 1 || raw === '1';
       } else if (field === 'assetTypeId' || field === 'assetSubTypeId' || field === 'departmentId' || field === 'supplierId' || field === 'status') {
         payload[field] = editValues[field];
+      } else if (field === 'installationDate') {
+        // Validate installation date
+        const dateValue = editValues[field];
+        if (dateValue) {
+          const date = new Date(dateValue);
+          if (isNaN(date.getTime())) {
+            throw new Error('Invalid installation date format');
+          }
+          payload[field] = dateValue;
+        } else {
+          payload[field] = null; // Allow clearing the date
+        }
       } else {
         payload[field] = editValues[field];
       }
@@ -199,7 +211,9 @@ export default function EditAssetPage() {
       //   // console.log('st====== inside else>',st)
         displayValue = asset?.assetSubType?.name || 'Not specified';
       // }
-    }
+    } else if (key === 'installationDate' && value) {
+      displayValue = formatDate(value) || 'Not specified';
+    } 
 
     return (
       <div className="mb-3">
@@ -295,7 +309,7 @@ export default function EditAssetPage() {
             </Button>
             <span>Edit Asset</span>
           </div>
-          <span className="text-muted">{asset.assetName} ({asset.consumerSerialNo})</span>
+          <span className="text-muted">{asset.assetName}</span>
         </div>
       }
     >
@@ -325,7 +339,11 @@ export default function EditAssetPage() {
               {renderField('model', 'Model', asset.model)}
               {asset.subModel ? renderField('subModel', 'Sub Model', asset.subModel) : null}
               {renderField('partNo', 'Part Number', asset.partNo)}
-              {assetStatuses.length > 0 ? renderField('status', 'Asset Status', asset.status, 'select', assetStatuses.map(s => ({ value: s.statusCode, label: s.displayName }))) : (
+              {renderField('installationDate', 'Installation Date', asset.installationDate, 'date')}
+             
+            </Col>
+            <Col lg={6}>
+            {assetStatuses.length > 0 ? renderField('status', 'Asset Status', asset.status, 'select', assetStatuses.map(s => ({ value: s.statusCode, label: s.displayName }))) : (
                 <div className="mb-3">
                   <div className="d-flex justify-content-between align-items-center mb-2">
                     <strong>Asset Status:</strong>
@@ -333,10 +351,6 @@ export default function EditAssetPage() {
                   <div className="p-2 bg-light rounded">Loading statuses...</div>
                 </div>
               )}
-              {renderField('assetAssignTo', 'Assigned To', asset.assetAssignTo)}
-            </Col>
-            <Col lg={6}>
-              {renderField('consumerSerialNo', 'Serial No', asset.consumerSerialNo)}
               {suppliers.length > 0 ? renderField('supplierId', 'Supplier Name', (asset as any).supplierId, 'select', suppliers.map(s => ({ value: s.id, label: s.name }))) : (
                 <div className="mb-3">
                   <div className="d-flex justify-content-between align-items-center mb-2">
@@ -345,7 +359,6 @@ export default function EditAssetPage() {
                   <div className="p-2 bg-light rounded">Loading suppliers...</div>
                 </div>
               )}
-              {renderField('supplierSerialNo', 'Supplier Serial No', asset.supplierSerialNo)}
               {departments.length > 0 ? renderField('departmentId', 'Department', asset.departmentId, 'select', departments.map(d => ({ value: d.deptId, label: d.deptName }))) : (
                 <div className="mb-3">
                   <div className="d-flex justify-content-between align-items-center mb-2">
@@ -354,6 +367,10 @@ export default function EditAssetPage() {
                   <div className="p-2 bg-light rounded">Loading departments...</div>
                 </div>
               )}
+              {renderField('building', 'Building', asset.building)}
+              {renderField('floorNumber', 'Floor Number', asset.floorNumber)}
+              {renderField('roomNumber', 'Room Number', asset.roomNumber)}
+              {renderField('assetAssignTo', 'Assigned To', asset.assetAssignTo)}
               {!isAppProduction && (
                 <>
                   {conditions.length > 0 ? renderField('assetCondition', 'Asset Condition', (asset as any).assetCondition?.code || (asset as any).assetCondition, 'select', conditions.map(c => ({ value: c.code, label: c.displayName }))) : (
