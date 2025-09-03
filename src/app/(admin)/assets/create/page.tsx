@@ -331,6 +331,17 @@ export default function AssetPage() {
           const calculatedPeriod = calculateWarrantyPeriod(startDate, endDate);
           updatedData.warrantyPeriod = calculatedPeriod;
         }
+        
+        // Validate warranty end date cannot be greater than start date
+        if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+          setErrors(prev => ({ 
+            ...prev, 
+            warrantyEndDate: "Warranty End Date cannot be less than Warranty Start Date" 
+          }));
+        } else if (errors.warrantyEndDate) {
+          // Clear the error if dates are now valid
+          setErrors(prev => ({ ...prev, warrantyEndDate: undefined }));
+        }
       }
       
       return updatedData;
@@ -351,6 +362,13 @@ export default function AssetPage() {
     if (!formData.assetType) newErrors.assetType = "Asset type is required";
     if (!formData.subAssetType) newErrors.subAssetType = "Sub asset type is required";
     if (!formData.departmentId) newErrors.departmentId = "Department is required";
+
+    // Validate warranty dates if both are provided
+    if (formData.warrantyStartDate && formData.warrantyEndDate) {
+      if (new Date(formData.warrantyEndDate) < new Date(formData.warrantyStartDate)) {
+        newErrors.warrantyEndDate = "Warranty End Date cannot be less than Warranty Start Date";
+      }
+    }
 
     console.log("Validation errors:", newErrors);
     setErrors(newErrors);
@@ -1055,7 +1073,13 @@ export default function AssetPage() {
                           value={formData.warrantyEndDate}
                           onChange={(e) => handleFieldChange("warrantyEndDate", e.target.value)}
                           isInvalid={!!errors.warrantyEndDate}
+                          min={formData.warrantyStartDate || undefined}
                         />
+                        {errors.warrantyEndDate && (
+                          <Form.Control.Feedback type="invalid">
+                            {errors.warrantyEndDate}
+                          </Form.Control.Feedback>
+                        )}
                       </div>
                     </Col>
 
