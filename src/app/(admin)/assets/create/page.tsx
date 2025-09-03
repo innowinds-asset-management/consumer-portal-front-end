@@ -389,8 +389,19 @@ export default function AssetPage() {
       
              // Create the asset warranty request with nested asset and warranty objects
                // Check if warranty type is selected (simple truthy check)
-        // Always include warranty data - create warranty record regardless of warrantyTypeId
-        const hasWarrantyData = true;
+        // Only include warranty data if any warranty-related fields are actually filled
+        const hasWarrantyData = Boolean(
+          formData.warrantyType || 
+          formData.warrantyStartDate || 
+          formData.warrantyEndDate || 
+          formData.warrantyPeriod > 0 || 
+          formData.coverageType || 
+          formData.coverageDescription || 
+          formData.termsConditions || 
+          formData.included || 
+          formData.excluded || 
+          formData.supplierId
+        );
 
         const assetWarrantyData: CreateAssetWarrantyRequest = {
           asset: {
@@ -418,35 +429,37 @@ export default function AssetPage() {
             // Set default values for required asset fields
             isAmc: true
           },
-          warranty: {
-            // Only include warrantyTypeId if warranty type is selected
-            ...(formData.warrantyType && String(formData.warrantyType).trim() !== '' && { warrantyTypeId: parseInt(String(formData.warrantyType)) }),
-            // Include other fields if they have values
-            ...(formData.warrantyStartDate && formData.warrantyStartDate.trim() !== '' && { startDate: formData.warrantyStartDate }),
-            ...(formData.warrantyEndDate && formData.warrantyEndDate.trim() !== '' && { endDate: formData.warrantyEndDate }),
-            ...(formData.warrantyPeriod > 0 && { warrantyPeriod: formData.warrantyPeriod }),
-            ...(formData.coverageType && formData.coverageType.trim() !== '' && { coverageType: formData.coverageType }),
-            ...(formData.coverageDescription && formData.coverageDescription.trim() !== '' && { coverageDescription: formData.coverageDescription }),
-            ...(formData.termsConditions && formData.termsConditions.trim() !== '' && { termsConditions: formData.termsConditions }),
-            ...(formData.included && formData.included.trim() !== '' && { included: formData.included }),
-            ...(formData.excluded && formData.excluded.trim() !== '' && { excluded: formData.excluded }),
-            ...(formData.supplierId && formData.supplierId.trim() !== '' && { supplierId: formData.supplierId }),
+          ...(hasWarrantyData && {
+            warranty: {
+              // Only include warrantyTypeId if warranty type is selected
+              ...(formData.warrantyType && String(formData.warrantyType).trim() !== '' && { warrantyTypeId: parseInt(String(formData.warrantyType)) }),
+              // Include other fields if they have values
+              ...(formData.warrantyStartDate && formData.warrantyStartDate.trim() !== '' && { startDate: formData.warrantyStartDate }),
+              ...(formData.warrantyEndDate && formData.warrantyEndDate.trim() !== '' && { endDate: formData.warrantyEndDate }),
+              ...(formData.warrantyPeriod > 0 && { warrantyPeriod: formData.warrantyPeriod }),
+              ...(formData.coverageType && formData.coverageType.trim() !== '' && { coverageType: formData.coverageType }),
+              ...(formData.coverageDescription && formData.coverageDescription.trim() !== '' && { coverageDescription: formData.coverageDescription }),
+              ...(formData.termsConditions && formData.termsConditions.trim() !== '' && { termsConditions: formData.termsConditions }),
+              ...(formData.included && formData.included.trim() !== '' && { included: formData.included }),
+              ...(formData.excluded && formData.excluded.trim() !== '' && { excluded: formData.excluded }),
+              ...(formData.supplierId && formData.supplierId.trim() !== '' && { supplierId: formData.supplierId }),
  
-            // Set default values for required warranty fields
-            isActive: true,
-            autoRenewal: false
-          }
+              // Set default values for required warranty fields
+              isActive: true,
+              autoRenewal: false
+            }
+          })
         };
 
               // Log the request data for debugging
         console.log("Form data:", formData);
-        console.log("Warranty data will always be included");
+        console.log("Has warranty data:", hasWarrantyData);
         console.log("Warranty type selected:", formData.warrantyType);
-        console.log("Warranty object being created:", {
+        console.log("Warranty object being created:", hasWarrantyData ? {
           ...(formData.warrantyType && { warrantyTypeId: parseInt(String(formData.warrantyType)) }),
           isActive: true,
           autoRenewal: false
-        });
+        } : null);
         console.log("Sending asset warranty creation request:", JSON.stringify(assetWarrantyData, null, 2));
       
       console.log("About to make API call to assetWarrantyService.createAssetWarranty");
