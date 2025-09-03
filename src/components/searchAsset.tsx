@@ -238,7 +238,7 @@ export default function SearchAsset({
           </div>
         </div>
       )}
-
+  
       {/* Dropdown Results */}
       {showDropdown && (
         <div className="position-absolute w-100 mt-1" style={{ zIndex: 1050 }}>
