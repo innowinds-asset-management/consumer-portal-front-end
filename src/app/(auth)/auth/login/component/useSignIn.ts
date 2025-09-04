@@ -66,7 +66,7 @@ const useSignIn = () => {
       }
     } catch (error: any) {
       // Handle specific error types
-      let errorMessage = 'Invalid credentials. Please check your user ID and password.'
+      let errorMessage = 'Invalid username or password.'
       
       // Check for specific error types
       if (error?.statusCode === 429 || error?.message?.includes('Too many requests')) {
