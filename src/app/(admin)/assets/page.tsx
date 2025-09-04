@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 
 import ComponentContainerCard from "@/components/ComponentContainerCard";
 import { Accordion, AccordionBody, AccordionHeader, AccordionItem, Alert, Button } from "react-bootstrap";
-
+import { supplierService } from "@/services/api/suppliers";
 import { assetsService } from "@/services/api/assets";
 import { Grid } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
@@ -15,6 +15,7 @@ import {  Card, CardBody, CardHeader } from "react-bootstrap";
 import ChoicesFormInput from "@/components/form/ChoicesFormInput";
 import Select from 'react-select'
 import { options } from '@/components/form/data'
+import { departmentService } from "@/services/api/departments";
 // import MultipleSelect from "@/components/form/MultipleSelect";
 
 interface Asset {
@@ -51,6 +52,7 @@ export default function AssetListingPage() {
   const [filteredAssets, setFilteredAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
+  const [assetSubHeaderDescription, setAssetSubHeaderDescription] = useState<string>("");
 
   // Get filter parameters from URL
   const consumerId = searchParams.get('cid');
@@ -72,13 +74,21 @@ export default function AssetListingPage() {
       
         if (supplierId) {
           queryParams.supplierId = supplierId;
+          const supplier = await supplierService.getSupplierDetailsById(supplierId);
+          setAssetSubHeaderDescription('Supplier: ' + supplier.name);
         }
         if (departmentId) {
           queryParams.departmentId = departmentId;
+          const department = await departmentService.getDepartmentById(departmentId);
+          setAssetSubHeaderDescription('Department: ' + department.deptName);
         }
         if (groupstatus) {
           queryParams.groupstatus = groupstatus;
+          setAssetSubHeaderDescription('Group Status: ' + groupstatus.toUpperCase());
         }
+
+        if(Object.keys(queryParams).length === 0)
+          setAssetSubHeaderDescription('');
         
         console.log('Fetching assets with params:', queryParams);
         const data = await assetsService.getAssets(queryParams);
@@ -116,7 +126,7 @@ export default function AssetListingPage() {
         }
 
         // Add click handlers for Department column (4th column, index 3)
-        const departmentCells = document.querySelectorAll('td:nth-child(3)');
+        const departmentCells = document.querySelectorAll('td:nth-child(2)');
         if (departmentCells.length > 0) {
           departmentCells.forEach((cell, index) => {
             if (index < filteredAssets.length) {
@@ -135,7 +145,7 @@ export default function AssetListingPage() {
         }
 
         // Add click handlers for Supplier column (5th column, index 4)
-        const supplierCells = document.querySelectorAll('td:nth-child(4)');
+        const supplierCells = document.querySelectorAll('td:nth-child(3)');
         if (supplierCells.length > 0) {
           supplierCells.forEach((cell, index) => {
             if (index < filteredAssets.length) {
@@ -216,7 +226,7 @@ export default function AssetListingPage() {
     const warrantyStatus = getWarrantyStatus(asset.warranties || []);
     return [
       asset.assetName || "",
-      [asset.brand, asset.model].filter(Boolean).join(" - ") || "",
+      // [asset.brand, asset.model].filter(Boolean).join(" - ") || "",
       // asset.assetType?.assetName || "",
       // asset.assetSubType?.name || "",
       asset.department?.deptName || asset.departmentName || "",
@@ -235,6 +245,8 @@ export default function AssetListingPage() {
       <CardHeader className="border-bottom card-tabs d-flex flex-wrap align-items-center gap-2">
         <div className="flex-grow-1">
           <h4 className="header-title">Assets</h4>
+          <h5 className="header-title">{assetSubHeaderDescription}</h5>
+
         </div>
         <div className="d-flex flex-wrap flex-lg-nowrap gap-2">
           {/* <div className="flex-shrink-0 d-flex align-items-center gap-2">
@@ -330,7 +342,7 @@ export default function AssetListingPage() {
               data={gridData}
               columns={[
                 { name: "Asset Name", sort: false, search: true },
-                { name: "Model", sort: false, search: true },
+                // { name: "Model", sort: false, search: true },
                 // { name: "Asset Type", sort: false, search: true },
                 // { name: "Asset Sub Type", sort: false, search: true },
                 { name: "Department", sort: false, search: true },

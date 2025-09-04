@@ -108,13 +108,13 @@ const SupplierStats = () => {
                     Total Suppliers
                   </h2>
                   <h2 className="mt-2 mb-1 fw-bold fs-1 text-white">{supplierCount || 0}</h2>
-                  <p className="mb-0 fw-bold text-white">
+                  {/* <p className="mb-0 fw-bold text-white">
                     <span className="text-white me-1">
                       <IconifyIcon icon="ri:user-star-line" style={{ marginBottom: '5px', marginRight: '5px' }} />
                       Active
                     </span>
                     <span className="text-nowrap">Business partners</span>
-                  </p>
+                  </p> */}
                 </div>
                 <div className="avatar-lg flex-shrink-0">
                   <span className="avatar-title bg-white text-warning rounded fs-28">
