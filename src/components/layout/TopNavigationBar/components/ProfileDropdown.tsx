@@ -23,16 +23,16 @@ const ProfileDropdown = () => {
           type="button"
           aria-haspopup="false"
           aria-expanded="false">
-          <Image src={avatar3} width={32} className="rounded-circle me-lg-2 d-flex" alt="user-image" />
+          <IconifyIcon icon="mdi:user" className=" me-1 fs-16 align-middle" height={36} width={36} />
           <span className="d-lg-flex flex-column gap-1 d-none">
             <span className="fw-semibold">{user?.name || 'User'}</span>
           </span>
           <IconifyIcon icon="ri:arrow-down-s-line" className="d-none d-lg-block align-middle ms-2" />
         </DropdownToggle>
         <DropdownMenu className="dropdown-menu-end">
-          <DropdownHeader className="noti-title">
+          {/* <DropdownHeader className="noti-title">
             <h6 className="text-overflow m-0">Welcome {user?.name || 'User'}!</h6>
-          </DropdownHeader>
+          </DropdownHeader> */}
           {!isAppProduction && (
             <>
               <DropdownItem>
@@ -60,7 +60,7 @@ const ProfileDropdown = () => {
               </DropdownItem>
             </>
           )}
-          <DropdownItem 
+          <DropdownItem
             onClick={() => handleLogout()}
             className="active fw-semibold text-danger"
             disabled={isLoggingOut}

@@ -106,17 +106,17 @@ const DepartmentStats = () => {
                     Total Departments
                   </h2>
                   <h2 className="mt-2 mb-1 fw-bold fs-1 text-white">{departmentCount || 0}</h2>
-                  <p className="mb-0 fw-bold text-white">
+                  {/* <p className="mb-0 fw-bold text-white">
                     <span className="text-white me-1">
                       <IconifyIcon icon="ri:building-line" style={{ marginBottom: '5px', marginRight: '5px' }} />
                       Active
                     </span>
                     <span className="text-nowrap">Organizational units</span>
-                  </p>
+                  </p> */}
                 </div>
                 <div className="avatar-lg flex-shrink-0">
                   <span className="avatar-title bg-white text-success rounded fs-28">
-                    <IconifyIcon icon="solar:building-bold-duotone" />
+                    <IconifyIcon icon="fa:building" />
                   </span>
                 </div>
               </div>
