@@ -10,6 +10,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import { Button, Col, Form, Modal, ModalBody, ModalFooter, ModalHeader, ModalTitle, Row } from 'react-bootstrap'
+import MessageModal from '@/components/ui/MessageModal'
 
 const BootstrapModals = () => {
   const { isTrue: isStandardOpen, toggle: toggleStandard } = useToggle()
@@ -743,9 +744,102 @@ const VaryingModalContent = () => {
   )
 }
 
+const MessageModalDemo = () => {
+  const { isTrue: isMessageModalOpen, toggle: toggleMessageModal } = useToggle()
+  const { isTrue: isSuccessModalOpen, toggle: toggleSuccessModal } = useToggle()
+  const { isTrue: isInfoModalOpen, toggle: toggleInfoModal } = useToggle()
+  const { isTrue: isWarningModalOpen, toggle: toggleWarningModal } = useToggle()
+  const { isTrue: isDangerModalOpen, toggle: toggleDangerModal } = useToggle()
+
+  return (
+    <ComponentContainerCard 
+      title="Message Modal" 
+      description="Customizable message modal component with different variants and icons"
+    >
+      <div className="d-flex flex-wrap gap-2">
+        <Button variant="warning" onClick={toggleMessageModal}>
+          Default Message Modal
+        </Button>
+        <Button variant="success" onClick={toggleSuccessModal}>
+          Success Message
+        </Button>
+        <Button variant="info" onClick={toggleInfoModal}>
+          Info Message
+        </Button>
+        <Button variant="warning" onClick={toggleWarningModal}>
+          Warning Message
+        </Button>
+        <Button variant="danger" onClick={toggleDangerModal}>
+          Danger Message
+        </Button>
+      </div>
+
+      {/* Default Message Modal (matches screenshot) */}
+      <MessageModal
+        isOpen={isMessageModalOpen}
+        onClose={toggleMessageModal}
+        title="Well Done!"
+        message="Cras mattis consectetur purus sit amet fermentum. Cras justo odio, dapibus ac facilisis in, egestas eget quam."
+        buttonText="Continue"
+        variant="warning"
+        icon="ri:information-line"
+      />
+
+      {/* Success Message Modal */}
+      <MessageModal
+        isOpen={isSuccessModalOpen}
+        onClose={toggleSuccessModal}
+        title="Success!"
+        message="Your action has been completed successfully. All changes have been saved."
+        buttonText="Great!"
+        variant="success"
+        icon="ri:check-line"
+      />
+
+      {/* Info Message Modal */}
+      <MessageModal
+        isOpen={isInfoModalOpen}
+        onClose={toggleInfoModal}
+        title="Information"
+        message="Here's some important information you should know about this process."
+        buttonText="Got it"
+        variant="info"
+        icon="ri:information-line"
+      />
+
+      {/* Warning Message Modal */}
+      <MessageModal
+        isOpen={isWarningModalOpen}
+        onClose={toggleWarningModal}
+        title="Warning!"
+        message="Please be careful with this action. Make sure you understand the consequences."
+        buttonText="I Understand"
+        variant="warning"
+        icon="ri:alert-line"
+      />
+
+      {/* Danger Message Modal */}
+      <MessageModal
+        isOpen={isDangerModalOpen}
+        onClose={toggleDangerModal}
+        title="Error!"
+        message="Something went wrong. Please try again or contact support if the problem persists."
+        buttonText="Try Again"
+        variant="danger"
+        icon="ri:error-warning-line"
+      />
+    </ComponentContainerCard>
+  )
+}
+
 const AllModal = () => {
   return (
     <>
+      <Row>
+        <Col xl={12}>
+          <MessageModalDemo />
+        </Col>
+      </Row>
       <Row>
         <Col xl={6}>
           <BootstrapModals />

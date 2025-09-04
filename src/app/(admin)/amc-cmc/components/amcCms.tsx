@@ -12,6 +12,7 @@ import { assetsService, Asset } from '@/services/api/assets';
 import { supplierService, Supplier } from '@/services/api/suppliers';
 import SearchAsset from '@/components/searchAsset';
 import SearchableSupplier from '@/components/searchableSupplier';
+import MessageModal from '@/components/ui/MessageModal';
 
 interface AmcCmcFormData {
   contractName: string;
@@ -38,14 +39,13 @@ interface AmcCmcFormProps {
   initialData?: Partial<AmcCmcFormData>;
   isEdit?: boolean;
   onSubmit?: (data: AmcCmcFormData) => void;
-  fullPath?: string;
+  returnUrl?: string;
 }
-
 
 
 // Status options will be loaded dynamically from API
 
-export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, fullPath }: AmcCmcFormProps) {
+export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, returnUrl }: AmcCmcFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -79,6 +79,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, full
   const [submitted, setSubmitted] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({ type: null, text: '' });
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: boolean }>({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Contract types state
   const [contractTypes, setContractTypes] = useState<ContractType[]>([]);
@@ -105,7 +106,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, full
   const assetId = searchParams.get('aid');
   
   // Use fullPath from props only
-  const currentFullPath = fullPath;
+  const currentFullPath = returnUrl;
 
   useEffect(() => {
     if (supplierId) {
@@ -302,6 +303,27 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, full
         [field]: false
       }));
     }
+
+    // Date validation logic - End Date cannot be less than Start Date
+    if (field === 'startDate' || field === 'endDate') {
+      const currentFormData = { ...formData, [field]: value };
+      const startDate = field === 'startDate' ? value : currentFormData.startDate;
+      const endDate = field === 'endDate' ? value : currentFormData.endDate;
+      
+      // Validate end date cannot be less than start date
+      if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+        setValidationErrors(prev => ({
+          ...prev,
+          endDate: true
+        }));
+      } else if (validationErrors.endDate) {
+        // Clear the error if dates are now valid
+        setValidationErrors(prev => ({
+          ...prev,
+          endDate: false
+        }));
+      }
+    }
   };
 
   const handleAssetSelect = (asset: any) => {
@@ -329,6 +351,9 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, full
         assetId: false
       }));
     }
+    
+    console.log('Asset selected:', asset);
+    console.log('Form data after asset selection:', { ...formData, assetId: asset?.id || '', contractName });
   };
 
   const handleSupplierSelect = (supplier: any) => {
@@ -353,7 +378,10 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, full
     
     // Check mandatory fields
     if (!formData.serviceSupplierId) errors.serviceSupplierId = true;
-    if (!formData.assetId) errors.assetId = true;
+    if (!formData.assetId) {
+      errors.assetId = true;
+      console.log('Asset validation failed - assetId is missing:', formData.assetId);
+    }
     if (!formData.contractName?.trim()) errors.contractName = true;
     if (!formData.startDate) errors.startDate = true;
     if (!formData.endDate) errors.endDate = true;
@@ -361,6 +389,13 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, full
     if (!formData.coverageType) errors.coverageType = true;
     if (!formData.serviceFrequency) errors.serviceFrequency = true;
     if (!formData.paymentTerms) errors.paymentTerms = true;
+    
+    // Validate date range - End Date cannot be less than Start Date
+    if (formData.startDate && formData.endDate) {
+      if (new Date(formData.endDate) < new Date(formData.startDate)) {
+        errors.endDate = true;
+      }
+    }
     
     console.log('Validation errors:', errors); // Debug
     console.log('Current form data during validation:', formData); // Debug
@@ -376,12 +411,103 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, full
     return hasError;
   };
 
+  // Function to get today's date in YYYY-MM-DD format for min attribute
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
+  // Common function to reset form to initial state
+  const resetForm = (): void => {
+    setFormData({
+      contractName: '',
+      contractTypeId: undefined,
+      startDate: '',
+      endDate: '',
+      contractType: '',
+      coverageType: 'COMPREHENSIVE',
+      serviceFrequency: '',
+      paymentTerms: 'ONE_TIME',
+      status: 4,
+      assetId: '',
+      serviceSupplierId: '',
+      includes: '',
+      excludes: '',
+      preventiveMaintenanceIncluded: true,
+      breakdownMaintenanceIncluded: true,
+      autoRenewal: false,
+      createdBy: '',
+      amount: undefined
+    });
+    
+    // Clear selected components
+    setSelectedAsset(null);
+    setSelectedSupplier(null);
+    
+    // Clear validation errors
+    setValidationErrors({});
+    
+    // Clear any messages
+    setError('');
+    setMessage({ type: null, text: '' });
+  };
+
+  // Handle success modal close and redirection
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    
+    // Handle redirection after modal close
+    if (currentFullPath) {
+      console.log('Redirecting back to:', currentFullPath);
+      router.push(currentFullPath);
+    } else {
+      // Reset form after successful submission if no redirection
+      resetForm();
+    }
+  };
+
+  // Function to get validation error message
+  const getValidationErrorMessage = (fieldName: string) => {
+    // Check for specific date validation error
+    if (fieldName === 'endDate' && validationErrors.endDate && formData.startDate && formData.endDate) {
+      if (new Date(formData.endDate) < new Date(formData.startDate)) {
+        return 'End Date cannot be less than Start Date';
+      }
+    }
+    
+    // Default error messages
+    switch (fieldName) {
+      case 'serviceSupplierId':
+        return 'Please select a service supplier';
+      case 'assetId':
+        return 'Please select an asset';
+      case 'contractName':
+        return 'Contract name is required';
+      case 'startDate':
+        return 'Start date is required';
+      case 'endDate':
+        return 'End date is required';
+      case 'contractType':
+        return 'Contract type is required';
+      case 'coverageType':
+        return 'Coverage type is required';
+      case 'serviceFrequency':
+        return 'Service frequency is required';
+      case 'paymentTerms':
+        return 'Payment terms are required';
+      default:
+        return 'This field is required';
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate form before submission
     if (!validateForm()) {
       setError('Please fill in all mandatory fields');
+      console.log('Form validation failed. Current form data:', formData);
+      console.log('Current validation errors:', validationErrors);
       return;
     }
     
@@ -419,17 +545,9 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, full
           
           await serviceContractService.createServiceContract(contractData);
           setSubmitted(true);
-          setMessage({ type: 'success', text: 'Contract created successfully!' });
           
-          // Handle redirection after successful submission
-          if (currentFullPath) {
-            console.log('Redirecting back to:', currentFullPath);
-            // Redirect back to the original page after a short delay
-            setTimeout(() => {
-              router.push(currentFullPath);
-            }, 2000); // 2 second delay to show success message
-          } else {
-            // Reset form after successful submission if no redirection
+          // Show success modal instead of message
+          setShowSuccessModal(true);
             setFormData({
               contractName: '',
               contractTypeId: undefined,
@@ -459,10 +577,9 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, full
             setTimeout(() => setSubmitted(false), 3000);
           }
         }
-      }
     } catch (err) {
-              setError('Failed to save contract. Please try again.');
-        setMessage({ type: 'error', text: 'Failed to save contract. Please try again.' });
+      setError('Failed to save contract. Please try again.');
+      setMessage({ type: 'error', text: 'Failed to save contract. Please try again.' });
       console.error('Error saving contract:', err);
     } finally {
       setLoading(false);
@@ -470,7 +587,8 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, full
   };
 
   const handleCancel = () => {
-    router.back();
+    // Reset form to initial state
+    resetForm();
   };
 
   return (
@@ -500,7 +618,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, full
                   placeholder="Search for suppliers..."
                   label="Select Service Supplier"
                   required={true}
-                  error={hasValidationError('serviceSupplierId') ? 'Please select a service supplier' : ''}
+                  error={hasValidationError('serviceSupplierId') ? getValidationErrorMessage('serviceSupplierId') : ''}
                 />
               </div>
             </Col>
@@ -520,7 +638,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, full
                   placeholder="Search for assets..."
                   label="Select Asset"
                   required={true}
-                  error={hasValidationError('assetId') ? 'Please select an asset' : ''}
+                  error={hasValidationError('assetId') ? getValidationErrorMessage('assetId') : ''}
                 />
               </div>
             </Col>
@@ -571,7 +689,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, full
                   style={validationErrors.startDate ? { borderColor: '#dc3545', borderWidth: '2px' } : {}}
                 />
                 {validationErrors.startDate && (
-                  <div className="invalid-feedback">Start date is required</div>
+                  <div className="invalid-feedback">{getValidationErrorMessage('startDate')}</div>
                 )}
               </Form.Group>
             </Col>
@@ -585,11 +703,12 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, full
                   value={formData.endDate}
                   onChange={(e) => handleInputChange('endDate', e.target.value)}
                   required
+                  min={getTodayDate()}
                   className={validationErrors.endDate ? 'is-invalid' : ''}
                   style={validationErrors.endDate ? { borderColor: '#dc3545', borderWidth: '2px' } : {}}
                 />
                 {validationErrors.endDate && (
-                  <div className="invalid-feedback">End date is required</div>
+                  <div className="invalid-feedback">{getValidationErrorMessage('endDate')}</div>
                 )}
               </Form.Group>
             </Col>
@@ -876,6 +995,17 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, full
           <button type="button" className="btn-close" onClick={() => setMessage({ type: null, text: '' })}></button>
         </div>
       )}
+
+      {/* Success Message Modal */}
+      <MessageModal
+        isOpen={showSuccessModal}
+        onClose={handleSuccessModalClose}
+        title="Contract Created Successfully!"
+        buttonText="Continue"
+        variant="success"
+        icon="ri:check-line"
+        size="sm"
+      />
     </>
   );
 }
