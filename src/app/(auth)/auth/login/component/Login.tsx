@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Card, Col, Row } from 'react-bootstrap'
 import useSignIn from './useSignIn'
 import TextFormInput from '@/components/form/TextFormInput'
+import PasswordFormInput from '@/components/form/PasswordFormInput'
 
 const Login = () => {
   const { loading, login, control, error } = useSignIn()
@@ -73,13 +74,12 @@ const Login = () => {
                 />
               </div>
               <div className="mb-3">
-                <TextFormInput
+                <PasswordFormInput
                   control={control}
                   name="password"
                   placeholder="Enter your password"
                   className="bg-light bg-opacity-50 border-light py-2"
                   label="Password"
-                  type="password"
                 />
               </div>
               <div className="d-flex justify-content-between mb-3">
