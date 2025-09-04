@@ -38,13 +38,14 @@ interface AmcCmcFormProps {
   initialData?: Partial<AmcCmcFormData>;
   isEdit?: boolean;
   onSubmit?: (data: AmcCmcFormData) => void;
+  fullPath?: string;
 }
 
 
 
 // Status options will be loaded dynamically from API
 
-export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: AmcCmcFormProps) {
+export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, fullPath }: AmcCmcFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -68,7 +69,8 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
     amount: undefined,
     ...initialData
   });
-
+  console.log('Form data in AmcCmcForm:', formData); // Debug
+  
   const [selectedAsset, setSelectedAsset] = useState<any>(null);
   const [selectedSupplier, setSelectedSupplier] = useState<any>(null);
 
@@ -101,6 +103,9 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
   // Get supplier ID and asset ID from URL params
   const supplierId = searchParams.get('sid');
   const assetId = searchParams.get('aid');
+  
+  // Use fullPath from props only
+  const currentFullPath = fullPath;
 
   useEffect(() => {
     if (supplierId) {
@@ -129,6 +134,7 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
         
         setFormData(prev => ({
           ...prev,
+          assetId: id, // Ensure assetId is set in form data
           contractName: contractName
         }));
       }
@@ -144,6 +150,11 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
       const supplierData = await supplierService.getSupplierDetailsById(id);      
       if (supplierData) {
         setSelectedSupplier(supplierData);
+        // Ensure serviceSupplierId is set in form data
+        setFormData(prev => ({
+          ...prev,
+          serviceSupplierId: id
+        }));
       }
     } catch (error) {
       console.error('Error fetching supplier:', error);
@@ -273,6 +284,11 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
     console.log('Validation errors state changed:', validationErrors);
   }, [validationErrors]);
 
+  // Debug: Monitor form data changes
+  useEffect(() => {
+    console.log('Form data changed:', formData);
+  }, [formData]);
+
   const handleInputChange = (field: keyof AmcCmcFormData, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -347,6 +363,8 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
     if (!formData.paymentTerms) errors.paymentTerms = true;
     
     console.log('Validation errors:', errors); // Debug
+    console.log('Current form data during validation:', formData); // Debug
+    console.log('Selected asset during validation:', selectedAsset); // Debug
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -403,34 +421,43 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit }: Am
           setSubmitted(true);
           setMessage({ type: 'success', text: 'Contract created successfully!' });
           
-          // Reset form after successful submission - clear all fields to initial state
-          setFormData({
-            contractName: '',
-            contractTypeId: undefined,
-            startDate: '',
-            endDate: '',
-            paymentTerms: 'ONE_TIME', // Reset to default One Time
-            contractType: '',
-            coverageType: 'COMPREHENSIVE',
-            serviceFrequency: '',
-            includes: '',
-            excludes: '',
-            preventiveMaintenanceIncluded: true,
-            breakdownMaintenanceIncluded: true,
-            autoRenewal: false,
-            createdBy: '',
-            status: 4,
-            amount: undefined,
-            serviceSupplierId: '', // Clear selected supplier
-            assetId: '', // Clear selected asset
-          });
-          
-          // Reset selected components to clear the UI dropdowns
-          setSelectedAsset(null);
-          setSelectedSupplier(null);
-          
-          // Reset submitted state after 3 seconds
-          setTimeout(() => setSubmitted(false), 3000);
+          // Handle redirection after successful submission
+          if (currentFullPath) {
+            console.log('Redirecting back to:', currentFullPath);
+            // Redirect back to the original page after a short delay
+            setTimeout(() => {
+              router.push(currentFullPath);
+            }, 2000); // 2 second delay to show success message
+          } else {
+            // Reset form after successful submission if no redirection
+            setFormData({
+              contractName: '',
+              contractTypeId: undefined,
+              startDate: '',
+              endDate: '',
+              paymentTerms: 'ONE_TIME', // Reset to default One Time
+              contractType: '',
+              coverageType: 'COMPREHENSIVE',
+              serviceFrequency: '',
+              includes: '',
+              excludes: '',
+              preventiveMaintenanceIncluded: true,
+              breakdownMaintenanceIncluded: true,
+              autoRenewal: false,
+              createdBy: '',
+              status: 4,
+              amount: undefined,
+              serviceSupplierId: '', // Clear selected supplier
+              assetId: '', // Clear selected asset
+            });
+            
+            // Reset selected components to clear the UI dropdowns
+            setSelectedAsset(null);
+            setSelectedSupplier(null);
+            
+            // Reset submitted state after 3 seconds
+            setTimeout(() => setSubmitted(false), 3000);
+          }
         }
       }
     } catch (err) {

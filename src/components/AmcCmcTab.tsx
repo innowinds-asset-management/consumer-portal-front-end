@@ -6,6 +6,7 @@ import { Card, CardBody, Col, Row, Badge, Table, Button, Alert, Spinner } from '
 import { useRouter, useSearchParams } from 'next/navigation';
 import { formatDate } from "@/utils/date";
 import { serviceContractService, ServiceContract } from "@/services/api/serviceContract";
+import { getFullPath } from "@/helpers/getUrlHelper";
 
 interface AmcCmcTabProps {
   supplierId?: string;
@@ -63,16 +64,29 @@ export default function AmcCmcTab({
   }, [currentSupplierId]);
 
   const handleCreateContract = () => {
+    // Get current full path for redirection
+    const fullPath = getFullPath();    
+    // Build URL with parameters
+    let redirectUrl = '/amc-cmc/create';
+    const urlParams = new URLSearchParams();    
     if (assetId) {
-      // If assetId exists, redirect to create page with assetId
-      router.push(`/amc-cmc/create?aid=${assetId}`);
+      urlParams.append('aid', assetId);
     } else if (supplier) {
-      // If supplier exists, redirect to create page with supplierId
-      router.push(`/amc-cmc/create?sid=${supplier.id}`);
-    } else {
-      // Default redirect
-      router.push('/amc-cmc/create');
+      urlParams.append('sid', supplier.id);
     }
+    
+    // Add returnUrl parameter (more semantic than fullPath)
+    if (fullPath) {
+      urlParams.append('returnUrl', encodeURIComponent(fullPath));
+    }
+    
+    // Append parameters to URL
+    if (urlParams.toString()) {
+      redirectUrl += `?${urlParams.toString()}`;
+    }
+    
+    console.log('Redirecting to:', redirectUrl);
+    router.push(redirectUrl);
   };
 
   const getStatusBadgeColor = (status: string) => {
