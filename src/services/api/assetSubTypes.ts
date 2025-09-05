@@ -13,6 +13,31 @@ export interface AssetSubType {
   updatedAt: string
 }
 
+// Asset Type interface for search results
+export interface AssetType {
+  id: string
+  assetName: string
+  code: string
+  description: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  industryId: string
+}
+
+// Search result interface that includes both asset sub type and asset type
+export interface AssetSubTypeSearchResult {
+  id: string
+  assetTypeId: string
+  name: string
+  code: string
+  description: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  assetType: AssetType
+}
+
 // Asset Sub-Types API service
 class AssetSubTypesService {
   // Get all asset sub-types
@@ -66,6 +91,17 @@ class AssetSubTypesService {
       return response.data
     } catch (error) {
       console.error('Error searching asset sub-types by asset type ID:', error)
+      throw error
+    }
+  }
+
+  // Search all asset sub-types with asset type information
+  async searchAllAssetSubTypes(searchWord: string): Promise<AssetSubTypeSearchResult[]> {
+    try {
+      const response = await httpClient.get<AssetSubTypeSearchResult[]>(`/asset-sub-type/searchAll?search=${encodeURIComponent(searchWord)}`)
+      return response.data
+    } catch (error) {
+      console.error('Error searching all asset sub-types:', error)
       throw error
     }
   }

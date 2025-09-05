@@ -7,7 +7,7 @@ import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { Button, Col, Form, Row, Alert, Card, CardBody, CardHeader } from 'react-bootstrap'
 import { assetTypesService, AssetType } from '@/services/api/assetTypes'
-import { assetSubTypesService, AssetSubType } from '@/services/api/assetSubTypes'
+import { assetSubTypesService, AssetSubType, AssetSubTypeSearchResult } from '@/services/api/assetSubTypes'
 import { departmentService, Department } from '@/services/api/departments'
 import { STORAGE_KEYS } from "@/utils/constants";
 import { supplierService, Supplier } from '@/services/api/suppliers'
@@ -17,6 +17,7 @@ import { toast } from 'react-toastify';
 import Select from 'react-select';
 
 import CreateDepartmentModal from '@/components/CreateDepartmentModal'
+import AssetTypeSubTypeSearchModal from '@/components/AssetTypeSubTypeSearchModal'
 
 // Form data interface
 interface FormData {
@@ -97,6 +98,7 @@ export default function AssetPage() {
    const [suppliersError, setSuppliersError] = useState("");
    const [warrantyTypesError, setWarrantyTypesError] = useState("");
    const [showCreateDepartmentModal, setShowCreateDepartmentModal] = useState(false);
+   const [showAssetSearchModal, setShowAssetSearchModal] = useState(false);
 
       // Form data state
   const [formData, setFormData] = useState<FormData>({
@@ -215,6 +217,7 @@ export default function AssetPage() {
       try {
         setAssetSubTypesError("");
         const data = await assetSubTypesService.getAssetSubTypesByAssetTypeId(formData.assetType);
+        // console.log('data===>',data)
         setAssetSubTypes(data);
       } catch (err) {
         console.error('Error fetching asset sub-types:', err);
@@ -527,6 +530,17 @@ export default function AssetPage() {
      }
    };
 
+   // Handle asset sub type selection from search modal
+   const handleAssetSelection = (assetTypeId: string, assetSubTypeId: string) => {
+    console.log('assetTypeId',assetTypeId),
+    console.log('assetSubTypeId',assetSubTypeId),
+     setFormData(prev => ({
+       ...prev,
+       assetType: assetTypeId,
+       subAssetType: assetSubTypeId
+     }));    
+   };
+
    // Reset form
    const handleReset = () => {
     setFormData({
@@ -557,6 +571,7 @@ export default function AssetPage() {
     setErrors({});
   };
 
+  // console.log('sub asset Id======>',formData.subAssetType)
   return (
     <>
 
@@ -633,21 +648,33 @@ export default function AssetPage() {
                       
                       <Col lg={4}>
                         <div className="mb-3">
-                          <Form.Label htmlFor="subAssetType">Sub Asset Type *</Form.Label>
+                          <div className="d-flex align-items-center mb-2">
+                            <Form.Label htmlFor="subAssetType" className="mb-0 me-2">Sub Asset Type *</Form.Label>
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              onClick={() => setShowAssetSearchModal(true)}
+                              className="d-flex align-items-center p-1"
+                              style={{ minWidth: '24px', height: '24px' }}
+                              title="Search Sub Asset Types"
+                            >
+                              <IconifyIcon icon="tabler:search" style={{ fontSize: '12px' }} />
+                            </Button>
+                          </div>
                           <Select
                             id="subAssetType"
                             className="select2"
                             classNamePrefix="select2"
                             value={assetSubTypes.find(ast => ast.id === formData.subAssetType) ? {
                               value: formData.subAssetType,
-                              label: `${assetSubTypes.find(ast => ast.id === formData.subAssetType)?.name} (${assetSubTypes.find(ast => ast.id === formData.subAssetType)?.code})`
+                              label: `${assetSubTypes.find(ast => ast.id === formData.subAssetType)?.name}`
                             } : null}
                             onChange={(selectedOption: any) => 
                               handleFieldChange("subAssetType", selectedOption ? selectedOption.value : "")
                             }
                             options={assetSubTypes.map(ast => ({
                               value: ast.id,
-                              label: `${ast.name} (${ast.code})`
+                              label: `${ast.name}`
                             }))}
                             placeholder="Type to search sub asset types..."
                             isDisabled={!formData.assetType || loadingAssetTypes}
@@ -658,6 +685,7 @@ export default function AssetPage() {
                             onInputChange={(inputValue: string, { action }) => {
                               // Only update options when user is typing, not when selecting
                               if (action === 'input-change' && inputValue && inputValue.length >= 2) {
+                                // console.log('inside input change111'),
                                 searchAssetSubTypes(inputValue).then(searchResults => {
                                   setAssetSubTypes(searchResults);
                                 }).catch(err => {
@@ -666,6 +694,7 @@ export default function AssetPage() {
                               } else if (action === 'input-change' && inputValue === '') {
                                 // Reset to initial list when search is cleared
                                 if (formData.assetType) {
+                                  // console.log('inside input change222'),
                                   assetSubTypesService.getAssetSubTypesByAssetTypeId(formData.assetType).then(data => {
                                     setAssetSubTypes(data);
                                   }).catch(err => {
@@ -1221,6 +1250,13 @@ export default function AssetPage() {
          onHide={() => setShowCreateDepartmentModal(false)}
          onSuccess={handleDepartmentCreated}
          existingDepartments={departments}
+       />
+
+       {/* Asset Type & Sub Type Search Modal */}
+       <AssetTypeSubTypeSearchModal
+         show={showAssetSearchModal}
+         onHide={() => setShowAssetSearchModal(false)}
+         onSelect={handleAssetSelection}
        />
      </>
    );
