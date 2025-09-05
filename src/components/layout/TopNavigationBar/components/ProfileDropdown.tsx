@@ -23,7 +23,7 @@ const ProfileDropdown = () => {
           type="button"
           aria-haspopup="false"
           aria-expanded="false">
-          <IconifyIcon icon="mdi:user" className=" me-1 fs-16 align-middle" height={36} width={36} />
+          <IconifyIcon icon="mingcute:user-4-fill" className=" me-1 fs-16 align-middle" height={36} width={36} />
           <span className="d-lg-flex flex-column gap-1 d-none">
             <span className="fw-semibold">{user?.name || 'User'}</span>
           </span>
