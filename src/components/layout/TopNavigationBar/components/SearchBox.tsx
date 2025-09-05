@@ -8,7 +8,7 @@ const SearchBox = () => {
   const { isTrue, toggle } = useToggle()
   return (
     <>
-      <div onClick={toggle} className="topbar-search d-none d-xl-flex gap-2 me-2 align-items-center" data-bs-toggle="modal" data-bs-target="#searchModal">
+      <div onClick={toggle} className="topbar-search d-none d-xl-flex gap-2 me-2 align-items-center" data-bs-toggle="modal" data-bs-target="#searchModal" style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', color: 'white' }}>
         <IconifyIcon icon="ri:search-line" className="fs-18" />
         <span className="me-2">Search something..</span>
       </div>
