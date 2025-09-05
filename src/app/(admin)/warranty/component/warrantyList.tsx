@@ -157,16 +157,7 @@ const WarrantyList: React.FC = () => {
                 >
                   <IconifyIcon icon="ri:refresh-line" />
                   Refresh
-                </Button>
-                <Button 
-                  variant="primary" 
-                  onClick={() => router.push('/warranty/create')}
-                  size="sm"
-                  className="d-flex align-items-center gap-2"
-                >
-                  <IconifyIcon icon="ri:add-line" />
-                  Add Warranty
-                </Button>
+                </Button>                
               </div>
             </CardHeader>
           </Card>

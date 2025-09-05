@@ -169,7 +169,6 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, retu
       // Fetch contract types
       setLoadingContractTypes(true);
       try {
-        console.log('Fetching contract types...'); // Debug
         const contractTypesData = await contractTypesService.getContractTypes();
         console.log('Contract types response:', contractTypesData); // Debug
         setContractTypes(contractTypesData);
@@ -183,7 +182,6 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, retu
       // Fetch service contract statuses
       setLoadingStatuses(true);
       try {
-        console.log('Fetching service contract statuses...'); // Debug
         const statusesData = await serviceContractStatusService.getServiceContractStatuses();
         console.log('Service contract statuses response:', statusesData); // Debug
         setServiceContractStatuses(statusesData);
@@ -197,7 +195,6 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, retu
       // Fetch service frequencies
       setLoadingFrequencies(true);
       try {
-        console.log('Fetching service frequencies...'); // Debug
         const frequenciesData = await serviceFrequencyService.getServiceFrequencies();
         console.log('Service frequencies response:', frequenciesData); // Debug
         setServiceFrequencies(frequenciesData);
@@ -211,7 +208,6 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, retu
       // Fetch payment terms
       setLoadingPaymentTerms(true);
       try {
-        console.log('Fetching payment terms...'); // Debug
         const paymentTermsData = await paymentTermsService.getPaymentTerms();
         console.log('Payment terms response:', paymentTermsData); // Debug
         setPaymentTerms(paymentTermsData);
@@ -544,35 +540,13 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, retu
           console.log('🚀 Final Request Body for Service Contract Creation:', JSON.stringify(contractData, null, 2));
           
           await serviceContractService.createServiceContract(contractData);
-          setSubmitted(true);
-          
+          setSubmitted(true);          
           // Show success modal instead of message
-          setShowSuccessModal(true);
-            setFormData({
-              contractName: '',
-              contractTypeId: undefined,
-              startDate: '',
-              endDate: '',
-              paymentTerms: 'ONE_TIME', // Reset to default One Time
-              contractType: '',
-              coverageType: 'COMPREHENSIVE',
-              serviceFrequency: '',
-              includes: '',
-              excludes: '',
-              preventiveMaintenanceIncluded: true,
-              breakdownMaintenanceIncluded: true,
-              autoRenewal: false,
-              createdBy: '',
-              status: 4,
-              amount: undefined,
-              serviceSupplierId: '', // Clear selected supplier
-              assetId: '', // Clear selected asset
-            });
-            
-            // Reset selected components to clear the UI dropdowns
-            setSelectedAsset(null);
-            setSelectedSupplier(null);
-            
+          setShowSuccessModal(true);           
+          resetForm();          
+          // Reset selected components to clear the UI dropdowns
+          setSelectedAsset(null);
+          setSelectedSupplier(null);            
             // Reset submitted state after 3 seconds
             setTimeout(() => setSubmitted(false), 3000);
           }
