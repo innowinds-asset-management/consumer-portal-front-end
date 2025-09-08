@@ -1,5 +1,33 @@
 import { API_URL } from '@/config/environment'
 import { User } from '@/types/admin'
+import { STORAGE_KEYS } from '@/utils/constants'
+
+// Backend user response type
+interface BackendUser {
+  id: string
+  email: string
+  name: string
+  role: string
+  isActive: boolean
+  consumerId: string
+  userId: string
+  createdAt: string
+  updatedAt: string
+  consumer?: {
+    id: string
+    email: string | null
+    phone: string | null
+    company: string | null
+    address: string | null
+    city: string | null
+    state: string | null
+    zipCode: string | null
+    country: string | null
+    isActive: boolean
+    createdAt: string
+    updatedAt: string
+  }
+}
 
 // Auth interfaces
 export interface LoginCredentials {
@@ -79,9 +107,9 @@ class AuthHttpClient {
     }
   }
 
-  get<T>(endpoint: string) { return this.request<T>(endpoint, { method: 'GET' }) }
+  get<T>(endpoint: string, options: RequestInit = {}) { return this.request<T>(endpoint, { method: 'GET', ...options }) }
   post<T>(endpoint: string, body: any) { return this.request<T>(endpoint, { method: 'POST', body: JSON.stringify(body) }) }
-  put<T>(endpoint: string, body: any) { return this.request<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) }) }
+  put<T>(endpoint: string, body: any, options: RequestInit = {}) { return this.request<T>(endpoint, { method: 'PUT', body: JSON.stringify(body), ...options }) }
   delete<T>(endpoint: string) { return this.request<T>(endpoint, { method: 'DELETE' }) }
 }
 
@@ -112,9 +140,18 @@ class AuthService {
   }
 
   // Get current user profile
-  async getProfile(): Promise<User> {
+  async getProfile(): Promise<BackendUser> {
     try {
-      const response = await authHttp.get<User>('/auth/profile')
+      const token = localStorage.getItem(STORAGE_KEYS.authToken)
+      if (!token) {
+        throw new Error('No authentication token found')
+      }
+
+      const response = await authHttp.get<BackendUser>('/auth/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
       return response
     } catch (error) {
       console.error('Error fetching user profile:', error)
@@ -196,7 +233,16 @@ class AuthService {
   // Update profile
   async updateProfile(profileData: Partial<User>): Promise<User> {
     try {
-      const response = await authHttp.put<User>('/auth/profile', profileData)
+      const token = localStorage.getItem(STORAGE_KEYS.authToken)
+      if (!token) {
+        throw new Error('No authentication token found')
+      }
+
+      const response = await authHttp.put<User>('/auth/profile', profileData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
       return response
     } catch (error) {
       console.error('Error updating profile:', error)
