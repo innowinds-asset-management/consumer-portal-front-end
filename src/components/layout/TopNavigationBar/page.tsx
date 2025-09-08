@@ -17,7 +17,7 @@ const TopNavigationBar = () => {
     <header 
       className="app-topbar"
       style={{ 
-        background: 'linear-gradient(135deg, #0932c1, #1286ae, #082a71)',
+        background: 'linear-gradient(135deg, #2c2c2c, #1a1a1a, #0d0d0d)',
         color: 'white'
       }}
     >
@@ -37,6 +37,25 @@ const TopNavigationBar = () => {
           <ProfileDropdown />
         </div>
       </div>
+      <style jsx>{`
+        .app-topbar .topbar-item,
+        .app-topbar .topbar-link,
+        .app-topbar .sidenav-toggle-button,
+        .app-topbar .topnav-toggle-button {
+          color: white !important;
+        }
+        
+        .app-topbar .topbar-item:hover,
+        .app-topbar .topbar-link:hover,
+        .app-topbar .sidenav-toggle-button:hover,
+        .app-topbar .topnav-toggle-button:hover {
+          color: rgba(255, 255, 255, 0.8) !important;
+        }
+        
+        .app-topbar .nav-user {
+          border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+      `}</style>
     </header>
   )
 }

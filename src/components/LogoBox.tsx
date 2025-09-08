@@ -12,8 +12,8 @@ const LogoBox = () => {
       <span className="logo-light">
         <span className="logo-lg">
           <Image 
-            width={180} 
-            height={30} 
+            width={160} 
+            height={26} 
             src={assetnixLogo} 
             alt="AssetNix logo" 
             style={{
@@ -44,15 +44,15 @@ const LogoBox = () => {
         
         @media (max-width: 768px) {
           .logo-image {
-            width: 140px !important;
-            height: 23px !important;
+            width: 130px !important;
+            height: 21px !important;
           }
         }
         
         @media (max-width: 480px) {
           .logo-image {
-            width: 120px !important;
-            height: 20px !important;
+            width: 110px !important;
+            height: 18px !important;
           }
         }
       `}</style>
