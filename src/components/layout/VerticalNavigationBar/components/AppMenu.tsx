@@ -159,7 +159,7 @@ const AppMenu = ({ menuItems }: AppMenuProps) => {
   )
 
   const activeMenu = useCallback(() => {
-    const trimmedURL = pathname?.replaceAll('', '')
+    const trimmedURL = pathname.replace(/\/$/, ''); 
     const matchingMenuItem = getMenuItemFromURL(menuItems, trimmedURL)
 
     if (matchingMenuItem) {

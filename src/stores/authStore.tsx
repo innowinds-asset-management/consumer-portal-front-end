@@ -4,6 +4,33 @@ import { User, AuthState } from '@/types/admin'
 import { authService, LoginCredentials } from '@/services/api/auth'
 import { STORAGE_KEYS } from '@/utils/constants'
 
+// Backend user response type
+interface BackendUser {
+  id: string
+  email: string
+  name: string
+  role: string
+  isActive: boolean
+  consumerId: string
+  userId: string
+  createdAt: string
+  updatedAt: string
+  consumer?: {
+    id: string
+    email: string | null
+    phone: string | null
+    company: string | null
+    address: string | null
+    city: string | null
+    state: string | null
+    zipCode: string | null
+    country: string | null
+    isActive: boolean
+    createdAt: string
+    updatedAt: string
+  }
+}
+
 // Action types
 type AuthAction =
   | { type: 'LOGIN_START' }
@@ -150,21 +177,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
           try {
             dispatch({ type: 'LOAD_USER_START' })
             
-            // TODO: Replace with actual profile endpoint when backend is ready
-            // For now, we'll skip the profile call to prevent 404 errors
-            // Backend needs to implement: GET /api/v1/auth/profile
-            console.log('⚠️ Profile endpoint not available, skipping profile load')
+            // Use the real profile endpoint
+            const user: BackendUser = await authService.getProfile()
+
+            // console.log('user', user)
             
-            // Create a mock user object from token (temporary solution)
-            const mockUser = {
-              id: '1',
-              name: 'User',
-              email: 'user@example.com',
-              role: 'user' as const,
-              status: 'active' as const,
+            // Transform the backend user data to match frontend User type
+            const transformedUser: User = {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              role: user.role.toLowerCase() as 'admin' | 'user',
+              status: user.isActive ? 'active' as const : 'inactive' as const,
               avatar: '',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
+              createdAt: user.createdAt,
+              updatedAt: user.updatedAt,
               preferences: {
                 theme: 'light' as const,
                 language: 'en',
@@ -178,7 +205,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               },
             }
             
-            dispatch({ type: 'LOAD_USER_SUCCESS', payload: mockUser })
+            dispatch({ type: 'LOAD_USER_SUCCESS', payload: transformedUser })
           } catch (error) {
             console.error('Failed to load user:', error)
             
@@ -258,9 +285,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       dispatch({ type: 'LOAD_USER_START' })
       
-      const user = await authService.getProfile()
+      const user: BackendUser = await authService.getProfile()
       
-      dispatch({ type: 'LOAD_USER_SUCCESS', payload: user })
+      // Transform the backend user data to match frontend User type
+      const transformedUser: User = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role.toLowerCase() as 'admin' | 'user',
+        status: user.isActive ? 'active' as const : 'inactive' as const,
+        avatar: '',
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        preferences: {
+          theme: 'light' as const,
+          language: 'en',
+          timezone: 'UTC',
+          notifications: {
+            email: true,
+            push: true,
+            sms: false,
+            frequency: 'immediate' as const,
+          },
+        },
+      }
+      
+      dispatch({ type: 'LOAD_USER_SUCCESS', payload: transformedUser })
     } catch (error) {
       console.error('Failed to load user:', error)
       

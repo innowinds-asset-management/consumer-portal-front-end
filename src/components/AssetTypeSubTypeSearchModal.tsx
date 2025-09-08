@@ -133,7 +133,7 @@ const AssetTypeSubTypeSearchModal: React.FC<AssetTypeSubTypeSearchModalProps> = 
         {searchResults.length > 0 && (
           <div className="mb-4">
             <h6 className="mb-3">Search Results ({searchResults.length} found)</h6>
-            <div className="border rounded" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            <div className="border rounded" style={{ maxHeight: '270px', overflowY: 'auto' }}>
               <Table hover responsive className="mb-0">
                 <thead className="table-light">
                   <tr>
@@ -172,24 +172,6 @@ const AssetTypeSubTypeSearchModal: React.FC<AssetTypeSubTypeSearchModalProps> = 
           </div>
         )}
 
-        {/* Selected Items Display */}
-        {(selectedAssetType || selectedAssetSubType) && (
-          <div className="mb-3">
-            <h6>Selected Items</h6>
-            <div className="bg-light p-3 rounded">
-              {selectedAssetType && (
-                <div className="mb-2">
-                  <strong>Asset Type:</strong> {selectedAssetType.assetName}
-                </div>
-              )}
-              {selectedAssetSubType && (
-                <div>
-                  <strong>Asset Sub Type:</strong> {selectedAssetSubType.name}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </Modal.Body>
 
       <Modal.Footer>
@@ -199,7 +181,7 @@ const AssetTypeSubTypeSearchModal: React.FC<AssetTypeSubTypeSearchModalProps> = 
         <Button 
           variant="primary" 
           onClick={handleSubmit}
-          disabled={!selectedAssetType || !selectedAssetSubType}
+          disabled={!selectedAssetType || !selectedAssetSubType || !searchResults.length}
         >
           <IconifyIcon icon="tabler:check" className="me-1" />
           Select & Apply
