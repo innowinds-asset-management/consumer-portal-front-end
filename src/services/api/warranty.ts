@@ -20,7 +20,7 @@ export interface Warranty {
   createdAt: string;
   updatedAt: string;
   consumerId: string;
-  supplierId: string;
+  supplierId: string | null;
   excluded: string | null;
   included: string | null;
   warrantyType: {
@@ -55,7 +55,7 @@ export interface Warranty {
     grnId: string | null;
     grnItemId: string | null;
     poLineItemId: string | null;
-    supplierId: string;
+    supplierId: string | null;
     supplierSerialNo: string | null;
     assetConditionCode: string | null;
     ageDays: number;
@@ -66,12 +66,20 @@ export interface Warranty {
   notifications: any[];
 }
 
+// API Response interface
+interface WarrantyApiResponse {
+  success: number;
+  msg: string;
+  code: string;
+  payload: Warranty[];
+}
+
 class WarrantyService {
   // Get all warranties
   async getWarranties(): Promise<Warranty[]> {
     try {
-      const response = await httpClient.get<Warranty[]>('/warranty')
-      return response.data
+      const response = await httpClient.get<WarrantyApiResponse>('/warranty')
+      return response.data.payload
     } catch (error) {
       console.error('Error fetching warranties:', error)
       throw error
@@ -82,6 +90,8 @@ class WarrantyService {
     try {
       const response = await httpClient.get<Warranty[]>(`/warranty/asset/${assetId}`)
       return response.data
+      //const response = await httpClient.get<WarrantyApiResponse>(`/warranty/asset/${assetId}`)
+      //return response.data.payload
     } catch (error) {
       console.error('Error fetching warranties by asset ID:', error)
       throw error

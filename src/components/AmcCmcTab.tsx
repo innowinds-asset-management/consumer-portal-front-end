@@ -36,32 +36,60 @@ export default function AmcCmcTab({
 
   // Get supplier ID from URL params or props
   const currentSupplierId = supplierId || searchParams.get('sid') || supplier?.id;
+  // Get asset ID from URL params or props
+  const currentAssetId = assetId || searchParams.get('aid');
+
   
-  // Filter contracts by asset if assetId is provided
-  const filteredContracts = assetId 
-    ? contracts.filter(contract => contract.assetId === assetId)
-    : contracts;
+  // Use contracts directly since we're fetching the correct data based on context
+  // Ensure it's always an array
+  const filteredContracts = Array.isArray(contracts) ? contracts : [];
 
   useEffect(() => {
     const fetchContracts = async () => {
-      if (!currentSupplierId) return;
+      // Don't fetch if we don't have either supplierId or assetId
+      if (!currentSupplierId && !currentAssetId) {
+        setContracts([]);
+        return;
+      }
       
       setLoading(true);
       setError(''); 
       
       try {
-        const data = await serviceContractService.getServiceContractsBySupplierId(currentSupplierId);
+        let data: ServiceContract[] = [];
+        
+        // If we have an assetId, fetch contracts by asset
+        if (currentAssetId) {
+          console.log('Fetching contracts for assetId:', currentAssetId);
+          data = await serviceContractService.getServiceContractsByAssetId(currentAssetId);
+          console.log('Asset contracts data:', data);
+        } 
+        // Otherwise, if we have a supplierId, fetch contracts by supplier
+        else if (currentSupplierId) {
+          console.log('Fetching contracts for supplierId:', currentSupplierId);
+          data = await serviceContractService.getServiceContractsBySupplierId(currentSupplierId);
+          console.log('Supplier contracts data:', data);
+        }
+        
+        // Ensure data is always an array
+        if (!Array.isArray(data)) {
+          console.warn('API returned non-array data:', data);
+          data = [];
+        }
+        
         setContracts(data);
+        
       } catch (err) {
         setError('Failed to load contracts');
         console.error('Error fetching contracts:', err);
+        setContracts([]); // Ensure contracts is always an array
       } finally {
         setLoading(false);
       }
     };
 
     fetchContracts();
-  }, [currentSupplierId]);
+  }, [currentSupplierId, currentAssetId]);
 
   const handleCreateContract = () => {
     // Get current full path for redirection
@@ -69,8 +97,8 @@ export default function AmcCmcTab({
     // Build URL with parameters
     let redirectUrl = '/amc-cmc/create';
     const urlParams = new URLSearchParams();    
-    if (assetId) {
-      urlParams.append('aid', assetId);
+    if (currentAssetId) {
+      urlParams.append('aid', currentAssetId);
     } else if (supplier) {
       urlParams.append('sid', supplier.id);
     }

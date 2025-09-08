@@ -111,6 +111,11 @@ class ServiceContractService {
       throw error
     }
   }
+
+  async getServiceContractsByAssetId(assetId: string): Promise<ServiceContract[]> {
+    const response = await httpClient.get<ServiceContract[]>(`${this.baseURL}/asset-contract/${assetId}`)
+    return response.data
+  }
 }
 
 export const serviceContractService = new ServiceContractService()
