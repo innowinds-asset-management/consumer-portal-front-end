@@ -6,7 +6,7 @@ import { Card, CardBody, Col, Row, Badge, Table, Button, Alert, Spinner } from '
 import { useRouter, useSearchParams } from 'next/navigation';
 import { formatDate } from "@/utils/date";
 import { serviceContractService, ServiceContract } from "@/services/api/serviceContract";
-import { getFullPath } from "@/helpers/getUrlHelper";
+import { getFullPath, buildReirectURL } from "@/helpers/getUrlHelper";
 
 interface AmcCmcTabProps {
   supplierId?: string;
@@ -91,9 +91,7 @@ export default function AmcCmcTab({
     fetchContracts();
   }, [currentSupplierId, currentAssetId]);
 
-  const handleCreateContract = () => {
-    // Get current full path for redirection
-    const fullPath = getFullPath();    
+  const handleCreateContract = () => {   
     // Build URL with parameters
     let redirectUrl = '/amc-cmc/create';
     const urlParams = new URLSearchParams();    
@@ -102,17 +100,7 @@ export default function AmcCmcTab({
     } else if (supplier) {
       urlParams.append('sid', supplier.id);
     }
-    
-    // Add returnUrl parameter (more semantic than fullPath)
-    if (fullPath) {
-      urlParams.append('returnUrl', encodeURIComponent(fullPath));
-    }
-    
-    // Append parameters to URL
-    if (urlParams.toString()) {
-      redirectUrl += `?${urlParams.toString()}`;
-    }
-    
+    redirectUrl = buildReirectURL(redirectUrl,getFullPath(), urlParams);      
     console.log('Redirecting to:', redirectUrl);
     router.push(redirectUrl);
   };

@@ -207,3 +207,10 @@ export const buildUrl = (
   
   return url;
 };
+
+export const buildReirectURL = (redirectUrl: string,fullPath: string, urlParams: URLSearchParams): string => {
+  if (fullPath) {
+    urlParams.append('returnUrl', encodeURIComponent(fullPath));
+  }
+  return redirectUrl + '?' + urlParams.toString();
+};
