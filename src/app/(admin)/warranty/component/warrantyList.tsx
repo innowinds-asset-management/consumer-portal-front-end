@@ -12,6 +12,7 @@ import { warrantyService, Warranty } from "@/services/api/warranty";
 const WarrantyList: React.FC = () => {
   const router = useRouter();
   const [warranties, setWarranties] = useState<Warranty[]>([]);
+  const [msg, setMsg] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   
@@ -21,7 +22,8 @@ const WarrantyList: React.FC = () => {
       setLoading(true);
       setError("");      
       const data = await warrantyService.getWarranties();
-      setWarranties(data);
+      setMsg(data.msg);
+      setWarranties(data.payload);
     } catch (err) {
       console.error('Error fetching warranties:', err);
       setError("Failed to load warranties. Please try again.");
@@ -173,15 +175,8 @@ const WarrantyList: React.FC = () => {
       {warranties.length === 0 ? (
         <div className="text-center text-muted my-5">
           <IconifyIcon icon="solar:shield-check-bold-duotone" className="mb-3" style={{ fontSize: '3rem' }} />
-          <h5>No warranties found</h5>
-          <p>There are no warranties to display at the moment.</p>
-          <Button 
-            variant="primary" 
-            onClick={() => router.push('/warranty/create')}
-          >
-            <IconifyIcon icon="ri:add-line" className="me-2" />
-            Create First Warranty
-          </Button>
+          <h5>{msg}</h5>
+          <p>There are no warranties to display at the moment.</p>          
         </div>
       ) : (
         <div className="table-responsive">

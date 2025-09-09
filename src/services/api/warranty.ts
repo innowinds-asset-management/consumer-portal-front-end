@@ -76,10 +76,16 @@ interface WarrantyApiResponse {
 
 class WarrantyService {
   // Get all warranties
-  async getWarranties(): Promise<Warranty[]> {
+  //async getWarranties(): Promise<Warranty[]> {
+  async getWarranties(): Promise<WarrantyApiResponse> {
     try {
-      const response = await httpClient.get<WarrantyApiResponse>('/warranty')
-      return response.data.payload
+      const response = await httpClient.get<WarrantyApiResponse>('/warranty');
+      if (response.data.success === 1) {
+        return response.data;
+      } else {
+        // You can throw an error with the message from the API, or a default message
+        throw new Error(response.data.msg || 'Failed to fetch warranties');
+      }
     } catch (error) {
       console.error('Error fetching warranties:', error)
       throw error
