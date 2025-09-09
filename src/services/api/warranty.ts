@@ -1,5 +1,6 @@
 import { API_URL } from '@/config/environment'
 import httpClient from '@/services/http'
+import { ApiResponse } from './ApiResponse'
 
 // Warranty interface
 export interface Warranty {
@@ -66,20 +67,13 @@ export interface Warranty {
   notifications: any[];
 }
 
-// API Response interface
-interface WarrantyApiResponse {
-  success: number;
-  msg: string;
-  code: string;
-  payload: Warranty[];
-}
+
 
 class WarrantyService {
   // Get all warranties
-  //async getWarranties(): Promise<Warranty[]> {
-  async getWarranties(): Promise<WarrantyApiResponse> {
+  async getWarranties(): Promise<ApiResponse<Warranty[]>> {
     try {
-      const response = await httpClient.get<WarrantyApiResponse>('/warranty');
+      const response = await httpClient.get<ApiResponse<Warranty[]>>('/warranty');
       if (response.data.success === 1) {
         return response.data;
       } else {

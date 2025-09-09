@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { formatDate } from "@/utils/date";
 import { serviceContractService, ServiceContract } from "@/services/api/serviceContract";
 import { getFullPath, buildReirectURL } from "@/helpers/getUrlHelper";
+import { formatCurrency } from "@/helpers/currencyHelper";  
 
 interface AmcCmcTabProps {
   supplierId?: string;
@@ -131,6 +132,8 @@ export default function AmcCmcTab({
     }
   };
 
+
+
   return (
     <div className={className}>
       <Row>
@@ -200,7 +203,7 @@ export default function AmcCmcTab({
                             </span>
                           </td>
                           <td>
-                            {contract.amount ? `$${contract.amount.toLocaleString()}` : '-'}
+                            {contract.amount ? `${formatCurrency(contract.amount)}` : '-'}
                           </td>
                           <td>{formatDate(contract.startDate)}</td>
                           <td>{formatDate(contract.endDate)}</td>

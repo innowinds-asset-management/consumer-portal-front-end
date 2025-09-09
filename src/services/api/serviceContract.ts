@@ -1,6 +1,6 @@
 import { API_URL } from '@/config/environment'
 import httpClient from '@/services/http'
-
+import { ApiResponse } from './ApiResponse'
 export interface ServiceContract {
   contractId: string;
   contractNumber: string;
@@ -27,6 +27,7 @@ export interface ServiceContract {
   asset: {
     id: string;
     assetName: string;
+    status: string;
   };
   serviceSupplier: {
     id: string;
@@ -43,18 +44,23 @@ export interface ServiceContract {
     typeName: string;
     typeCode: string;
     description: string;
-    contractDurationMonths: number;
+    contractDurationMonths: number | null;
     createdAt: string;
   };
 }
 
+
 class ServiceContractService {
   private baseURL = `${API_URL}/service-contract`
 
-  async getServiceContracts(): Promise<ServiceContract[]> {
+  async getServiceContracts(): Promise<ApiResponse<ServiceContract[]>> {
     try {
-      const response = await httpClient.get<ServiceContract[]>(this.baseURL)
-      return response.data
+      const response = await httpClient.get<ApiResponse<ServiceContract[]>>(this.baseURL)
+      if(response.data.success === 1){
+        return response.data
+      } else {
+        throw new Error(response.data.msg || 'Failed to fetch service contracts')
+      }      
     } catch (error) {
       console.error('Error fetching service contracts:', error)
       throw error

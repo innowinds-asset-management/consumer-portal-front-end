@@ -152,20 +152,29 @@ export const MENU_ITEMS: MenuItemType[] = [
     key: 'amc-cmc',
     label: 'AMC/CMC',
     icon: Disc,
-    url: '/amc-cmc/create',
+        children: [
+          {
+            key: 'create-amc-cmc',
+            label: 'Create AMC/CMC',
+             url: '/amc-cmc/create',
+          },
+          {
+            key: 'all-amc-cmc',
+            label: 'All AMC/CMC',
+             url: '/amc-cmc',
+          }
+        ]    
   },
+
+
+  
   {
     key: 'inventory',
     label: 'Inventory',
     icon: Box,
     url: '/inventory',
   },
-  {
-    key: 'servicecontracts',
-    label: 'Serive Contracts',
-    icon: FileText,
-    url: '/servicecontracts',
-  },
+  
   // {
   //   key: 'invoice',
   //   label: 'Invoice',

@@ -974,10 +974,9 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, retu
       <MessageModal
         isOpen={showSuccessModal}
         onClose={handleSuccessModalClose}
-        title="Contract Created Successfully!"
+        message="Your AMC/CMC contract has been created and saved successfully."
         buttonText="Continue"
         variant="success"
-        icon="ri:check-line"
         size="sm"
       />
     </>
