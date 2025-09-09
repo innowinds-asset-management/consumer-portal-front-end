@@ -88,7 +88,6 @@ export const MENU_ITEMS: MenuItemType[] = [
         label: 'Warranty',
          icon: File, 
         url: '/warranty',
-        parentKey: 'warranty',
       },
       
 
