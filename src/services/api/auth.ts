@@ -66,7 +66,7 @@ class AuthHttpClient {
   private defaultHeaders: Record<string, string>
 
   constructor() {
-    this.baseURL = API_URL
+    this.baseURL = API_URL!
     this.defaultHeaders = { 'Content-Type': 'application/json' }
     console.log('AuthHttpClient initialized with baseURL:', this.baseURL)
   }

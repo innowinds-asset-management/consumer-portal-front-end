@@ -64,6 +64,10 @@ export interface Asset {
     primaryContactEmail?: string | null;
     primaryContactPhone?: string | null;
   };
+  assetStatus?: {
+    statusCode: string;
+    displayName: string;
+  };
 }
 
 // Location interface

@@ -5,7 +5,7 @@ import React, { useEffect, useState, useRef } from "react";
 import ComponentContainerCard from "@/components/ComponentContainerCard";
 import { Alert, Button, Card, CardBody, CardHeader } from "react-bootstrap";
 import { departmentService, Department } from "@/services/api/departments";
-import { CardTitle} from 'react-bootstrap'
+import { CardTitle } from 'react-bootstrap'
 import { Grid } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
 import { useRouter } from "next/navigation";
@@ -14,6 +14,7 @@ import CreateDepartmentModal from "@/components/CreateDepartmentModal";
 import { Col, Row } from 'react-bootstrap'
 import IconifyIcon from "@/components/wrappers/IconifyIcon";
 import Link from "next/link";
+import { formatDate } from "@/utils/date";
 export default function DepartmentListingPage() {
   const router = useRouter();
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -94,7 +95,7 @@ export default function DepartmentListingPage() {
           }
         }
       };
-      
+
       // Try immediately
       addClickHandlers();
       // Also try after a delay to ensure GridJS has rendered
@@ -103,13 +104,7 @@ export default function DepartmentListingPage() {
       // Cleanup timeout
       return () => clearTimeout(timeoutId);
     }
-      }, [loading, departments, router, isAppProduction]);
-
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "";
-    return dateString.split("T")[0];
-  };
+  }, [loading, departments, router, isAppProduction]);
 
   // Function to refresh departments list
   const refreshDepartments = () => {
@@ -137,67 +132,67 @@ export default function DepartmentListingPage() {
       department.deptName || "",
       department.assetCount || 0,
     ];
-    
+
     if (!isAppProduction) {
       baseData.push(department.openServiceRequestCount || 0);
     }
-    
+
     baseData.push(formatDate(department.createdAt));
     return baseData;
   });
 
   return (
     <>
-    <Row>
+      <Row>
         <Col xs={12}>
-        <Card>
-      <CardHeader className="border-bottom card-tabs d-flex flex-wrap align-items-center gap-2">
-        <div className="flex-grow-1">
-          <h4 className="header-title">Departments</h4>
-        </div>
-        <div className="d-flex flex-wrap flex-lg-nowrap gap-2">
-          {/* <div className="flex-shrink-0 d-flex align-items-center gap-2">
+          <Card>
+            <CardHeader className="border-bottom card-tabs d-flex flex-wrap align-items-center gap-2">
+              <div className="flex-grow-1">
+                <h4 className="header-title">Departments</h4>
+              </div>
+              <div className="d-flex flex-wrap flex-lg-nowrap gap-2">
+                {/* <div className="flex-shrink-0 d-flex align-items-center gap-2">
             <div className="position-relative">
               <input type="text" className="form-control ps-4" placeholder="Search Here..." />
               <IconifyIcon icon="ti:search" className="ti position-absolute top-50 translate-middle-y start-0 ms-2" />
             </div>
           </div> */}
-         <Button 
-            variant="primary" 
-            onClick={() => setShowCreateModal(true)}
-            className="d-flex align-items-center gap-2"
-            size="sm"
-          >
-            <i className="ri-add-line"></i>
-            Add Department
-          </Button>
-        </div>
-      </CardHeader>
-      </Card>
+                <Button
+                  variant="primary"
+                  onClick={() => setShowCreateModal(true)}
+                  className="d-flex align-items-center gap-2"
+                  size="sm"
+                >
+                  <IconifyIcon icon="tabler:plus" className="fs-16" />
+                  Add Department
+                </Button>
+              </div>
+            </CardHeader>
+          </Card>
         </Col>
       </Row>
       <Row>
         <Col lg={12}>
-          
-        <Card>
-        <CardBody>
-        {loading && (
-              <div className="text-center my-4">
-                <div className="spinner-border" role="status">
-                  <span className="visually-hidden">Loading...</span>
+
+          <Card>
+            <CardBody>
+              {loading && (
+                <div className="text-center my-4">
+                  <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
                 </div>
-              </div>
-            )}
-        
-        
-        {error && <Alert variant="danger">{error}</Alert>}
-        
-        {!loading && !error && departments.length === 0 && (
-              <div className="text-center text-muted my-4">No departments found.</div>
-            )}
-        {/* <CardTitle as={'h4'} className="mb-3 anchor" id="general"></CardTitle> */}
-        {!loading && !error && departments.length > 0 && (
-        <Grid
+              )}
+
+
+              {error && <Alert variant="danger">{error}</Alert>}
+
+              {!loading && !error && departments.length === 0 && (
+                <div className="text-center text-muted my-4">No departments found.</div>
+              )}
+              {/* <CardTitle as={'h4'} className="mb-3 anchor" id="general"></CardTitle> */}
+              {!loading && !error && departments.length > 0 && (
+                <Grid
                   data={gridData}
                   columns={[
                     { name: "Department ID", sort: false, search: true },
@@ -212,15 +207,15 @@ export default function DepartmentListingPage() {
                   sort={true}
                   search={true}
                   resizable={true}
-                  // height ="300px"
+                // height ="300px"
                 />
-        
+
               )}
-      </CardBody>
-    </Card>
- 
-      
-      </Col>
+            </CardBody>
+          </Card>
+
+
+        </Col>
       </Row>
       {/* Create Department Modal */}
       <CreateDepartmentModal

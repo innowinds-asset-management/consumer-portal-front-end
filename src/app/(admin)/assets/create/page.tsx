@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
@@ -36,7 +36,6 @@ interface FormData {
   floorNumber: string;
   roomNumber: string;
   supplierId: string;
-  
   // Warranty Information
   warrantyType: string | number;
   warrantyStartDate: string;
@@ -47,6 +46,7 @@ interface FormData {
   termsConditions: string;
   included: string;
   excluded: string;
+  consumerSerialNo: string;
 }
 
 // Form errors interface
@@ -77,6 +77,7 @@ interface FormErrors {
   termsConditions?: string;
   included?: string;
   excluded?: string;
+  consumerSerialNo?: string;
 }
 
 export default function AssetPage() {
@@ -100,6 +101,9 @@ export default function AssetPage() {
    const [showCreateDepartmentModal, setShowCreateDepartmentModal] = useState(false);
    const [showAssetSearchModal, setShowAssetSearchModal] = useState(false);
 
+   const searchParams = useSearchParams();
+
+
       // Form data state
   const [formData, setFormData] = useState<FormData>({
     // Asset Information
@@ -113,11 +117,11 @@ export default function AssetPage() {
     installStatus: "",
     status: "",
     buildingNumber: "",
-    departmentId: "",
+    departmentId: searchParams.get('did') || '',
     floorNumber: "",
     roomNumber: "",
     supplierId: "",
-    
+    consumerSerialNo: "",
     // Warranty Information
     warrantyType: "",
     warrantyStartDate: "",
@@ -441,7 +445,7 @@ export default function AssetPage() {
             ...(formData.subModel && formData.subModel.trim() !== '' && { subModel: formData.subModel }),
             ...(formData.model && formData.model.trim() !== '' && { partNo: formData.model }), // Using model as part number
             ...(formData.supplierId && suppliers.find(s => s.id === formData.supplierId)?.code && { supplierCode: suppliers.find(s => s.id === formData.supplierId)?.code }),
-            // ...(formData.name && { consumerSerialNo: formData.name }), // Using asset name as consumer serial
+            ...(formData.consumerSerialNo && formData.consumerSerialNo.trim() !== '' && { consumerSerialNo: formData.consumerSerialNo }), 
             ...(formData.supplierId && formData.supplierId.trim() !== '' && { supplierId: formData.supplierId }),
             // ...(formData.model && formData.model.trim() !== '' && { supplierSerialNo: formData.model }), // Using model as serial number
             ...(formData.buildingNumber && formData.buildingNumber.trim() !== '' && { building: formData.buildingNumber }),
@@ -504,7 +508,14 @@ export default function AssetPage() {
       
       // Redirect to assets listing page after successful creation
       setTimeout(() => {
-        router.push('/assets');
+        const returnUrl = searchParams.get('returnUrl');
+        console.log('returnUrl', returnUrl)
+        if(returnUrl){
+          console.log('redirecting to', decodeURIComponent(returnUrl))
+          router.push(decodeURIComponent(returnUrl))
+        }else{
+          router.push('/assets');
+        }
       }, 1500);
     } catch (err) {
       console.error("Error creating asset:", err);
@@ -567,6 +578,7 @@ export default function AssetPage() {
       termsConditions: "",
       included: "",
       excluded: "",
+      consumerSerialNo: "",
     });
     setErrors({});
   };
@@ -581,13 +593,7 @@ export default function AssetPage() {
           <Card>
             <CardBody>
               <div className="mb-4">
-                <div>
-                  <span className="badge bg-primary-subtle text-primary px-2 fs-12 mb-3">
-                    New Asset
-                  </span>
                   <h3 className="m-0 fw-bolder fs-20">Create New Asset</h3>
-                  <p className="text-muted mb-0 mt-1">Fill in the details below to add a new asset to the system.</p>
-                </div>
               </div>
 
                              {error && (
@@ -647,8 +653,8 @@ export default function AssetPage() {
                       </Col>
                       
                       <Col lg={4}>
-                        <div className="mb-3">
-                          <div className="d-flex align-items-center mb-2">
+                        <div className="mb-3 d-flex flex-column">
+                          <div className="d-flex align-items-center mb-1">
                             <Form.Label htmlFor="subAssetType" className="mb-0 me-2">Sub Asset Type *</Form.Label>
                             <Button
                               variant="outline-primary"
@@ -718,7 +724,7 @@ export default function AssetPage() {
                         </div>
                       </Col>
 
-                                             <Col lg={4}>
+                      <Col lg={4}>
                          <div className="mb-3">
                            <Form.Label htmlFor="name">Asset Name *</Form.Label>
                            <Form.Control
@@ -745,9 +751,104 @@ export default function AssetPage() {
                        </Col>
                     </Row>
 
-                    {/* Row 2: Brand, Model, Sub Model */}
+                    {/* Row 4: Department,Supplier,Consumer Serial No  */}
                     <Row>
+                        <Col lg={4}>
+                          <div className="mb-3 d-flex flex-column">
+                            <div className="d-flex align-items-center mb-1">
+                              <Form.Label htmlFor="departmentId" className="mb-0 me-2">Department *</Form.Label>
+                              <Button
+                                variant="outline-primary"
+                                size="sm"
+                                onClick={() => setShowCreateDepartmentModal(true)}
+                                className="d-flex align-items-center p-1"
+                                style={{ minWidth: '24px', height: '24px' }}
+                              >
+                                <IconifyIcon icon="tabler:plus" style={{ fontSize: '12px' }} />
+                              </Button>
+                            </div>
+                            <Form.Select
+                              id="departmentId"
+                              value={formData.departmentId}
+                              onChange={(e) => handleFieldChange("departmentId", e.target.value)}
+                              isInvalid={!!errors.departmentId}
+                              disabled={loadingDepartments}
+                            >
+                              <option value="">
+                                {loadingDepartments ? "Loading departments..." : "Select department"}
+                              </option>
+                              {departments.map((department) => (
+                                <option key={department.deptId} value={department.deptId}>
+                                  {department.deptName}
+                                </option>
+                              ))}
+                            </Form.Select>
+                            {loadingDepartments && (
+                              <div className="mt-2">
+                                <small className="text-muted">Loading departments...</small>
+                              </div>
+                            )}
+                            {errors.departmentId && (
+                              <Form.Control.Feedback type="invalid">
+                                {errors.departmentId}
+                              </Form.Control.Feedback>
+                            )}
+                          </div>
+                        </Col>
+
+                        <Col lg={4}>
+                            <div className="mb-3">
+                           <Form.Label htmlFor="supplierId">Supplier</Form.Label>
+                          <Form.Select
+                            id="supplierId"
+                            value={formData.supplierId}
+                            onChange={(e) => handleFieldChange("supplierId", e.target.value)}
+                            isInvalid={!!errors.supplierId}
+                            disabled={loadingSuppliers}
+                          >
+                            <option value="">
+                              {loadingSuppliers ? "Loading suppliers..." : `Select supplier (${suppliers.length} available)`}
+                            </option>
+                            {suppliers.map((supplier) => (
+                              <option key={supplier.id} value={supplier.id}>
+                                {supplier.name}
+                              </option>
+                            ))}
+                          </Form.Select>
+                          {errors.supplierId && (
+                            <Form.Control.Feedback type="invalid">
+                              {errors.supplierId}
+                            </Form.Control.Feedback>
+                          )}
+                        </div>
+                      </Col>
+
                       <Col lg={4}>
+                        <div className="mb-3">
+                          <Form.Label htmlFor="consumerSerialNo">Consumer Serial No</Form.Label>
+                          <Form.Control
+                            type="text"
+                            id="consumerSerialNo"
+                            placeholder="Enter consumer serial no"
+                            value={formData.consumerSerialNo}
+                            onChange={(e) => handleFieldChange("consumerSerialNo", e.target.value)}
+                            isInvalid={!!errors.consumerSerialNo}
+                            />
+                            <Form.Text className="text-muted">If you don't add consumer serial no, it will be auto generated</Form.Text>
+                          {errors.consumerSerialNo && (
+                            <Form.Control.Feedback type="invalid">
+                              {errors.consumerSerialNo}
+                            </Form.Control.Feedback>
+                          )}
+                          </div>
+                      </Col>
+
+
+                    </Row>
+
+                                        {/* Row 2: Brand,Model, Sub Model */}
+                          <Row>
+                          <Col lg={4}>
                                                  <div className="mb-3">
                            <Form.Label htmlFor="brand">Brand</Form.Label>
                           <Form.Control
@@ -765,6 +866,7 @@ export default function AssetPage() {
                           )}
                         </div>
                       </Col>
+
                       
                       <Col lg={4}>
                                                  <div className="mb-3">
@@ -803,10 +905,77 @@ export default function AssetPage() {
                           )}
                         </div>
                       </Col>
+
+
                     </Row>
 
-                    {/* Row 3: Installation Date, Installation Status, Supplier */}
-                    <Row>
+
+                    {/* Row 5: Building Number,Room Number, Floor Number */}
+                    <Row className="mb-4 border-bottom border-2">
+                    <Col lg={4}>
+                                                 <div className="mb-3">
+                           <Form.Label htmlFor="buildingNumber">Building Number</Form.Label>
+                          <Form.Control
+                            type="text"
+                            id="buildingNumber"
+                            placeholder="Enter building number"
+                            value={formData.buildingNumber}
+                            onChange={(e) => handleFieldChange("buildingNumber", e.target.value)}
+                            isInvalid={!!errors.buildingNumber}
+                          />
+                          {errors.buildingNumber && (
+                            <Form.Control.Feedback type="invalid">
+                              {errors.buildingNumber}
+                            </Form.Control.Feedback>
+                          )}
+                        </div>
+                      </Col>
+
+                      <Col lg={4}>
+                                                 <div className="mb-3">
+                           <Form.Label htmlFor="roomNumber">Room Number</Form.Label>
+                          <Form.Control
+                            type="text"
+                            id="roomNumber"
+                            placeholder="Enter room number"
+                            value={formData.roomNumber}
+                            onChange={(e) => handleFieldChange("roomNumber", e.target.value)}
+                            isInvalid={!!errors.roomNumber}
+                          />
+                          {errors.roomNumber && (
+                            <Form.Control.Feedback type="invalid">
+                              {errors.roomNumber}
+                            </Form.Control.Feedback>
+                          )}
+                        </div>
+                      </Col>
+
+                      <Col lg={4} className="mb-2">
+                                                 <div className="mb-3">
+                           <Form.Label htmlFor="floorNumber">Floor Number</Form.Label>
+                          <Form.Control
+                            type="text"
+                            id="floorNumber"
+                            placeholder="Enter floor number"
+                            value={formData.floorNumber}
+                            onChange={(e) => handleFieldChange("floorNumber", e.target.value)}
+                            isInvalid={!!errors.floorNumber}
+                          />
+                          {errors.floorNumber && (
+                            <Form.Control.Feedback type="invalid">
+                              {errors.floorNumber}
+                            </Form.Control.Feedback>
+                          )}
+                        </div>
+                      </Col>
+
+
+                    </Row>
+
+
+
+                                        {/* Row 3: Installation Date, Installation Status */}
+                                        <Row>
                       <Col lg={4}>
                                                  <div className="mb-3">
                            <Form.Label htmlFor="installationDate">Installation Date</Form.Label>
@@ -847,143 +1016,9 @@ export default function AssetPage() {
                         </div>
                       </Col>
                       
-                      <Col lg={4}>
-                                                 <div className="mb-3">
-                           <Form.Label htmlFor="supplierId">Supplier</Form.Label>
-                          <Form.Select
-                            id="supplierId"
-                            value={formData.supplierId}
-                            onChange={(e) => handleFieldChange("supplierId", e.target.value)}
-                            isInvalid={!!errors.supplierId}
-                            disabled={loadingSuppliers}
-                          >
-                            <option value="">
-                              {loadingSuppliers ? "Loading suppliers..." : `Select supplier (${suppliers.length} available)`}
-                            </option>
-                            {suppliers.map((supplier) => (
-                              <option key={supplier.id} value={supplier.id}>
-                                {supplier.name}
-                              </option>
-                            ))}
-                          </Form.Select>
-                          {errors.supplierId && (
-                            <Form.Control.Feedback type="invalid">
-                              {errors.supplierId}
-                            </Form.Control.Feedback>
-                          )}
-                        </div>
-                      </Col>
 
                     </Row>
 
-                    {/* Row 4: Department, Building Number, Floor Number */}
-                    <Row>
-                                                                     <Col lg={4}>
-                          <div className="mb-3">
-                            <div className="d-flex align-items-center mb-2">
-                              <Form.Label htmlFor="departmentId" className="mb-0 me-2">Department *</Form.Label>
-                              <Button
-                                variant="outline-primary"
-                                size="sm"
-                                onClick={() => setShowCreateDepartmentModal(true)}
-                                className="d-flex align-items-center p-1"
-                                style={{ minWidth: '24px', height: '24px' }}
-                              >
-                                <IconifyIcon icon="tabler:plus" style={{ fontSize: '12px' }} />
-                              </Button>
-                            </div>
-                            <Form.Select
-                              id="departmentId"
-                              value={formData.departmentId}
-                              onChange={(e) => handleFieldChange("departmentId", e.target.value)}
-                              isInvalid={!!errors.departmentId}
-                              disabled={loadingDepartments}
-                            >
-                              <option value="">
-                                {loadingDepartments ? "Loading departments..." : "Select department"}
-                              </option>
-                              {departments.map((department) => (
-                                <option key={department.deptId} value={department.deptId}>
-                                  {department.deptName}
-                                </option>
-                              ))}
-                            </Form.Select>
-                            {loadingDepartments && (
-                              <div className="mt-2">
-                                <small className="text-muted">Loading departments...</small>
-                              </div>
-                            )}
-                            {errors.departmentId && (
-                              <Form.Control.Feedback type="invalid">
-                                {errors.departmentId}
-                              </Form.Control.Feedback>
-                            )}
-                          </div>
-                        </Col>
-                      
-                      <Col lg={4}>
-                                                 <div className="mb-3">
-                           <Form.Label htmlFor="buildingNumber">Building Number</Form.Label>
-                          <Form.Control
-                            type="text"
-                            id="buildingNumber"
-                            placeholder="Enter building number"
-                            value={formData.buildingNumber}
-                            onChange={(e) => handleFieldChange("buildingNumber", e.target.value)}
-                            isInvalid={!!errors.buildingNumber}
-                          />
-                          {errors.buildingNumber && (
-                            <Form.Control.Feedback type="invalid">
-                              {errors.buildingNumber}
-                            </Form.Control.Feedback>
-                          )}
-                        </div>
-                      </Col>
-
-                      <Col lg={4}>
-                                                 <div className="mb-3">
-                           <Form.Label htmlFor="floorNumber">Floor Number</Form.Label>
-                          <Form.Control
-                            type="text"
-                            id="floorNumber"
-                            placeholder="Enter floor number"
-                            value={formData.floorNumber}
-                            onChange={(e) => handleFieldChange("floorNumber", e.target.value)}
-                            isInvalid={!!errors.floorNumber}
-                          />
-                          {errors.floorNumber && (
-                            <Form.Control.Feedback type="invalid">
-                              {errors.floorNumber}
-                            </Form.Control.Feedback>
-                          )}
-                        </div>
-                      </Col>
-                    </Row>
-
-                    {/* Row 5: Room Number */}
-                    <Row>
-                      <Col lg={4}>
-                                                 <div className="mb-3">
-                           <Form.Label htmlFor="roomNumber">Room Number</Form.Label>
-                          <Form.Control
-                            type="text"
-                            id="roomNumber"
-                            placeholder="Enter room number"
-                            value={formData.roomNumber}
-                            onChange={(e) => handleFieldChange("roomNumber", e.target.value)}
-                            isInvalid={!!errors.roomNumber}
-                          />
-                          {errors.roomNumber && (
-                            <Form.Control.Feedback type="invalid">
-                              {errors.roomNumber}
-                            </Form.Control.Feedback>
-                          )}
-                        </div>
-                      </Col>
-                      <Col lg={8}>
-                        {/* Empty space for balance */}
-                      </Col>
-                    </Row>
                   </CardBody>
                 </Card>
 

@@ -571,7 +571,7 @@ export default function AssetDetailPage() {
       <ComponentContainerCard
         title={
           <div className="d-flex justify-content-between align-items-center ">
-            <span>{`${asset.assetName}`}</span>
+            <span>{`${asset.assetName} ${asset.consumerSerialNo ? `(${asset.consumerSerialNo})` : ''}`}</span>
             <div className="d-flex gap-2">
               <Button 
                 variant="primary" 
@@ -633,24 +633,7 @@ export default function AssetDetailPage() {
                     </div>
                     <div className="mb-3">
                       <strong>Asset Status:</strong>
-                        <Badge bg={
-                          (() => {
-                            if (!asset.status) return 'warning';
-                            const statusData = assetStatuses.find(s => s.statusCode === asset.status);
-                            if (!statusData) return 'warning';                            
-                            // Use group from assetStatuses to determine badge color
-                            switch (statusData.group) {
-                              case 'ACTIVE':
-                                return 'success';
-                              case 'PRE_ACTIVE':
-                                return 'primary';
-                              case 'RETIRED':
-                                return 'secondary';
-                              default:
-                                return 'warning';
-                            }
-                          })()
-                        } className="ms-2">
+                        <Badge bg='primary' className="ms-2">
                           {asset.status ? 
                             (() => {
                               const statusData = assetStatuses.find(s => s.statusCode === asset.status);
@@ -701,6 +684,10 @@ export default function AssetDetailPage() {
                         {getWarrantyStatus(warranties)}
                       </Badge>
                     </div>
+                    <div className="mb-3">
+                      <strong>Consumer Serial No:</strong> {asset.consumerSerialNo || ''}
+                    </div>
+
                     {!isAppProduction && (
                     <>
                     <div className="mb-3">
@@ -855,17 +842,7 @@ export default function AssetDetailPage() {
                                   <td><strong>Warranty Status</strong></td>
                                   <td>-</td>
                                   <td>
-                                    <Badge bg={
-                                      (() => {
-                                        const warrantyStatus = getWarrantyStatus([warranty]);
-                                        switch (warrantyStatus) {
-                                          case 'Active': return 'success';
-                                          case 'Expired': return 'danger';
-                                          case 'Not Started': return 'warning';
-                                          default: return 'secondary';
-                                        }
-                                      })()
-                                    }>
+                                    <Badge bg='secondary'>
                                       {getWarrantyStatus([warranty])}
                                     </Badge>
                                   </td>
