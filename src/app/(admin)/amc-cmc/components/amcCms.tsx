@@ -12,7 +12,7 @@ import { assetsService, Asset } from '@/services/api/assets';
 import { supplierService, Supplier } from '@/services/api/suppliers';
 import SearchAsset from '@/components/searchAsset';
 import SearchableSupplier from '@/components/searchableSupplier';
-import MessageModal from '@/components/ui/MessageModal';
+import MessageModal, { useMessageModal } from '@/components/ui/MessageModal';
 
 interface AmcCmcFormData {
   contractName: string;
@@ -76,10 +76,9 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, retu
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({ type: null, text: '' });
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: boolean }>({});
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  // Use the MessageModal hook for better state management
+  const { modalProps, showSuccess, closeModal } = useMessageModal();
 
   // Contract types state
   const [contractTypes, setContractTypes] = useState<ContractType[]>([]);
@@ -107,6 +106,10 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, retu
   
   // Use fullPath from props only
   const currentFullPath = returnUrl;
+  
+  // Debug logging
+  console.log('AmcCmcForm - returnUrl prop:', returnUrl);
+  console.log('AmcCmcForm - currentFullPath:', currentFullPath);
 
   useEffect(() => {
     if (supplierId) {
@@ -445,20 +448,17 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, retu
     
     // Clear any messages
     setError('');
-    setMessage({ type: null, text: '' });
   };
 
   // Handle success modal close and redirection
-  const handleSuccessModalClose = () => {
-    setShowSuccessModal(false);
-    
+  const handleSuccessModalClose = () => {   
     // Handle redirection after modal close
     if (currentFullPath) {
-      console.log('Redirecting back to:', currentFullPath);
       router.push(currentFullPath);
     } else {
-      // Reset form after successful submission if no redirection
-      resetForm();
+      // Close the modal and stay on the same page
+      router.push('/amc-cmc');
+      //closeModal();
     }
   };
 
@@ -509,7 +509,6 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, retu
     
     setLoading(true);
     setError('');
-    setMessage({ type: null, text: '' });
 
     try {
       if (onSubmit) {
@@ -540,20 +539,26 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, retu
           console.log('🚀 Final Request Body for Service Contract Creation:', JSON.stringify(contractData, null, 2));
           
           await serviceContractService.createServiceContract(contractData);
-          setSubmitted(true);          
-          // Show success modal instead of message
-          setShowSuccessModal(true);           
+          // Show success modal using the hook
+          showSuccess(
+            'Success!', 
+            'Your AMC/CMC contract has been created and saved successfully.',
+            { 
+              buttonText: 'Continue',
+              size: 'sm',
+              onClose: handleSuccessModalClose
+            }
+          );           
+          
+          // Always reset form after successful submission
           resetForm();          
           // Reset selected components to clear the UI dropdowns
           setSelectedAsset(null);
-          setSelectedSupplier(null);            
-            // Reset submitted state after 3 seconds
-            setTimeout(() => setSubmitted(false), 3000);
+          setSelectedSupplier(null);
           }
         }
     } catch (err) {
       setError('Failed to save contract. Please try again.');
-      setMessage({ type: 'error', text: 'Failed to save contract. Please try again.' });
       console.error('Error saving contract:', err);
     } finally {
       setLoading(false);
@@ -961,24 +966,8 @@ export default function AmcCmcForm({ initialData, isEdit = false, onSubmit, retu
       </CardBody>
     </Card>
 
-      {/* Message Display */}
-      {message.type && (
-        <div className={`alert alert-${message.type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`} 
-             style={{ top: '20px', right: '20px', zIndex: 9999, minWidth: '300px' }}>
-          {message.text}
-          <button type="button" className="btn-close" onClick={() => setMessage({ type: null, text: '' })}></button>
-        </div>
-      )}
-
       {/* Success Message Modal */}
-      <MessageModal
-        isOpen={showSuccessModal}
-        onClose={handleSuccessModalClose}
-        message="Your AMC/CMC contract has been created and saved successfully."
-        buttonText="Continue"
-        variant="success"
-        size="sm"
-      />
+      <MessageModal {...modalProps} />
     </>
   );
 }
