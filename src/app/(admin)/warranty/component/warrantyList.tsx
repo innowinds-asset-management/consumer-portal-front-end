@@ -21,7 +21,7 @@ const WarrantyList: React.FC = () => {
     try {
       setLoading(true);
       setError("");      
-      const data = await warrantyService.getWarranties();
+      const data = await warrantyService.getWarrantiesWithoutAmcCmc();  
       setMsg(data.msg);
       setWarranties(data.payload);
     } catch (err) {

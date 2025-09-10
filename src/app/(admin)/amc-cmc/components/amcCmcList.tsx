@@ -138,7 +138,16 @@ const AmcCmsList: React.FC = () => {
                 >
                   <IconifyIcon icon="ri:refresh-line" />
                   Refresh
-                </Button>                
+                </Button> 
+              <Button
+                variant="primary"
+                size="sm"
+                className="d-flex align-items-center gap-2"
+                onClick={() => router.push('/amc-cmc/create')}
+              >
+                <IconifyIcon icon="ri:add-line" />
+                Add AMC/CMC
+              </Button>
               </div>
             </CardHeader>
           </Card>

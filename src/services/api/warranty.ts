@@ -2,6 +2,21 @@ import { API_URL } from '@/config/environment'
 import httpClient from '@/services/http'
 import { ApiResponse } from './ApiResponse'
 
+// Warranty Stats interfaces
+export interface WarrantyStatsData {
+  totalWarrantiesWithoutAmcCmc: number;
+  expiringSoon: {
+    in5Days: { count: number; text: string; title: string };
+    in10Days: { count: number; text: string; title: string };
+    in30Days: { count: number; text: string; title: string };
+  };
+  recentlyExpired: {
+    inLast5Days: { count: number; text: string; title: string };
+    inLast10Days: { count: number; text: string; title: string };
+    inLast30Days: { count: number; text: string; title: string };
+  };
+}
+
 // Warranty interface
 export interface Warranty {
   warrantyId: number;
@@ -95,6 +110,36 @@ class WarrantyService {
     } catch (error) {
       console.error('Error fetching warranties by asset ID:', error)
       throw error
+    }
+  }
+
+  // Get warranty statistics
+  async getWarrantyStats(): Promise<ApiResponse<WarrantyStatsData>> {
+    try {
+      const response = await httpClient.get<ApiResponse<WarrantyStatsData>>('/warranty/stats');
+      if (response.data.success === 1) {
+        return response.data;
+      } else {
+        throw new Error(response.data.msg || 'Failed to fetch warranty statistics');
+      }
+    } catch (error) {
+      console.error('Error fetching warranty statistics:', error);
+      throw error;
+    }
+  }
+
+  // Get all warranties without AMC/CMC
+  async getWarrantiesWithoutAmcCmc(): Promise<ApiResponse<Warranty[]>> {
+    try {
+      const response = await httpClient.get<ApiResponse<Warranty[]>>('/warranty/without-amc-cmc');
+      if (response.data.success === 1) {
+        return response.data;
+      } else {
+        throw new Error(response.data.msg || 'Failed to fetch warranties without AMC/CMC');
+      }
+    } catch (error) {
+      console.error('Error fetching warranties without AMC/CMC:', error);
+      throw error;
     }
   }
 }
