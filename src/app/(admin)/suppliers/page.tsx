@@ -197,8 +197,8 @@ export default function SupplierListingPage() {
                 className="d-flex align-items-center gap-2"
                 size="sm"
               >
-                <i className="ri-add-line"></i>
-                Add Supplier
+                    <IconifyIcon icon="tabler:plus" className="fs-16" />
+                    Add Supplier
               </Button>
             </div>
           </CardHeader>

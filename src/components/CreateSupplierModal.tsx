@@ -11,6 +11,7 @@ interface CreateSupplierModalProps {
 
 export default function CreateSupplierModal({ show, onHide, onSuccess, existingSuppliers = [] }: CreateSupplierModalProps) {
   const [supplierName, setSupplierName] = useState('');
+  const [supplierCode, setSupplierCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -46,13 +47,15 @@ export default function CreateSupplierModal({ show, onHide, onSuccess, existingS
     try {
       const supplierData = {
         name: supplierName.trim(),
-        isActive: true
+        isActive: true,
+        code: supplierCode ?  supplierCode.trim() : null
       };
 
       await supplierService.createSupplier(supplierData);
       
       setSuccess('Supplier created successfully!');
       setSupplierName('');
+      setSupplierCode('');
       
       // Close modal after a short delay to show success message
       setTimeout(() => {
@@ -103,8 +106,18 @@ export default function CreateSupplierModal({ show, onHide, onSuccess, existingS
               required
               className="form-control-lg"
             />
-            <Form.Text className="text-muted">
-              {/* Enter a unique name for the supplier (minimum 2 characters) */}
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-semibold">Supplier Code</Form.Label>
+            <Form.Control
+              type="text"
+              value={supplierCode}
+              onChange={(e) => setSupplierCode(e.target.value)}
+              disabled={loading}
+              className="form-control-lg"
+                            
+            />
+            <Form.Text className="text-muted">ERP supplier code or Other system code
             </Form.Text>
           </Form.Group>
 

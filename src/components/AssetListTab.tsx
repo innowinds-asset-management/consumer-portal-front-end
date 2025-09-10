@@ -5,6 +5,8 @@ import IconifyIcon from '@/components/wrappers/IconifyIcon'
 import { Card, CardBody, Col, Row, Badge, Table, Button } from 'react-bootstrap'
 import { assetsService, Asset } from '@/services/api/assets'
 import { useRouter } from 'next/navigation';
+import { buildReirectURL, getFullPath } from "@/helpers/getUrlHelper";
+import { formatDate } from "@/utils/date";
 
 interface AssetListTabProps {
   supplierId?: string;
@@ -74,27 +76,22 @@ export default function AssetListTab({
   }, [supplierId, assetId, departmentId]);
 
   const handleCreateAsset = () => {
-    if (supplier) {
-      router.push(`/assets/create?sid=${supplier.id}`);
-    } else {
-      router.push('/assets/create');
-    }
+        // Build URL with parameters
+        let redirectUrl = '/assets/create';
+        const urlParams = new URLSearchParams();    
+        if (departmentId) {
+          urlParams.append('did', departmentId);
+        } else if (supplier) {
+          urlParams.append('sid', supplier.id);
+        }
+        redirectUrl = buildReirectURL(redirectUrl,getFullPath(), urlParams);      
+        console.log('Redirecting to:', redirectUrl);
+        router.push(redirectUrl);
+    
   };
 
   const handleAssetClick = (assetId: string) => {
     router.push(`/assets/detail?aid=${assetId}`);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  const getStatusBadgeColor = (isActive: boolean) => {
-    return isActive ? 'success' : 'danger';
   };
 
   return (
@@ -164,9 +161,7 @@ export default function AssetListTab({
                           <td>{asset.model || 'N/A'}</td>
                           <td>{asset.consumerSerialNo || 'N/A'}</td>
                           <td>
-                            <Badge bg={getStatusBadgeColor(asset.isActive)}>
-                              {asset.isActive ? 'Active' : 'Inactive'}
-                            </Badge>
+                              {asset.assetStatus?.displayName || ''}
                           </td>
                           <td>{formatDate(asset.createdAt!)}</td>
                         </tr>

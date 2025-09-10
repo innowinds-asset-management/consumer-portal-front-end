@@ -78,7 +78,7 @@ class SupplierService {
 
   async createSupplier(data: {
     name: string;
-    code?: string;
+    code?: string | null;
     isActive?: boolean;
   }): Promise<Supplier> {
     try {

@@ -11,11 +11,12 @@ import "gridjs/dist/theme/mermaid.css";
 import { useRouter, useSearchParams } from "next/navigation";
 import { STORAGE_KEYS } from "@/utils/constants";
 import { Col, Row } from 'react-bootstrap'
-import {  Card, CardBody, CardHeader } from "react-bootstrap";
+import { Card, CardBody, CardHeader } from "react-bootstrap";
 import ChoicesFormInput from "@/components/form/ChoicesFormInput";
 import Select from 'react-select'
 import { options } from '@/components/form/data'
 import { departmentService } from "@/services/api/departments";
+import IconifyIcon from "@/components/wrappers/IconifyIcon";
 // import MultipleSelect from "@/components/form/MultipleSelect";
 
 interface Asset {
@@ -59,19 +60,19 @@ export default function AssetListingPage() {
   const supplierId = searchParams.get('sid');
   const departmentId = searchParams.get('did');
   const groupstatus = searchParams.get('groupstatus');
-  
-  
-  
-    
-  
+
+
+
+
+
   useEffect(() => {
     const fetchAssets = async (retryCount = 0) => {
       setLoading(true);
       setError("");
       try {
         // Build query parameters object
-        const queryParams: { supplierId?: string; departmentId?: string ;groupstatus?: string} = {};
-      
+        const queryParams: { supplierId?: string; departmentId?: string; groupstatus?: string } = {};
+
         if (supplierId) {
           queryParams.supplierId = supplierId;
           const supplier = await supplierService.getSupplierDetailsById(supplierId);
@@ -87,12 +88,12 @@ export default function AssetListingPage() {
           setAssetSubHeaderDescription('Group Status: ' + groupstatus.toUpperCase());
         }
 
-        if(Object.keys(queryParams).length === 0)
+        if (Object.keys(queryParams).length === 0)
           setAssetSubHeaderDescription('');
-        
+
         console.log('Fetching assets with params:', queryParams);
         const data = await assetsService.getAssets(queryParams);
-        const allAssets = Array.isArray(data) ? data : []; 
+        const allAssets = Array.isArray(data) ? data : [];
         // console.log('allAssets========>',allAssets);      
         setAssets(allAssets);
         setFilteredAssets(allAssets); // API already returns filtered results
@@ -177,25 +178,25 @@ export default function AssetListingPage() {
   // Compute warranty status from warranties array
   const getWarrantyStatus = (warranties: any[]): string => {
     if (!warranties || warranties.length === 0) return "N/A";
-    
+
     // Get current date in YYYY-MM-DD format for comparison
     const now = new Date();
     const today = now.toISOString().split('T')[0]; // Format: "2025-01-XX"
-    
+
     // Check each warranty in the array
     for (const warranty of warranties) {
       if (warranty.startDate && warranty.endDate) {
         // Parse warranty dates and convert to YYYY-MM-DD format
         const startDate = warranty.startDate.split('T')[0]; // Format: "2025-09-30"
         const endDate = warranty.endDate.split('T')[0];   // Format: "2026-09-30"
-        
+
         // Simple string comparison (YYYY-MM-DD format allows this)
         if (today >= startDate && today <= endDate) {
           return "Active";
         }
       }
     }
-    
+
     // If no active warranty found, check if any warranty has expired
     for (const warranty of warranties) {
       if (warranty.startDate && warranty.endDate) {
@@ -205,7 +206,7 @@ export default function AssetListingPage() {
         }
       }
     }
-    
+
     // If no warranty has started yet
     for (const warranty of warranties) {
       if (warranty.startDate) {
@@ -215,11 +216,11 @@ export default function AssetListingPage() {
         }
       }
     }
-    
+
     return "N/A";
   };
 
- 
+
 
   // Prepare data for GridJS (in requested column order)
   const gridData = filteredAssets.map((asset) => {
@@ -230,7 +231,7 @@ export default function AssetListingPage() {
       // asset.assetType?.assetName || "",
       // asset.assetSubType?.name || "",
       asset.department?.deptName || asset.departmentName || "",
-     
+
       asset.supplier?.name || "",
       asset.assetStatus?.displayName || "", // Asset Status
       warrantyStatus
@@ -239,47 +240,47 @@ export default function AssetListingPage() {
 
   return (
     <>
- <Row>
+      <Row>
         <Col xs={12}>
-        <Card>
-      <CardHeader className="border-bottom card-tabs d-flex flex-wrap align-items-center gap-2">
-        <div className="flex-grow-1">
-          <h4 className="header-title">Assets</h4>
-          <h5 className="header-title">{assetSubHeaderDescription}</h5>
+          <Card>
+            <CardHeader className="border-bottom card-tabs d-flex flex-wrap align-items-center gap-2">
+              <div className="flex-grow-1">
+                <h4 className="header-title">Assets</h4>
+                <h5 className="header-title">{assetSubHeaderDescription}</h5>
 
-        </div>
-        <div className="d-flex flex-wrap flex-lg-nowrap gap-2">
-          {/* <div className="flex-shrink-0 d-flex align-items-center gap-2">
+              </div>
+              <div className="d-flex flex-wrap flex-lg-nowrap gap-2">
+                {/* <div className="flex-shrink-0 d-flex align-items-center gap-2">
             <div className="position-relative">
               <input type="text" className="form-control ps-4" placeholder="Search Here..." />
               <IconifyIcon icon="ti:search" className="ti position-absolute top-50 translate-middle-y start-0 ms-2" />
             </div>
           </div> */}
-         <Button 
-             variant="primary" 
-             onClick={() => router.push('/assets/create')}
-             className="d-flex align-items-center gap-2"
-             size="sm"
-           >
-             <i className="ri-add-line"></i>
-             Add Asset
-           </Button>
-        </div>
-      </CardHeader>
-      </Card>
+                <Button
+                  variant="primary"
+                  onClick={() => router.push('/assets/create')}
+                  className="d-flex align-items-center gap-2"
+                  size="sm"
+                >
+                  <IconifyIcon icon="tabler:plus" className="fs-16" />
+                  Add Asset
+                </Button>
+              </div>
+            </CardHeader>
+          </Card>
         </Col>
-      </Row>  
+      </Row>
 
 
 
 
-      
+
       <Row>
         <Col lg={12}>
-          
-        <Card>
-        <CardBody>
-        {/* Filter Section - Hidden
+
+          <Card>
+            <CardBody>
+              {/* Filter Section - Hidden
         <Row>
         <Col xs={12}>
         <CardHeader >
@@ -321,67 +322,67 @@ export default function AssetListingPage() {
         </Col>
         </Row>
         */}
-            
-        {loading && (
-          <div className="text-center my-4">
-            <div className="spinner-border" role="status">
-              <span className="visually-hidden">Loading...</span>
-            </div>
-          </div>
-        )}
-        
-        {error && <Alert variant="danger">{error}</Alert>}
-        
-        {!loading && !error && filteredAssets.length === 0 && (
-          <div className="text-center text-muted my-4">No assets found.</div>
-        )}
-        
-        {!loading && !error && filteredAssets.length > 0 && (
-          
-            <Grid
-              data={gridData}
-              columns={[
-                { name: "Asset Name", sort: false, search: true },
-                // { name: "Model", sort: false, search: true },
-                // { name: "Asset Type", sort: false, search: true },
-                // { name: "Asset Sub Type", sort: false, search: true },
-                { name: "Department", sort: false, search: true },
-               
-                { name: "Supplier", sort: false, search: true },
-                { 
-                  name: "Status", 
-                  sort: false, 
-                  search: true
-                },
-                { 
-                  name: "Warranty Status", 
-                  sort: false, 
-                  search: true,
-                  formatter: (cell: any) => {
-                    const status = cell as string;
-                    return status || 'N/A';
-                  }
-                }
-              ]}
-              search={true}
 
-              pagination={{
-                limit: 100
-              }}
-              sort={true}
-              resizable={true}
-              
+              {loading && (
+                <div className="text-center my-4">
+                  <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              )}
 
-              
-            />
-         
+              {error && <Alert variant="danger">{error}</Alert>}
 
-        )}
-      </CardBody>
-    </Card>
- 
-      
-      </Col>
+              {!loading && !error && filteredAssets.length === 0 && (
+                <div className="text-center text-muted my-4">No assets found.</div>
+              )}
+
+              {!loading && !error && filteredAssets.length > 0 && (
+
+                <Grid
+                  data={gridData}
+                  columns={[
+                    { name: "Asset Name", sort: false, search: true },
+                    // { name: "Model", sort: false, search: true },
+                    // { name: "Asset Type", sort: false, search: true },
+                    // { name: "Asset Sub Type", sort: false, search: true },
+                    { name: "Department", sort: false, search: true },
+
+                    { name: "Supplier", sort: false, search: true },
+                    {
+                      name: "Status",
+                      sort: false,
+                      search: true
+                    },
+                    {
+                      name: "Warranty Status",
+                      sort: false,
+                      search: true,
+                      formatter: (cell: any) => {
+                        const status = cell as string;
+                        return status || 'N/A';
+                      }
+                    }
+                  ]}
+                  search={true}
+
+                  pagination={{
+                    limit: 100
+                  }}
+                  sort={true}
+                  resizable={true}
+
+
+
+                />
+
+
+              )}
+            </CardBody>
+          </Card>
+
+
+        </Col>
       </Row>
     </>
   );

@@ -335,11 +335,13 @@ export default function EditAssetPage() {
                   <div className="p-2 bg-light rounded">Loading sub types...</div>
                 </div>
               )}
+              {renderField('consumerSerialNo', 'Consumer Serial No', asset.consumerSerialNo)}
               {renderField('brand', 'Brand', asset.brand)}
               {renderField('model', 'Model', asset.model)}
               {asset.subModel ? renderField('subModel', 'Sub Model', asset.subModel) : null}
               {renderField('partNo', 'Part Number', asset.partNo)}
               {renderField('installationDate', 'Installation Date', asset.installationDate, 'date')}
+              
              
             </Col>
             <Col lg={6}>

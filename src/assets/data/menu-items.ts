@@ -44,6 +44,12 @@ export const MENU_ITEMS: MenuItemType[] = [
         icon: FileText,
         children: [
           {
+            key: 'create-asset',
+            label: 'Create Asset',
+            url: '/assets/create',
+            parentKey: 'assets',
+          },
+          {
             key: 'all-assets',
             label: 'All Assets',
             url: '/assets',
