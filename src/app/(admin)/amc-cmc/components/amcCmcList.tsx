@@ -44,8 +44,8 @@ const AmcCmsList: React.FC = () => {
   useEffect(() => {
     if (!loading && contracts.length > 0) {
       const addClickHandlers = () => {
-        // Add click handlers for Asset Name column (2nd column, index 1)
-        const assetNameCells = document.querySelectorAll('td:nth-child(2)');
+        // Add click handlers for Asset Name column (1st column, index 0)
+        const assetNameCells = document.querySelectorAll('td:nth-child(1)');
         if (assetNameCells.length > 0) {
           assetNameCells.forEach((cell, index) => {
             if (index < contracts.length) {
@@ -60,8 +60,8 @@ const AmcCmsList: React.FC = () => {
           });
         }
 
-        // Add click handlers for Supplier column (3rd column, index 2)
-        const supplierCells = document.querySelectorAll('td:nth-child(3)');
+        // Add click handlers for Supplier column (2nd column, index 1)
+        const supplierCells = document.querySelectorAll('td:nth-child(2)');
         if (supplierCells.length > 0) {
           supplierCells.forEach((cell, index) => {
             if (index < contracts.length) {
@@ -88,11 +88,11 @@ const AmcCmsList: React.FC = () => {
   // Prepare data for GridJS - only plain data, no React components
   const gridData = contracts.map((contract) => {
     return [
-      contract.contractName || "-",
       contract.asset.assetName || "-",
       contract.serviceSupplier.name || "-",
       contract.contractType.typeName || "-",
-      formatCurrency(contract.amount)
+      contract.startDate ? new Date(contract.startDate).toLocaleDateString() : "-",
+      contract.endDate ? new Date(contract.endDate).toLocaleDateString() : "-"
     ];
   });
 
@@ -137,7 +137,7 @@ const AmcCmsList: React.FC = () => {
                   className="d-flex align-items-center gap-2"
                 >
                   <IconifyIcon icon="ri:refresh-line" />
-                  Refresh
+                  Refresh Data
                 </Button> 
               <Button
                 variant="primary"
@@ -172,12 +172,6 @@ const AmcCmsList: React.FC = () => {
             data={gridData}
             columns={[
               { 
-                name: "Contract Name", 
-                sort: true, 
-                search: false,
-                width: '30%'
-              },
-              { 
                 name: "Asset Name", 
                 sort: true, 
                 search: false,
@@ -187,16 +181,22 @@ const AmcCmsList: React.FC = () => {
                 name: "Supplier", 
                 sort: true, 
                 search: false,
-                width: '25%'
+                width: '20%'
               },
               { 
                 name: "Type", 
                 sort: true, 
                 search: false,
+                width: '15%'
+              },
+              { 
+                name: "Start Date", 
+                sort: true, 
+                search: false,
                 width: '20%'
               },
               { 
-                name: "Amount", 
+                name: "End Date", 
                 sort: true, 
                 search: false,
                 width: '20%'
