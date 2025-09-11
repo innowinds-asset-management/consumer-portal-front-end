@@ -121,10 +121,9 @@ const WarrantyList: React.FC<WarrantyListProps> = ({ filter, onClearFilter }) =>
     return [
       warranty.asset.assetName || "-",
       warranty.warrantyType.typeName || "-",
-      warranty.warrantyNumber || "-",
+      (warranty.asset as any).supplier?.name || "-",
       formatDate(warranty.startDate),
       formatDate(warranty.endDate),
-      warranty.warrantyPeriod ? `${warranty.warrantyPeriod} months` : "-",
       warrantyStatus.status
     ];
   });
@@ -217,11 +216,7 @@ const WarrantyList: React.FC<WarrantyListProps> = ({ filter, onClearFilter }) =>
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <span className="text-muted">
                   Showing {warranties.length} warranties
-                  {filter && filter.type && filter.days && (
-                    <span className="text-primary ms-2">
-                      (filtered by backend)
-                    </span>
-                  )}
+                  
                 </span>
               </div>
       {warranties.length === 0 ? (
@@ -263,7 +258,7 @@ const WarrantyList: React.FC<WarrantyListProps> = ({ filter, onClearFilter }) =>
                 width: '12%'
               },
               { 
-                name: "Warranty Number", 
+                name: "Supplier Name", 
                 sort: true, 
                 search: true,
                 width: '12%'
@@ -280,13 +275,6 @@ const WarrantyList: React.FC<WarrantyListProps> = ({ filter, onClearFilter }) =>
                 search: true,
                 width: '10%'
               },
-              { 
-                name: "Period", 
-                sort: true, 
-                search: true,
-                width: '8%'
-              },
-
               { 
                 name: "Warranty Status", 
                 sort: true, 

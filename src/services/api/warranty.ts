@@ -79,6 +79,10 @@ export interface Warranty {
     draft: boolean;
     status: string | null;
     assetAssignTo: string | null;
+    supplier?: {
+      id: string;
+      name: string;
+    } | null;
   };
   notifications: any[];
 }
