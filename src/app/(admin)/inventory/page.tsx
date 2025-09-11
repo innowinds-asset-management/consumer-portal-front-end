@@ -9,6 +9,7 @@ import { formatDate } from "@/utils/date";
 import { STORAGE_KEYS } from "@/utils/constants";
 import { ImExit } from "react-icons/im";
 import TransferInventoryModal from "@/components/TransferInventoryModal";
+import IconifyIcon from "@/components/wrappers/IconifyIcon";
 
 interface InventoryListItem {
   id: string;
@@ -130,8 +131,8 @@ export default function InventoryListingPage() {
               className="d-flex align-items-center gap-2"
               size="sm"
             >
-              <i className="ri-add-line"></i>
-              Add Inventory Item
+                    <IconifyIcon icon="tabler:plus" className="fs-16" />
+                    Add Inventory Item
             </Button>
           </div>
         }

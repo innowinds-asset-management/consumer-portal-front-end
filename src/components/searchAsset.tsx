@@ -139,6 +139,7 @@ export default function SearchAsset({
       onClick={() => handleAssetSelect(asset)}
       className="d-flex justify-content-between align-items-start py-2"
       style={{ cursor: 'pointer' }}
+      
     >
       <div className="flex-grow-1">
         <div className="fw-semibold text-primary">{asset.assetName}</div>
@@ -226,7 +227,7 @@ export default function SearchAsset({
       )}
 
       {/* Selected Asset Display */}
-      {selectedAsset && !showDropdown && (
+      {/* {selectedAsset && !showDropdown && (
         <div className="mt-2 p-2 bg-light rounded border">
           <div className="d-flex justify-content-between align-items-start">
             <div className="flex-grow-1">
@@ -248,11 +249,11 @@ export default function SearchAsset({
             )}
           </div>
         </div>
-      )}
+      )} */}
   
       {/* Dropdown Results */}
       {showDropdown && (
-        <div className="position-absolute w-100 mt-1" style={{ zIndex: 1050 }}>
+        <div className="position-absolute w-100 mt-1" style={{ zIndex: 1050,maxHeight: "300px", overflowY: "auto" }}>
           <ListGroup className="shadow-sm border">
             {filteredAssets.length > 0 ? (
               filteredAssets.map(renderAssetItem)

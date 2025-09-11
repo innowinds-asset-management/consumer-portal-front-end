@@ -914,7 +914,7 @@ export default function AssetPage() {
                     <Row className="mb-4 border-bottom border-2">
                     <Col lg={4}>
                                                  <div className="mb-3">
-                           <Form.Label htmlFor="buildingNumber">Building Number</Form.Label>
+                           <Form.Label htmlFor="buildingNumber">Building</Form.Label>
                           <Form.Control
                             type="text"
                             id="buildingNumber"
@@ -933,7 +933,7 @@ export default function AssetPage() {
 
                       <Col lg={4}>
                                                  <div className="mb-3">
-                           <Form.Label htmlFor="roomNumber">Room Number</Form.Label>
+                           <Form.Label htmlFor="roomNumber">Room</Form.Label>
                           <Form.Control
                             type="text"
                             id="roomNumber"
