@@ -179,10 +179,10 @@ const WarrantyStat: React.FC<WarrantyStatProps> = ({
           <Card>
             <CardHeader className="border-bottom card-tabs d-flex flex-wrap align-items-center gap-2">
               <div className="flex-grow-1">
-                <h4 className="header-title">Warranty Statistics</h4>
+                <h4 className="header-title">Warranty Dashboard</h4>
                 {stats && (
-                  <p className="text-muted mb-0">
-                    Total Warranties without AMC/CMC: <strong>{stats.totalWarrantiesWithoutAmcCmc}</strong>
+                  <p className="mb-0">
+                    <strong>Total Warranties without AMC/CMC:</strong> <strong>{stats.totalWarrantiesWithoutAmcCmc}</strong>
                   </p>
                 )}
               </div>
@@ -193,7 +193,7 @@ const WarrantyStat: React.FC<WarrantyStatProps> = ({
                   className="btn btn-outline-primary btn-sm d-flex align-items-center gap-2"
                 >
                   <i className={`ri-refresh-line ${loading ? 'fa-spin' : ''}`}></i>
-                  {loading ? 'Refreshing...' : 'Refresh Stats'}
+                  {loading ? 'Refreshing...' : 'Refresh Data'}
                 </button>
               </div>
             </CardHeader>

@@ -203,7 +203,7 @@ const WarrantyList: React.FC<WarrantyListProps> = ({ filter, onClearFilter }) =>
                   className="d-flex align-items-center gap-2"
                 >
                   <IconifyIcon icon="ri:refresh-line" />
-                  Refresh
+                  Refresh Data
                 </Button>                
               </div>
             </CardHeader>

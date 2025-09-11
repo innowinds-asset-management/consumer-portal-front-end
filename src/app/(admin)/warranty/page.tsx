@@ -4,7 +4,9 @@ import React, { useState } from "react";
 
 import WarrantyStat from "./component/warrantyStat";
 import WarrantyList from "./component/warrantyList";
+import WarrantyFilterForm from "./component/warrantyFilterForm";
 import { FILTER_TYPES } from "@/utils/constants";
+import CommonAccordionFilter from "@/components/accordianfilter";
 
 // Filter interface for warranty filtering
 export interface WarrantyFilter {
@@ -28,7 +30,16 @@ const WarrantyListingPage = () => {
   return (
     <>      
       {/* Warranty Statistics Component */}
-      <WarrantyStat onFilterChange={handleFilterChange} currentFilter={filter} />      
+      <WarrantyStat onFilterChange={handleFilterChange} currentFilter={filter} />   
+      <CommonAccordionFilter 
+        title="Filters" 
+        children={
+          <WarrantyFilterForm 
+            onFilterChange={handleFilterChange} 
+            currentFilter={filter} 
+          />
+        } 
+      />
       {/* Warranty List Component */}
       <WarrantyList filter={filter} onClearFilter={clearFilter} />
     </>
