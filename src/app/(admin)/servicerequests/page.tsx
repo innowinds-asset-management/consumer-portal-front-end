@@ -8,6 +8,8 @@ import "gridjs/dist/theme/mermaid.css";
 import { useRouter, useSearchParams } from "next/navigation";
 import { serviceRequestService } from "@/services/api/serviceRequest";
 import { formatDate, timeSince } from "@/utils/date";
+import ServiceRequestStats from "@/app/(admin)/dashboard/components/serviceRequestStats";
+import IconifyIcon from "@/components/wrappers/IconifyIcon";
 
 interface ServiceRequestListItem {
   srNo: string;
@@ -168,18 +170,22 @@ export default function ServiceRequestListingPage() {
           <div className="d-flex justify-content-between align-items-center">
             <span>Service Requests</span>
             <Button
-              variant="light"
+              variant="primary"
               onClick={() => router.push("/servicerequests/create")}
               className="d-flex align-items-center gap-2"
               size="sm"
             >
-              <i className="ri-add-line"></i>
-              Create Service Request
+                    <IconifyIcon icon="tabler:plus" className="fs-16" />
+                    Create Service Request
             </Button>
           </div>
         }
         description=""
       >
+        <div className="mb-4">
+          <ServiceRequestStats />
+        </div>
+        
         {loading && (
           <div className="text-center my-4">
             <div className="spinner-border" role="status">
@@ -270,7 +276,7 @@ export default function ServiceRequestListingPage() {
                 // { name: "Description", sort: false, search: true },
               ]}
               pagination={{
-                limit: 10,
+                limit: 100,
               }}
               sort={true}
              
@@ -278,7 +284,7 @@ export default function ServiceRequestListingPage() {
                 container: "table table-striped",
                 table: "table",
                 thead: "table-light",
-                th: "border-0 text-bg-success bg-gradient",
+                // th: "",
                 td: "border-0",
                 search: "form-control",
                 pagination: "pagination pagination-sm",

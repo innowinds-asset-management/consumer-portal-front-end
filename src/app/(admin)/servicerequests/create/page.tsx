@@ -3,19 +3,14 @@
 import React, { useState, useEffect } from "react";
 import ComponentContainerCard from '@/components/ComponentContainerCard'
 import IconifyIcon from '@/components/wrappers/IconifyIcon'
-import { Card, CardBody, Col, Nav, NavItem, NavLink, Row, TabContainer, TabContent, TabPane, Badge, Table, Alert, Button, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
+import { Card, CardBody, Col, Row, Alert, Button, Form, FormControl, FormGroup, FormLabel } from 'react-bootstrap'
 import { assetsService, Asset } from '@/services/api/assets'
-import { assetTypesService, AssetType } from '@/services/api/assetTypes'
-import { assetSubTypesService, AssetSubType } from '@/services/api/assetSubTypes'
-import {departmentService, Department } from '@/services/api/departments'
-import { warrantyService, Warranty } from '@/services/api/warranty'
-import { serviceRequestService, ServiceRequest, CreateServiceRequestRequest } from '@/services/api/serviceRequest'
+import { serviceRequestService, CreateServiceRequestRequest } from '@/services/api/serviceRequest'
 import { assetConditionService, AssetCondition } from '@/services/api/assetCondition'
-import { Location } from '@/services/api/assets'
 import { useSearchParams } from 'next/navigation'
 import { useRouter } from 'next/navigation';
 import {  CardFooter, CardHeader, CardTitle,  } from 'react-bootstrap'
-import ChoicesFormInput from '@/components/form/ChoicesFormInput'
+import SearchAsset from '@/components/searchAsset'
 
 export default function ServiceRequestCreatePage() {
   const router = useRouter();
@@ -27,31 +22,21 @@ export default function ServiceRequestCreatePage() {
   const [submitting, setSubmitting] = useState(false);
   const [problemDescription, setProblemDescription] = useState("");
   const [assetConditionCode, setAssetConditionCode] = useState("");
-  const [allAssets, setAllAssets] = useState<Asset[]>([]);
-  const [loadingAssets, setLoadingAssets] = useState(false);
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [assetConditions, setAssetConditions] = useState<AssetCondition[]>([]);
   const [loadingAssetConditions, setLoadingAssetConditions] = useState(false);
 
   useEffect(() => { 
     const fetchAsset = async () => {
       if (!assetId) {
-        // If no asset ID, fetch all assets for selection
-        setLoadingAssets(true);
-        try {
-          const assetsData = await assetsService.getAssets();
-          setAllAssets(assetsData);
-          setLoading(false);
-        } catch (error) {
-          setError("Failed to load assets. Please try again.");
-          setLoading(false);
-        } finally {
-          setLoadingAssets(false);
-        }
+        // If no asset ID, just set loading to false - SearchAsset component will handle asset loading
+        setLoading(false);
         return;
       }
       try {
         const assetData = await assetsService.getAssetById(assetId);
         setAsset(assetData);
+        setSelectedAsset(assetData);
         setLoading(false);
       } catch (error) {
         setError("Failed to load asset. Please try again.");
@@ -95,8 +80,8 @@ export default function ServiceRequestCreatePage() {
       return;
     }
 
-    if (!assetId) {
-      setError("Asset ID is required");
+    if (!selectedAsset) {
+      setError("Please select an asset");
       return;
     }
 
@@ -105,7 +90,7 @@ export default function ServiceRequestCreatePage() {
 
     try {
       const serviceRequestData: CreateServiceRequestRequest = {
-        assetId: assetId,
+        assetId: selectedAsset.id,
         problem: problemDescription,
         assetConditionCode: assetConditionCode,
       };
@@ -123,12 +108,15 @@ export default function ServiceRequestCreatePage() {
     }
   };
 
-  const handleAssetSelect = (value: any) => {
-    if (typeof value === 'string' && value) {
-      // Redirect to the same page with the selected asset ID
-      router.push(`/servicerequests/create?aid=${value}`);
-    }
+  const handleAssetSelect = (selectedAsset: Asset | null) => {
+    console.log('selected asset ===>',selectedAsset);
+    setSelectedAsset(selectedAsset);
+    setAsset(selectedAsset);
+    setError(""); // Clear any previous errors
   };
+
+  console.log('=======>',selectedAsset);
+
 
   if (loading) {
     return (
@@ -140,7 +128,7 @@ export default function ServiceRequestCreatePage() {
     );
   }
 
-  if (error && !asset && !assetId) {
+  if (error && !selectedAsset && !assetId) {
     return (
       <div className="container-fluid">
         <Alert variant="danger">
@@ -155,7 +143,7 @@ export default function ServiceRequestCreatePage() {
   }
 
   // Show only asset selection when no asset ID is provided
-  if (!assetId) {
+  if (!assetId && !selectedAsset && !asset) {
     return (
       <>
         <Row>
@@ -169,44 +157,43 @@ export default function ServiceRequestCreatePage() {
                   </CardTitle>
                 </CardHeader>
                 <CardBody>
-                  {loadingAssets ? (
-                    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100px' }}>
-                      <div className="spinner-border" role="status">
-                        <span className="visually-hidden">Loading assets...</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <FormGroup className="mb-3">
-                      <FormLabel htmlFor="assetSelect">
-                        <strong>Select Asset *</strong>
-                      </FormLabel>
-                      <ChoicesFormInput
-                        id="assetSelect"
-                        className="form-select"
-                        data-choices
-                        onChange={handleAssetSelect}
-                        options={{
-                          searchEnabled: true,
-                          searchPlaceholderValue: "Search assets...",
-                          placeholder: true,
-                          placeholderValue: "Choose an asset",
-                          shouldSort: true,
-                          itemSelectText: "",
-                          removeItemButton: false,
-                        }}
-                      >
-                        <option value="">Choose an asset</option>
-                        {allAssets.map((asset) => (
-                          <option key={asset.id} value={asset.id}>
-                            {asset.id} - {asset.assetName}
-                          </option>
-                        ))}
-                      </ChoicesFormInput>
-                      <div className="form-text">
-                        Select the asset for which you want to create a service request.
-                      </div>
-                    </FormGroup>
+                  {error && (
+                    <Alert variant="danger" className="mb-3">
+                      {error}
+                    </Alert>
                   )}
+                  <SearchAsset
+                    onAssetSelect={handleAssetSelect}
+                    selectedAsset={selectedAsset}
+                    placeholder="Search for assets by name, ID, part number, brand, model, or serial number..."
+                    label="Select Asset"
+                    required={true}
+                    className="mb-3"
+                    error={error}
+                  />
+                  <div className="form-text">
+                    Search and select the asset for which you want to create a service request.
+                  </div>
+                  
+                  {/* {selectedAsset && (
+                    <div className="mt-3">
+                      <Button 
+                        variant="primary" 
+                        onClick={() => router.push(`/servicerequests/create?aid=${selectedAsset.id}`)}
+                        className="me-2"
+                      >
+                        <IconifyIcon icon="mdi:arrow-right" className="me-2" />
+                        Continue with Selected Asset
+                      </Button>
+                      <Button 
+                        variant="outline-secondary" 
+                        onClick={() => router.back()}
+                      >
+                        <IconifyIcon icon="mdi:arrow-left" className="me-2" />
+                        Go Back
+                      </Button>
+                    </div>
+                  )} */}
                 </CardBody>
               </Card>
             </ComponentContainerCard>
@@ -219,7 +206,7 @@ export default function ServiceRequestCreatePage() {
   return (
     <>
       {/* Asset Information - Show when asset is selected or provided via URL */}
-      {asset && (
+      {(asset || selectedAsset) && (
         <Row>
           <Col md={12}>
             <ComponentContainerCard title="Asset Information" description="Details of the asset for service request">
@@ -234,36 +221,36 @@ export default function ServiceRequestCreatePage() {
                   <Row>
                     <Col md={6}>
                       <div className="mb-3">
-                        <strong>Asset Name:</strong> {asset?.assetName}
+                        <strong>Asset Name:</strong> {(asset || selectedAsset)?.assetName}
                       </div>
                       <div className="mb-3">
-                        <strong>Asset Type:</strong> {asset?.assetType?.assetName}
+                        <strong>Asset Type:</strong> {(asset || selectedAsset)?.assetType?.assetName}
                       </div>
                       <div className="mb-3">
-                        <strong>Asset Sub Type:</strong> {asset?.assetSubType?.name}
+                        <strong>Asset Sub Type:</strong> {(asset || selectedAsset)?.assetSubType?.name}
                       </div>
                       <div className="mb-3">
-                        <strong>Department:</strong> {asset?.department?.deptName}
+                        <strong>Department:</strong> {(asset || selectedAsset)?.department?.deptName}
                       </div>
                       <div className="mb-3">
-                        <strong>Brand:</strong> {asset?.brand}
+                        <strong>Brand:</strong> {(asset || selectedAsset)?.brand}
                       </div>
                     </Col>
                     <Col md={6}>
                       <div className="mb-3">
-                        <strong>Model:</strong> {asset?.model}
+                        <strong>Model:</strong> {(asset || selectedAsset)?.model}
                       </div>
                       <div className="mb-3">
-                        <strong>Sub Model:</strong> {asset?.subModel}
+                        <strong>Sub Model:</strong> {(asset || selectedAsset)?.subModel}
                       </div>
                       <div className="mb-3">
-                        <strong>Installation Date:</strong> {asset?.installationDate}
+                        <strong>Installation Date:</strong> {(asset || selectedAsset)?.installationDate}
                       </div>
                       <div className="mb-3">
-                        <strong>Warranty Start Date:</strong> {asset?.warrantyStartDate}
+                        <strong>Warranty Start Date:</strong> {(asset || selectedAsset)?.warrantyStartDate}
                       </div>
                       <div className="mb-3">
-                        <strong>Warranty End Date:</strong> {asset?.warrantyEndDate}
+                        <strong>Warranty End Date:</strong> {(asset || selectedAsset)?.warrantyEndDate}
                       </div>
                     </Col>
                   </Row>
