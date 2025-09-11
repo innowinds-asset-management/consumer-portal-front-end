@@ -233,35 +233,7 @@ export default function SearchableSupplier({
           {searchError}
         </Alert>
       )}
-
-      {/* Selected Supplier Display */}
-      {selectedSupplier && !showDropdown && (
-        <div className="mt-2 p-2 bg-light rounded border">
-          <div className="d-flex justify-content-between align-items-start">
-            <div className="flex-grow-1">
-              <div className="fw-semibold text-primary">{selectedSupplier.name}</div>
-              <div className="small text-muted">
-                {selectedSupplier.code && <span className="me-2">#{selectedSupplier.code}</span>}
-                {selectedSupplier.supplierCode && <span className="me-2">• Code: {selectedSupplier.supplierCode}</span>}
-              </div>
-              {selectedSupplier.phone && (
-                <div className="small text-muted">
-                  📞 {selectedSupplier.phone}
-                </div>
-              )}
-            </div>
-            {clearable && (
-              <button
-                type="button"
-                className="btn btn-sm btn-outline-secondary"
-                onClick={handleClear}
-              >
-                <IconifyIcon icon="tabler:x" />
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+     
 
       {/* Dropdown Results */}
       {showDropdown && (
