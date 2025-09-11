@@ -163,7 +163,7 @@ export default function SupplierDetailPage() {
               <AssetListTab 
                 supplierId={supplierId!} 
                 supplier={supplier}
-                showCreateButton={false}
+                showCreateButton={true}
                 title="Assets"
               />
             </TabPane>

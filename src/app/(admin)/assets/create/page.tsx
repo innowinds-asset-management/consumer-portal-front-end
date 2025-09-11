@@ -120,7 +120,7 @@ export default function AssetPage() {
     departmentId: searchParams.get('did') || '',
     floorNumber: "",
     roomNumber: "",
-    supplierId: "",
+    supplierId: searchParams.get('sid') || '',
     consumerSerialNo: "",
     // Warranty Information
     warrantyType: "",
@@ -976,6 +976,29 @@ export default function AssetPage() {
 
                                         {/* Row 3: Installation Date, Installation Status */}
                                         <Row>
+                                        <Col lg={4}>
+                                                 <div className="mb-3">
+                           <Form.Label htmlFor="installStatus">Installation Status</Form.Label>
+                          <Form.Select
+                            id="installStatus"
+                            value={formData.installStatus}
+                            onChange={(e) => handleFieldChange("installStatus", e.target.value)}
+                            isInvalid={!!errors.installStatus}
+                          >
+                            <option value="">Select installation status</option>
+                            <option value="InstallationNotRequired">Installation Not Required</option>
+                            <option value="Installed">Installed</option>
+                            <option value="NotInstalled">Not Installed</option>
+                          </Form.Select>
+                          {errors.installStatus && (
+                            <Form.Control.Feedback type="invalid">
+                              {errors.installStatus}
+                            </Form.Control.Feedback>
+                          )}
+                        </div>
+                      </Col>
+
+                      
                       <Col lg={4}>
                                                  <div className="mb-3">
                            <Form.Label htmlFor="installationDate">Installation Date</Form.Label>
@@ -994,27 +1017,6 @@ export default function AssetPage() {
                         </div>
                       </Col>
                       
-                      <Col lg={4}>
-                                                 <div className="mb-3">
-                           <Form.Label htmlFor="installStatus">Installation Status</Form.Label>
-                          <Form.Select
-                            id="installStatus"
-                            value={formData.installStatus}
-                            onChange={(e) => handleFieldChange("installStatus", e.target.value)}
-                            isInvalid={!!errors.installStatus}
-                          >
-                            <option value="">Select installation status</option>
-                            <option value="Installable">Installable</option>
-                            <option value="Installed">Installed</option>
-                            <option value="ReadyToUse">Ready To Use</option>
-                          </Form.Select>
-                          {errors.installStatus && (
-                            <Form.Control.Feedback type="invalid">
-                              {errors.installStatus}
-                            </Form.Control.Feedback>
-                          )}
-                        </div>
-                      </Col>
                       
 
                     </Row>
