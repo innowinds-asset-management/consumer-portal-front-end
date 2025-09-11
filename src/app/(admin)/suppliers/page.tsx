@@ -171,7 +171,7 @@ export default function SupplierListingPage() {
             baseData.push(supplier.openServiceRequestCount || 0);
         }
         
-        baseData.push(formatDate(supplier.registeredFrom));
+        // baseData.push(formatDate(supplier.registeredFrom));
         return baseData;
     });
 
@@ -233,7 +233,7 @@ export default function SupplierListingPage() {
                             { name: "Supplier Name", sort: false, search: true },
                             { name: "Number of Assets", sort: true, search: true },
                             ...(isAppProduction ? [] : [{ name: "Number of Open SRs", sort: true, search: true }]),
-                            { name: "Created Date", sort: true, search: true }
+                            // { name: "Created Date", sort: true, search: true }
                           ]}
                           pagination={{
                             limit: 100

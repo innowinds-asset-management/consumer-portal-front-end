@@ -137,7 +137,7 @@ export default function DepartmentListingPage() {
       baseData.push(department.openServiceRequestCount || 0);
     }
 
-    baseData.push(formatDate(department.createdAt));
+    // baseData.push(formatDate(department.createdAt));
     return baseData;
   });
 
@@ -199,7 +199,7 @@ export default function DepartmentListingPage() {
                     { name: "Department Name", sort: false, search: true },
                     { name: "Number of Assets", sort: true, search: true },
                     ...(isAppProduction ? [] : [{ name: "Number of Open SRs", sort: true, search: true }]),
-                    { name: "Created Date", sort: true, search: true }
+                    // { name: "Created Date", sort: true, search: true }
                   ]}
                   pagination={{
                     limit: 50
