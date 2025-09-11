@@ -1,6 +1,7 @@
 import { API_URL } from '@/config/environment'
 import httpClient from '@/services/http'
 import { ApiResponse } from './ApiResponse'
+import { FILTER_TYPES } from '@/utils/constants'
 
 // Warranty Stats interfaces
 export interface WarrantyStatsData {
@@ -85,10 +86,23 @@ export interface Warranty {
 
 
 class WarrantyService {
-  // Get all warranties
-  async getWarranties(): Promise<ApiResponse<Warranty[]>> {
+  // Get all warranties with optional filtering
+  async getWarranties(filter?: { type?: typeof FILTER_TYPES.expiring | typeof FILTER_TYPES.expired; days?: number }): Promise<ApiResponse<Warranty[]>> {
     try {
-      const response = await httpClient.get<ApiResponse<Warranty[]>>('/warranty');
+      const params = new URLSearchParams();
+      
+      if (filter?.type) {
+        params.append('filterType', filter.type);
+      }
+      
+      if (filter?.days) {
+        params.append('filterDays', filter.days.toString());
+      }
+
+      const queryString = params.toString();
+      const url = queryString ? `/warranty?${queryString}` : '/warranty';
+      
+      const response = await httpClient.get<ApiResponse<Warranty[]>>(url);
       if (response.data.success === 1) {
         return response.data;
       } else {
@@ -142,6 +156,7 @@ class WarrantyService {
       throw error;
     }
   }
+
 }
 
 export const warrantyService = new WarrantyService() 

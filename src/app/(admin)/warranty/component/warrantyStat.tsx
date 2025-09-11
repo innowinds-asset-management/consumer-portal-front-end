@@ -4,29 +4,34 @@ import React, { useState, useEffect } from "react";
 import { Card, CardBody, CardHeader, Col, Row, Alert } from "react-bootstrap";
 import IconifyIcon from "@/components/wrappers/IconifyIcon";
 import { warrantyService, WarrantyStatsData } from "@/services/api/warranty";
+import { WarrantyFilter } from "../page";
+import { FILTER_TYPES } from "@/utils/constants"; 
 
 interface WarrantyStatProps {
   onRefresh?: () => void;
   autoRefresh?: boolean;
   refreshInterval?: number; // in milliseconds
+  onFilterChange?: (filter: WarrantyFilter) => void;
+  currentFilter?: WarrantyFilter;
 }
 
 const WarrantyStat: React.FC<WarrantyStatProps> = ({ 
   onRefresh,
   autoRefresh = false,
-  refreshInterval = 30000 // 30 seconds default
+  refreshInterval = 30000, // 30 seconds default
+  onFilterChange,
+  currentFilter
 }) => {
-  const [stats, setStats] = useState<WarrantyStatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [stats, setStats] = useState<WarrantyStatsData>(); 
   // Fetch warranty statistics
   const fetchStats = async () => {
     try {
       setLoading(true);
       setError(null);
       const response = await warrantyService.getWarrantyStats();
-      setStats(response.payload);
+      setStats(response.payload as WarrantyStatsData);
     } catch (err) {
       console.error('Error fetching warranty stats:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch warranty statistics');
@@ -54,9 +59,21 @@ const WarrantyStat: React.FC<WarrantyStatProps> = ({
     onRefresh?.();
   };
 
+  // Handle stat card click
+  const handleStatClick = (type: typeof FILTER_TYPES.expiring | typeof FILTER_TYPES.expired, days: number) => {
+    if (onFilterChange) {
+      // If clicking the same filter, clear it; otherwise set new filter
+      if (currentFilter?.type === type && currentFilter?.days === days) {
+        onFilterChange({ type: null, days: null });
+      } else {
+        onFilterChange({ type, days });
+      }
+    }
+  };
+
   // Dynamic configuration for different stat types and timeframes
   // This function returns appropriate icon and color based on stat type and timeframe
-  const getStatConfig = (type: 'expiring' | 'expired', timeframe: '5' | '10' | '30') => {
+  const getStatConfig = (type: typeof FILTER_TYPES.expiring | typeof FILTER_TYPES.expired, timeframe: '5' | '10' | '30') => {
     const configs = {
       expiring: {
         '5': { icon: "solar:clock-circle-bold-duotone", color: "warning" },
@@ -80,7 +97,8 @@ const WarrantyStat: React.FC<WarrantyStatProps> = ({
       value: stats.expiringSoon.in5Days.count,
       subtitle: stats.expiringSoon.in5Days.text,
       ...getStatConfig('expiring', '5'),
-      type: "expiring",
+      type: FILTER_TYPES.expiring,
+      days: 5,
       priority: 1
     },
     {
@@ -88,7 +106,8 @@ const WarrantyStat: React.FC<WarrantyStatProps> = ({
       value: stats.expiringSoon.in10Days.count,
       subtitle: stats.expiringSoon.in10Days.text,
       ...getStatConfig('expiring', '10'),
-      type: "expiring",
+      type: FILTER_TYPES.expiring,
+      days: 10,
       priority: 2
     },
     {
@@ -96,7 +115,8 @@ const WarrantyStat: React.FC<WarrantyStatProps> = ({
       value: stats.expiringSoon.in30Days.count,
       subtitle: stats.expiringSoon.in30Days.text,
       ...getStatConfig('expiring', '30'),
-      type: "expiring",
+      type: FILTER_TYPES.expiring,
+      days: 30,
       priority: 3
     },
     // Recently Expired Stats
@@ -105,7 +125,8 @@ const WarrantyStat: React.FC<WarrantyStatProps> = ({
       value: stats.recentlyExpired.inLast5Days.count,
       subtitle: stats.recentlyExpired.inLast5Days.text,
       ...getStatConfig('expired', '5'),
-      type: "expired",
+      type: FILTER_TYPES.expired,
+      days: 5,
       priority: 1
     },
     {
@@ -113,7 +134,8 @@ const WarrantyStat: React.FC<WarrantyStatProps> = ({
       value: stats.recentlyExpired.inLast10Days.count,
       subtitle: stats.recentlyExpired.inLast10Days.text,
       ...getStatConfig('expired', '10'),
-      type: "expired",
+      type: FILTER_TYPES.expired,
+      days: 10,
       priority: 2
     },
     {
@@ -121,13 +143,14 @@ const WarrantyStat: React.FC<WarrantyStatProps> = ({
       value: stats.recentlyExpired.inLast30Days.count,
       subtitle: stats.recentlyExpired.inLast30Days.text,
       ...getStatConfig('expired', '30'),
-      type: "expired",
+      type: FILTER_TYPES.expired,
+      days: 30,
       priority: 3
     }
   ].sort((a, b) => {
     // Sort by type first (expiring before expired), then by priority
     if (a.type !== b.type) {
-      return a.type === 'expiring' ? -1 : 1;
+      return a.type === FILTER_TYPES.expiring ? -1 : 1;
     }
     return a.priority - b.priority;
   }) : [];
@@ -180,41 +203,64 @@ const WarrantyStat: React.FC<WarrantyStatProps> = ({
 
       {/* Stats Cards */}
       <Row className="mb-4">
-        {statItems.map((item, index) => (
-          <Col key={index} xs={12} sm={6} lg={4} className="mb-3">
-            <Card className="h-100" title={`${item.title}: ${item.value} - ${item.subtitle}`}>
-              <CardBody>
-                <div className="d-flex align-items-start gap-2 justify-content-between">
-                  <div>
-                    <h5 
-                      className="text-muted fs-13 fw-bold text-uppercase" 
-                      title={item.title}
-                    >
-                      {item.title}
-                    </h5>
-                    <h3 className="mt-2 mb-1 fw-bold">
-                      {loading ? (
-                        <div className="spinner-border spinner-border-sm" role="status">
-                          <span className="visually-hidden">Loading...</span>
-                        </div>
-                      ) : (
-                        item.value
-                      )}
-                    </h3>
-                    <p className="mb-0 text-muted">
-                      <span className="text-nowrap">{item.subtitle}</span>
-                    </p>
+        {statItems.map((item, index) => {
+          const isActive = currentFilter?.type === item.type && currentFilter?.days === item.days;
+          const isClickable = onFilterChange && item.value > 0;
+          
+          return (
+            <Col key={index} xs={12} sm={6} lg={4} className="mb-3">
+              <Card 
+                className={`h-100 ${isClickable ? 'cursor-pointer' : ''} ${isActive ? 'border-primary shadow-sm' : ''}`}
+                title={`${item.title}: ${item.value} - ${item.subtitle}${isClickable ? ' (Click to filter)' : ''}`}
+                onClick={isClickable ? () => handleStatClick(item.type, item.days) : undefined}
+                style={isClickable ? { cursor: 'pointer', transition: 'all 0.2s ease' } : {}}
+              >
+                <CardBody>
+                  <div className="d-flex align-items-start gap-2 justify-content-between">
+                    <div>
+                      <h5 
+                        className="text-muted fs-13 fw-bold text-uppercase" 
+                        title={item.title}
+                      >
+                        {item.title}
+                        {isActive && (
+                          <IconifyIcon 
+                            icon="solar:check-circle-bold-duotone" 
+                            className="ms-2 text-primary" 
+                            style={{ fontSize: '1rem' }}
+                          />
+                        )}
+                      </h5>
+                      <h3 className="mt-2 mb-1 fw-bold">
+                        {loading ? (
+                          <div className="spinner-border spinner-border-sm" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
+                        ) : (
+                          item.value
+                        )}
+                      </h3>
+                      <p className="mb-0 text-muted">
+                        <span className="text-nowrap">{item.subtitle}</span>
+                        {isClickable && (
+                          <span className="d-block text-primary small mt-1">
+                            <IconifyIcon icon="solar:hand-stars-bold-duotone" className="me-1" />
+                            Click to filter
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    <div className="avatar-lg flex-shrink-0">
+                      <span className={`avatar-title bg-${item.color}-subtle text-${item.color} rounded fs-28 ${isActive ? 'border border-primary' : ''}`}>
+                        <IconifyIcon icon={item.icon} />
+                      </span>
+                    </div>
                   </div>
-                  <div className="avatar-lg flex-shrink-0">
-                    <span className={`avatar-title bg-${item.color}-subtle text-${item.color} rounded fs-28`}>
-                      <IconifyIcon icon={item.icon} />
-                    </span>
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-        ))}
+                </CardBody>
+              </Card>
+            </Col>
+          );
+        })}
       </Row>
     </>
   );

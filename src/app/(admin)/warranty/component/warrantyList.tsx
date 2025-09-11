@@ -2,26 +2,40 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Alert, Card, CardBody, CardHeader, Col, Row, Spinner } from "react-bootstrap";
+import { Button, Alert, Card, CardBody, CardHeader, Col, Row, Spinner, Badge } from "react-bootstrap";
 import { Grid } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
 
 import IconifyIcon from "@/components/wrappers/IconifyIcon";
 import { warrantyService, Warranty } from "@/services/api/warranty";
+import { WarrantyFilter } from "../page";
+import { FILTER_TYPES } from "@/utils/constants"; 
 
-const WarrantyList: React.FC = () => {
-  const router = useRouter();
+interface WarrantyListProps {
+  filter?: WarrantyFilter;
+  onClearFilter?: () => void;
+}
+
+const WarrantyList: React.FC<WarrantyListProps> = ({ filter, onClearFilter }) => {
+  const router = useRouter(); 
   const [warranties, setWarranties] = useState<Warranty[]>([]);
   const [msg, setMsg] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   
-  // Fetch warranty data from API
-  const fetchWarranties = async () => {
+  // Fetch warranty data from API with optional filtering
+  const fetchWarranties = async (currentFilter?: WarrantyFilter) => {
     try {
       setLoading(true);
-      setError("");      
-      const data = await warrantyService.getWarrantiesWithoutAmcCmc();  
+      setError("");
+      
+      // Convert filter to backend format
+      const backendFilter = currentFilter && currentFilter.type && currentFilter.days ? {
+        type: currentFilter.type,
+        days: currentFilter.days
+      } : undefined;
+      
+      const data = await warrantyService.getWarranties(backendFilter);
       setMsg(data.msg);
       setWarranties(data.payload);
     } catch (err) {
@@ -33,9 +47,10 @@ const WarrantyList: React.FC = () => {
     }
   };
 
+  // Initial fetch and refetch when filter changes
   useEffect(() => {
-    fetchWarranties();
-  }, []);
+    fetchWarranties(filter);
+  }, [filter]);
 
   // Format date for display
   const formatDate = (dateString: string | null) => {
@@ -67,8 +82,7 @@ const WarrantyList: React.FC = () => {
 
   // Get coverage type badge variant
   const getCoverageBadgeVariant = (coverageType: string | null) => {
-    if (!coverageType) return "secondary";
-    
+    if (!coverageType) return "secondary";    
     switch (coverageType.toLowerCase()) {
       case 'comprehensive':
         return 'success';
@@ -115,6 +129,18 @@ const WarrantyList: React.FC = () => {
     ];
   });
 
+  // Get filter description for display
+  const getFilterDescription = (filter: WarrantyFilter | undefined): string => {
+    if (!filter || !filter.type || !filter.days) {
+      return "";
+    }
+    
+    const typeText = filter.type === FILTER_TYPES.expiring   ? FILTER_TYPES.typeText.expiring : FILTER_TYPES.typeText.expired;
+    const daysText = filter.days === 1 ? FILTER_TYPES.daysText.days : `${filter.days} ${FILTER_TYPES.daysText.days}`;
+    
+    return `${typeText} within ${daysText}`;
+  };
+
 
 
   if (loading) {
@@ -133,7 +159,7 @@ const WarrantyList: React.FC = () => {
       <Alert variant="danger" className="my-4">
         <Alert.Heading>Error Loading Warranties</Alert.Heading>
         <p>{error}</p>
-        <Button variant="outline-danger" onClick={fetchWarranties}>
+        <Button variant="outline-danger" onClick={() => fetchWarranties(filter)}>
           <IconifyIcon icon="ri:refresh-line" className="me-2" />
           Retry
         </Button>
@@ -149,11 +175,30 @@ const WarrantyList: React.FC = () => {
             <CardHeader className="border-bottom card-tabs d-flex flex-wrap align-items-center gap-2">
               <div className="flex-grow-1">
                 <h4 className="header-title">Warranty List</h4>
+                {filter && filter.type && filter.days && (
+                  <div className="mt-2">
+                    <Badge bg="primary" className="me-2">
+                      <IconifyIcon icon="solar:filter-bold-duotone" className="me-1" />
+                      Filtered: {getFilterDescription(filter)}
+                    </Badge>
+                  </div>
+                )}
               </div>
               <div className="d-flex flex-wrap flex-lg-nowrap gap-2">
+                {filter && filter.type && filter.days && onClearFilter && (
+                  <Button 
+                    variant="outline-secondary" 
+                    onClick={onClearFilter}
+                    size="sm"
+                    className="d-flex align-items-center gap-2"
+                  >
+                    <IconifyIcon icon="solar:close-circle-bold-duotone" />
+                    Clear Filter
+                  </Button>
+                )}
                 <Button 
                   variant="outline-primary" 
-                  onClick={fetchWarranties}
+                  onClick={() => fetchWarranties(filter)}
                   size="sm"
                   className="d-flex align-items-center gap-2"
                 >
@@ -170,13 +215,35 @@ const WarrantyList: React.FC = () => {
           <Card>
             <CardBody>
               <div className="d-flex justify-content-between align-items-center mb-3">
-                <span className="text-muted">Showing {warranties.length} warranties</span>
+                <span className="text-muted">
+                  Showing {warranties.length} warranties
+                  {filter && filter.type && filter.days && (
+                    <span className="text-primary ms-2">
+                      (filtered by backend)
+                    </span>
+                  )}
+                </span>
               </div>
       {warranties.length === 0 ? (
         <div className="text-center text-muted my-5">
           <IconifyIcon icon="solar:shield-check-bold-duotone" className="mb-3" style={{ fontSize: '3rem' }} />
-          <h5>{msg}</h5>
-          <p>There are no warranties to display at the moment.</p>          
+          {filter && filter.type && filter.days ? (
+            <>
+              <h5>No warranties found</h5>
+              <p>No warranties match the current filter: {getFilterDescription(filter)}</p>
+              {onClearFilter && (
+                <Button variant="outline-primary" onClick={onClearFilter} className="mt-2">
+                  <IconifyIcon icon="solar:close-circle-bold-duotone" className="me-2" />
+                  Clear Filter
+                </Button>
+              )}
+            </>
+          ) : (
+            <>
+              <h5>{msg}</h5>
+              <p>There are no warranties to display at the moment.</p>
+            </>
+          )}
         </div>
       ) : (
         <div className="table-responsive">

@@ -195,3 +195,16 @@ export const CURRENCY = {
   position: 'before' as const,
   decimals: 2,
 } as const 
+
+//filter types
+export const FILTER_TYPES = {
+  expiring: 'expiring',
+  expired: 'expired',
+  typeText: {
+    expiring: 'Expiring',
+    expired: 'Expired',
+  },
+  daysText: {
+    days: 'days',
+  }
+} as const
