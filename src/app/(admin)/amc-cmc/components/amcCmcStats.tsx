@@ -39,8 +39,8 @@ const AmcCmcStat: React.FC<AmcCmcStatProps> = ({
       const response = await serviceContractService.getServiceContractStats();
       setStats(response.payload as ServiceContractStatsData);
     } catch (err) {
-      console.error('Error fetching service contract stats:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch service contract statistics');
+      console.error('Error fetching amc/cmc stats:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch amc/cmc statistics');
     } finally {
       setLoading(false);
     }
@@ -166,7 +166,7 @@ const AmcCmcStat: React.FC<AmcCmcStatProps> = ({
   if (error) {
     return (
       <Alert variant="danger" className="mb-4">
-        <Alert.Heading>Error Loading Service Contract Statistics</Alert.Heading>
+        <Alert.Heading>Error Loading AMC/CMC Statistics</Alert.Heading>
         <p>{error}</p>
         <button 
           onClick={handleRefresh}
@@ -186,10 +186,10 @@ const AmcCmcStat: React.FC<AmcCmcStatProps> = ({
           <Card>
             <CardHeader className="border-bottom card-tabs d-flex flex-wrap align-items-center gap-2">
               <div className="flex-grow-1">
-                <h4 className="header-title">Service Contract Dashboard</h4>
+                <h4 className="header-title">AMC/CMC Dashboard</h4>
                 {stats && (
                   <p className="mb-0">
-                    <strong>Total Service Contracts:</strong> <strong>{stats.totalServiceContracts}</strong>
+                    <strong>Total AMC/CMC:</strong> <strong>{stats.totalServiceContracts}</strong>
                   </p>
                 )}
               </div>

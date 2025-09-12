@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import AmcCmcList from './components/amcCmcList';
 import AmcCmcStats, { ServiceContractFilter } from './components/amcCmcStats';
+import AmcCmcFilterForm from './components/amcCmcFilterForm';
+import CommonAccordionFilter from '@/components/accordianfilter';
 
 export default function AmcCmcPage() {
   const [filter, setFilter] = useState<ServiceContractFilter>({ type: null, days: null });
@@ -20,6 +22,12 @@ export default function AmcCmcPage() {
   return (
     <div className="container-fluid">
       <AmcCmcStats onFilterChange={handleFilterChange} currentFilter={filter} />
+      <CommonAccordionFilter
+        title="Filters"
+        children={
+          <AmcCmcFilterForm onFilterChange={handleFilterChange} currentFilter={filter} />
+        }
+      />
       <AmcCmcList filter={filter} onClearFilter={clearFilter} />
     </div>
   );
