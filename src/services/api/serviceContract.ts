@@ -49,13 +49,64 @@ export interface ServiceContract {
   };
 }
 
+export interface ServiceContractStatsData {
+  totalServiceContracts: number;
+  expiringSoon: {
+    in5Days: {
+      title: string;
+      count: number;
+      text: string;
+    };
+    in10days: {
+      title: string;
+      count: number;
+      text: string;
+    };
+    in30days: {
+      title: string;
+      count: number;
+      text: string;
+    };
+  };
+  recentlyExpired: {
+    in5Days: {
+      title: string;
+      count: number;
+      text: string;
+    };
+    in10Days: {
+      title: string;
+      count: number;
+      text: string;
+    };
+    in30Days: {
+      title: string;
+      count: number;
+      text: string;
+    };
+  };
+}
+
 
 class ServiceContractService {
   private baseURL = `${API_URL}/service-contract`
 
-  async getServiceContracts(): Promise<ApiResponse<ServiceContract[]>> {
+  async getServiceContracts(filter?: { type?: 'expiring' | 'expired'; days?: number }): Promise<ApiResponse<ServiceContract[]>> {
     try {
-      const response = await httpClient.get<ApiResponse<ServiceContract[]>>(this.baseURL)
+      const params = new URLSearchParams();
+      
+      if (filter?.type) {
+        params.append('filterType', filter.type);
+      }
+      
+      if (filter?.days) {
+        params.append('filterDays', filter.days.toString());
+      }
+
+      const queryString = params.toString();
+      params.append('groupstatus', 'active-or-pre-active');
+      const url = queryString ? `${this.baseURL}?${queryString}` : this.baseURL;      
+      const response = await httpClient.get<ApiResponse<ServiceContract[]>>(url)
       if(response.data.success === 1){
         return response.data
       } else {
@@ -79,8 +130,8 @@ class ServiceContractService {
 
   async createServiceContract(contractData: Omit<ServiceContract, 'contractId' | 'createdAt' | 'updatedAt'>): Promise<ServiceContract> {
     try {
-      console.log('🚀 Creating service contract at URL:', this.baseURL)
-      console.log('📦 Request data:', JSON.stringify(contractData, null, 2))
+      console.log('Creating service contract at URL:', this.baseURL)
+      console.log('Request data:', JSON.stringify(contractData, null, 2))
       const response = await httpClient.post<ServiceContract>(this.baseURL, contractData)
       return response.data
     } catch (error) {
@@ -121,6 +172,21 @@ class ServiceContractService {
   async getServiceContractsByAssetId(assetId: string): Promise<ServiceContract[]> {
     const response = await httpClient.get<ServiceContract[]>(`${this.baseURL}/asset-contract/${assetId}`)
     return response.data
+  }
+
+  // Get service contract statistics
+  async getServiceContractStats(): Promise<ApiResponse<ServiceContractStatsData>> {
+    try {
+      const response = await httpClient.get<ApiResponse<ServiceContractStatsData>>('/service-contract/service-contract-stats');
+      if (response.data.success === 1) {
+        return response.data;
+      } else {
+        throw new Error(response.data.msg || 'Failed to fetch service contract statistics');
+      }
+    } catch (error) {
+      console.error('Error fetching service contract statistics:', error);
+      throw error;
+    }
   }
 }
 

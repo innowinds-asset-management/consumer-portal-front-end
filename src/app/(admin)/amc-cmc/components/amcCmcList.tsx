@@ -2,17 +2,22 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Alert, Card, CardBody, CardHeader, Col, Row, Spinner } from "react-bootstrap";
+import { Button, Alert, Card, CardBody, CardHeader, Col, Row, Spinner, Badge } from "react-bootstrap";
 import { Grid } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
 
 import IconifyIcon from "@/components/wrappers/IconifyIcon";
 import { serviceContractService, ServiceContract } from "@/services/api/serviceContract";
 import { formatCurrency } from "@/helpers/currencyHelper";
+import { ServiceContractFilter } from "./amcCmcStats";
+import { FILTER_TYPES } from "@/utils/constants";
 
+interface AmcCmcListProps {
+  filter?: ServiceContractFilter;
+  onClearFilter?: () => void;
+}
 
-
-const AmcCmsList: React.FC = () => {
+const AmcCmsList: React.FC<AmcCmcListProps> = ({ filter, onClearFilter }) => {
   const router = useRouter();
   const [contracts, setContracts] = useState<ServiceContract[]>([]);
   const [msg, setMsg] = useState<string>("");
@@ -20,15 +25,22 @@ const AmcCmsList: React.FC = () => {
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    fetchServiceContracts();
-  }, []);
+    fetchServiceContracts(filter);
+  }, [filter]);
 
-  // Fetch service contract data from API
-  const fetchServiceContracts = async () => {
+  // Fetch service contract data from API with optional filtering
+  const fetchServiceContracts = async (currentFilter?: ServiceContractFilter) => {
     try {
       setLoading(true);
-      setError("");      
-      const data = await serviceContractService.getServiceContracts();
+      setError("");
+      
+      // Convert filter to backend format
+      const backendFilter = currentFilter && currentFilter.type && currentFilter.days ? {
+        type: currentFilter.type,
+        days: currentFilter.days
+      } : undefined;
+      
+      const data = await serviceContractService.getServiceContracts(backendFilter);
       setMsg("Service contracts fetched successfully");
       setContracts(data.payload);
     } catch (err) {
@@ -85,6 +97,18 @@ const AmcCmsList: React.FC = () => {
     }
   }, [loading, contracts, router]);
 
+  // Get filter description for display
+  const getFilterDescription = (filter: ServiceContractFilter | undefined): string => {
+    if (!filter || !filter.type || !filter.days) {
+      return "";
+    }
+    
+    const typeText = filter.type === FILTER_TYPES.expiring   ? FILTER_TYPES.typeText.expiring : FILTER_TYPES.typeText.expired;
+    const daysText = filter.days === 1 ? FILTER_TYPES.daysText.days : `${filter.days} ${FILTER_TYPES.daysText.days}`;
+    
+    return `${typeText} within ${daysText}`;
+  };
+
   // Prepare data for GridJS - only plain data, no React components
   const gridData = contracts.map((contract) => {
     return [
@@ -112,7 +136,7 @@ const AmcCmsList: React.FC = () => {
       <Alert variant="danger" className="my-4">
         <Alert.Heading>Error Loading Service Contracts</Alert.Heading>
         <p>{error}</p>
-        <Button variant="outline-danger" onClick={fetchServiceContracts}>
+        <Button variant="outline-danger" onClick={() => fetchServiceContracts(filter)}>
           <IconifyIcon icon="ri:refresh-line" className="me-2" />
           Retry
         </Button>
@@ -128,11 +152,30 @@ const AmcCmsList: React.FC = () => {
             <CardHeader className="border-bottom card-tabs d-flex flex-wrap align-items-center gap-2">
               <div className="flex-grow-1">
                 <h4 className="header-title">AMC/CMC Contracts</h4>
+                {filter && filter.type && filter.days && (
+                  <div className="mt-2">
+                    <Badge bg="primary" className="me-2">
+                      <IconifyIcon icon="solar:filter-bold-duotone" className="me-1" />
+                      Filtered: {getFilterDescription(filter)}
+                    </Badge>
+                  </div>
+                )}
               </div>
               <div className="d-flex flex-wrap flex-lg-nowrap gap-2">
+                {filter && filter.type && filter.days && onClearFilter && (
+                  <Button 
+                    variant="outline-secondary" 
+                    onClick={onClearFilter}
+                    size="sm"
+                    className="d-flex align-items-center gap-2"
+                  >
+                    <IconifyIcon icon="solar:close-circle-bold-duotone" />
+                    Clear Filter
+                  </Button>
+                )}
                 <Button 
                   variant="outline-primary" 
-                  onClick={fetchServiceContracts}
+                  onClick={() => fetchServiceContracts(filter)}
                   size="sm"
                   className="d-flex align-items-center gap-2"
                 >
@@ -158,7 +201,7 @@ const AmcCmsList: React.FC = () => {
           <Card>
             <CardBody>
               <div className="d-flex justify-content-between align-items-center mb-3">
-                <span className="text-muted">Showing {contracts.length} contracts</span>
+                <span className="text-muted">Showing {contracts.length} contracts</span>               
               </div>
       {contracts.length === 0 ? (
         <div className="text-center text-muted my-5">
