@@ -7,20 +7,15 @@ import { ChildrenType } from '../../types/component-props'
 
 const Layout = ({ children }: ChildrenType) => {
   const { layoutOrientation } = useLayoutContext()
+  
   return (
     <AuthProtectionWrapper>
       <>
-        {layoutOrientation === 'vertical' ? (
+      
           <VerticalLayout>
             {children}
           </VerticalLayout>
-        ) : (
-          <>
-            <HorizontalLayout>
-              {children}
-            </HorizontalLayout>
-          </>
-        )}
+        
       </>
     </AuthProtectionWrapper>
   )
