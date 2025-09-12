@@ -375,7 +375,7 @@ export default function EditAssetPage() {
               {renderField('assetAssignTo', 'Assigned To', asset.assetAssignTo)}
               {!isAppProduction && (
                 <>
-                  {conditions.length > 0 ? renderField('assetCondition', 'Asset Condition', (asset as any).assetCondition?.code || (asset as any).assetCondition, 'select', conditions.map(c => ({ value: c.code, label: c.displayName }))) : (
+                  {conditions.length > 0 ? renderField('assetConditionCode', 'Asset Condition', (asset as any).assetCondition?.displayName || (asset as any).assetCondition, 'select', conditions.map(c => ({ value: c.code, label: c.displayName }))) : (
                     <div className="mb-3">
                       <div className="d-flex justify-content-between align-items-center mb-2">
                         <strong>Asset Condition:</strong>
