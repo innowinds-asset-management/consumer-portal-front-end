@@ -217,31 +217,31 @@ const AmcCmsList: React.FC<AmcCmcListProps> = ({ filter, onClearFilter }) => {
               { 
                 name: "Asset Name", 
                 sort: true, 
-                search: false,
+                search: true,
                 width: '25%'
               },
               { 
                 name: "Supplier", 
                 sort: true, 
-                search: false,
+                search: true,
                 width: '20%'
               },
               { 
                 name: "Type", 
                 sort: true, 
-                search: false,
+                search: true,
                 width: '15%'
               },
               { 
                 name: "Start Date", 
                 sort: true, 
-                search: false,
+                search: true,
                 width: '20%'
               },
               { 
                 name: "End Date", 
                 sort: true, 
-                search: false,
+                search: true,
                 width: '20%'
               }
             ]}
@@ -249,7 +249,7 @@ const AmcCmsList: React.FC<AmcCmcListProps> = ({ filter, onClearFilter }) => {
               limit: 50
             }}
             sort={true}
-            search={false}
+            search={true}
             resizable={true}
           />
         </div>

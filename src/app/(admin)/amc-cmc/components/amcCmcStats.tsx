@@ -170,9 +170,9 @@ const AmcCmcStat: React.FC<AmcCmcStatProps> = ({
         <p>{error}</p>
         <button 
           onClick={handleRefresh}
-          className="btn btn-outline-danger btn-sm"
+          className="btn btn-outline-danger btn-sm d-flex align-items-center gap-2"
         >
-          <i className="ri-refresh-line me-2"></i>
+          <IconifyIcon icon="ri:refresh-line" />
           Try Again
         </button>
       </Alert>
@@ -199,7 +199,7 @@ const AmcCmcStat: React.FC<AmcCmcStatProps> = ({
                   disabled={loading}
                   className="btn btn-outline-primary btn-sm d-flex align-items-center gap-2"
                 >
-                  <i className={`ri-refresh-line ${loading ? 'fa-spin' : ''}`}></i>
+                  <IconifyIcon icon="ri:refresh-line" />
                   {loading ? 'Refreshing...' : 'Refresh Data'}
                 </button>
               </div>
