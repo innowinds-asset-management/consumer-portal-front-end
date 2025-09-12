@@ -22,6 +22,7 @@ interface ServiceRequestListItem {
   technicianName: string;
   supplier: string;
   warrantyStatus: string;
+  departmentId: string;
   status: string;
   // type: string;
   // description: string;
@@ -86,6 +87,7 @@ export default function ServiceRequestListingPage() {
             description: record.serviceDescription || "",
             //  createdAt: record.createdAt || undefined,
             asset: record.asset,
+            departmentId: record.asset?.department?.deptId || "",
           }))
           : [];
         setServiceRequests(mapped);
@@ -139,6 +141,27 @@ export default function ServiceRequestListingPage() {
             }
           });
         }
+
+               
+                // Add click handlers for Department column (6th column, index 5)
+                const departmentCells = document.querySelectorAll("td:nth-child(6)");
+                if (departmentCells.length > 0) {
+                  departmentCells.forEach((cell, index) => {
+                    if (index < filteredServiceRequests.length) {
+                      const item = filteredServiceRequests[index];
+                      (cell as HTMLElement).style.cursor = "pointer";
+                      (cell as HTMLElement).style.color = "#0d6efd";
+                      (cell as HTMLElement).style.textDecoration = "underline";
+                      cell.addEventListener("click", () => {
+                        if (item.departmentId) {
+                          router.push(`/departments/detail?did=${item.departmentId}`);
+                      }
+                      });
+                    }
+                  });
+                }
+
+
       };
       addClickHandlers();
       const timeoutId = setTimeout(addClickHandlers, 500);
