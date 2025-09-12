@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button, Alert, Card, CardBody, CardHeader, Col, Row, Spinner, Badge } from "react-bootstrap";
 import { Grid } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
@@ -52,6 +53,54 @@ const WarrantyList: React.FC<WarrantyListProps> = ({ filter, onClearFilter }) =>
     fetchWarranties(filter);
   }, [filter]);
 
+  // Add click handlers to asset names and supplier names after grid is rendered
+  useEffect(() => {
+    if (!loading && warranties.length > 0) {
+      const addClickHandlers = () => {
+        // Handle Asset Name column (1st column, index 0)
+        const assetNameCells = document.querySelectorAll('td:first-child');
+        if (assetNameCells.length > 0) {
+          assetNameCells.forEach((cell, index) => {
+            if (index < warranties.length) {
+              const warranty = warranties[index];
+              const assetId = warranty.asset.id || warranty.assetId;
+              if (assetId) {
+                (cell as HTMLElement).style.cursor = 'pointer';
+                (cell as HTMLElement).style.color = '#0d6efd';
+                (cell as HTMLElement).style.textDecoration = 'underline';
+                cell.addEventListener('click', () => {
+                  router.push(`/assets/detail?aid=${assetId}`);
+                });
+              }
+            }
+          });
+        }
+
+        // Handle Supplier Name column (3rd column, index 2)
+        const supplierNameCells = document.querySelectorAll('td:nth-child(3)');
+        if (supplierNameCells.length > 0) {
+          supplierNameCells.forEach((cell, index) => {
+            if (index < warranties.length) {
+              const warranty = warranties[index];
+              const supplierId = (warranty.asset as any).supplier?.id;
+              if (supplierId) {
+                (cell as HTMLElement).style.cursor = 'pointer';
+                (cell as HTMLElement).style.color = '#0d6efd';
+                (cell as HTMLElement).style.textDecoration = 'underline';
+                cell.addEventListener('click', () => {
+                  router.push(`/suppliers/detail?sid=${supplierId}`);
+                });
+              }
+            }
+          });
+        }
+      };
+
+      // Use setTimeout to ensure the grid is fully rendered
+      setTimeout(addClickHandlers, 100);
+    }
+  }, [loading, warranties, router]);
+
   // Format date for display
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "-";
@@ -80,22 +129,6 @@ const WarrantyList: React.FC<WarrantyListProps> = ({ filter, onClearFilter }) =>
     }
   };
 
-  // Get coverage type badge variant
-  const getCoverageBadgeVariant = (coverageType: string | null) => {
-    if (!coverageType) return "secondary";    
-    switch (coverageType.toLowerCase()) {
-      case 'comprehensive':
-        return 'success';
-      case 'parts_labor':
-        return 'primary';
-      case 'parts':
-        return 'info';
-      case 'labor':
-        return 'warning';
-      default:
-        return 'secondary';
-    }
-  };
 
   // Calculate warranty status
   const getWarrantyStatus = (endDate: string) => {
